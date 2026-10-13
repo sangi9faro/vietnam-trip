@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
 <title>越南去哪儿投票</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -138,6 +139,8 @@ th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white
 th{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:700}
 td.dim{color:var(--muted)}
 tr.me td{background:var(--sea-soft)}
+.unlock{font-size:14px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:14px 18px;text-align:center}
+.weather{font-size:14px;background:var(--sea-soft);color:var(--ink);border-radius:10px;padding:10px 14px;margin-top:10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -147,7 +150,7 @@ tr.me td{background:var(--sea-soft)}
   <header>
     <div class="stamp">Việt Nam · 2026–27 Trip Poll</div>
     <h1>越南去哪儿？<em>富国岛、芽庄、岘港</em>，大家投一票</h1>
-    <p class="lede">先看三个地方的优缺点和天气，再投出你的选择。每人一票，随时可以改。下面可以选想去的月份，也可以留言说说理由。</p>
+    <p class="lede">这次跨年（12 月底到 1 月初）一起去越南。先填名字，做个小测试、看看三个地方，再投出你的选择。投完票，就能看到大家的结果、留言板和参与名单。每人一票，随时可以改。</p>
     <div class="who" id="who">正在连接投票数据…</div>
     <form class="idbox" id="idForm">
       <label for="idName" id="idLabel">先告诉大家你是谁</label>
@@ -155,19 +158,21 @@ tr.me td{background:var(--sea-soft)}
         <input id="idName" maxlength="20" placeholder="填你的名字或昵称，例如：小杨" autocomplete="nickname">
         <button class="send" id="idSave" type="submit">确定</button>
       </div>
-      <div class="status" id="idStatus">填写后才能答题、投票和留言。</div>
+      <div class="status" id="idStatus">填写后才会出现测试和投票。</div>
     </form>
   </header>
 
-  <section class="quiz" id="quiz" aria-live="polite"></section>
+  <section class="quiz" id="quiz" aria-live="polite" data-step="named" hidden></section>
 
-  <section>
+  <section data-step="named" hidden>
     <h2>三个候选地</h2>
     <p class="sub">月份条：绿色是旱季（推荐），红色是雨季或台风季。</p>
+    <p class="weather"><b>跨年天气提醒：</b>12 月底到 1 月初，只有富国岛在旱季。芽庄、岘港 12 月是雨季，岘港 1 月也不算稳定。</p>
   </section>
-  <div class="cards" id="cards"></div>
+  <div class="cards" id="cards" data-step="named" hidden></div>
+  <div class="unlock" id="unlock" hidden>投完票后，下面会出现大家的投票结果、留言板和参与名单。</div>
 
-  <div class="lower">
+  <div class="lower" data-step="voted" hidden>
     <div class="panel">
       <div>
         <h2>什么时候去？</h2>
@@ -199,12 +204,12 @@ tr.me td{background:var(--sea-soft)}
     </div>
   </div>
 
-  <section class="roster">
+  <section class="roster" data-step="voted" hidden>
     <div><h2>参与名单</h2><p class="sub">每个人的投票、测试结果和想去的月份，用来统计。</p></div>
     <div class="tablewrap" id="roster"><p class="empty">还没有人报名。填写上面的名字后就会出现在这里。</p></div>
   </section>
 
-  <div class="roadmap"><b>下一步计划：</b>投票结束后，这个页面会继续加上行程安排、机票酒店比价、预算分摊和出发清单。</div>
+  <div class="roadmap" data-step="voted" hidden><b>下一步计划：</b>投票结束后，这个页面会继续加上行程安排、机票酒店比价、预算分摊和出发清单。</div>
 </div>
 
 <script>
@@ -242,7 +247,8 @@ function renderId(){
   $("#idLabel").textContent = myName? "你是：" : "先告诉大家你是谁";
   if(document.activeElement!==$("#idName")) $("#idName").value=myName;
   $("#idSave").textContent = myName? "修改名字" : "确定";
-  $("#idStatus").textContent = myName? "名字已保存，可以开始答题和投票了。" : "填写后才能答题、投票和留言。";
+  $("#idStatus").textContent = myName? "名字已保存，可以开始答题和投票了。" : "填写后才会出现测试和投票。";
+  renderGates();
 }
 $("#idForm").addEventListener("submit",async e=>{
   e.preventDefault();
@@ -273,7 +279,17 @@ function renderRoster(){
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
+function hasVoted(){ return !!votes.find(v=>v.id===uid)?.choice; }
+function renderGates(){
+  const named=!!myName, voted=named&&hasVoted();
+  document.querySelectorAll('[data-step="named"]').forEach(el=>{el.hidden=!named;});
+  document.querySelectorAll('[data-step="voted"]').forEach(el=>{el.hidden=!voted;});
+  $("#unlock").hidden=!(named&&!voted);
+}
+
 function renderCards(){
+  renderGates();
+  const voted=hasVoted();
   const counts={pq:0,nt:0,dn:0}; let total=0;
   for(const v of votes){ if(counts[v.choice]!=null){counts[v.choice]++;total++;} }
   const mine = votes.find(v=>v.id===uid)?.choice;
@@ -283,7 +299,7 @@ function renderCards(){
     const season = MONTHS.map((m,i)=>{const k=i+1; const c=d.dry.includes(k)?"ok":d.rain.includes(k)?"rain":""; return `<span class="${c}">${k}</span>`}).join("");
     return `<article class="card ${mine===d.id?"mine":""}">
       <div class="ticket">
-        <div class="code">${d.code}${n===lead&&n>0?" · 目前领先":""}</div>
+        <div class="code">${d.code}${voted&&n===lead&&n>0?" · 目前领先":""}</div>
         <h3>${d.name}</h3>
         <div class="vn">${d.vn}</div>
         <div class="tag">${d.tag}</div>
@@ -296,8 +312,8 @@ function renderCards(){
         <div class="fit">${d.fit}</div>
       </div>
       <div class="voteRow">
-        <div class="count"><span>${n} 票</span><span>${pct}%</span></div>
-        <div class="bar"><i style="width:${pct}%"></i></div>
+        ${voted?`<div class="count"><span>${n} 票</span><span>${pct}%</span></div>
+        <div class="bar"><i style="width:${pct}%"></i></div>`:`<div class="count"><span>票数投票后可见</span></div>`}
         <button class="vote" data-vote="${d.id}" ${!ready()?"disabled":""}>${mine===d.id?"✓ 我投了这里（点击取消）":"投给"+d.name}</button>
       </div>
     </article>`;
@@ -375,8 +391,8 @@ const QS = [
   ["你下水的程度是？",[["不太下水，看看海就好",{dn:2,pq:1}],["浮潜一下",{pq:2,nt:1}],["想认真潜水",{nt:3}]]],
   ["你对历史文化感兴趣吗？",[["很感兴趣",{dn:3}],["一般，有就看看",{nt:1,dn:1,pq:1}],["不感兴趣",{pq:2,nt:1}]]],
   ["你能玩几天？",[["3 到 4 天",{nt:2,dn:1}],["5 到 6 天",{dn:2,pq:1}],["7 天以上",{pq:2,dn:1}]]],
-  ["你最可能哪几个月出发？",[["11 月到 1 月",{pq:3}],["2 月到 4 月",{dn:2,pq:1,nt:1}],["5 月到 8 月",{nt:2,dn:2}],["9 月到 10 月",{dn:1,nt:1}]]],
-  ["这次和谁一起去？",[["情侣两个人",{pq:3}],["一群朋友",{dn:2,nt:1}],["家人，有老人或小孩",{dn:2,pq:1}],["一个人",{nt:2,dn:1}]]],
+  ["跨年夜你想怎么过？",[["海边看烟花倒数",{pq:2,nt:1}],["去酒吧或海滩派对，玩到天亮",{nt:3}],["在古城或河边，安静一点跨年",{dn:3}],["四个人在别墅里自己开派对",{pq:3}]]],
+  ["住宿你想怎么安排？",[["四个人包一栋带泳池的别墅",{pq:3}],["两间海景房，住海边高楼酒店",{nt:2,pq:1}],["两间市区酒店房，出门就能吃喝逛",{dn:2,nt:1}]]],
   ["吃的方面你更期待？",[["海鲜大餐",{nt:3}],["越南街头小吃，河粉、法棍",{dn:3}],["酒店里舒舒服服吃",{pq:3}]]],
   ["对缆车、乐园这类项目？",[["想去山上看风景、坐缆车",{dn:3}],["想去海上乐园、跨海缆车",{pq:2,nt:1}],["不太感兴趣",{nt:1,pq:1}]]],
   ["对中国游客多不多，你介意吗？",[["多点好，中文方便",{nt:3}],["无所谓",{dn:1,pq:1,nt:1}],["希望少一点",{pq:2,dn:1}]]]
@@ -410,12 +426,12 @@ function renderQuiz(){
     const s=score(answers), p=pcts(s), b=best(s);
     el.innerHTML=`<div class="qhead"><h2>测试结果</h2><span class="qnum">${QS.length} / ${QS.length}</span></div>
       <div class="result"><p class="big">你最适合去 <em>${DN[b]}</em></p>${bars(p,b)}<p class="why">${WHY[b]}</p>
-      <div class="qnav"><button class="ghost" id="qRedo">重新测一次</button>${ready()?`<button class="primary" id="qVote">把我的一票投给${DN[b]}</button>`:""}</div></div>${renderGroup()}`;
+      <div class="qnav"><button class="ghost" id="qRedo">重新测一次</button>${ready()?(myVote().choice===b?`<button class="primary" disabled>已投给${DN[b]} ✓</button>`:`<button class="primary" id="qVote">把我的一票投给${DN[b]}</button>`):""}</div></div>${hasVoted()?renderGroup():""}`;
     return;
   }
   if(db&&uid&&!myName){
     el.innerHTML=`<div class="qhead"><div><h2>测一测：你适合去哪里？</h2><p class="sub">${QS.length} 道题，大约 2 分钟。</p></div></div>
-      <div class="gate">请先在上面填写 <b>你是谁</b>，再开始答题。这样你的结果才会算进大家的统计里。</div>${quizAll.some(r=>r.best)?renderGroup():""}`;
+      <div class="gate">请先在上面填写 <b>你是谁</b>，再开始答题。这样你的结果才会算进大家的统计里。</div>${hasVoted()&&quizAll.some(r=>r.best)?renderGroup():""}`;
     return;
   }
   const [q,opts]=QS[qi];
@@ -424,7 +440,7 @@ function renderQuiz(){
     <p class="qtext">${q}</p>
     <div class="opts">${opts.map((o,j)=>`<button class="opt ${answers[qi]===j?"on":""}" data-opt="${j}">${o[0]}</button>`).join("")}</div>
     <div class="qnav"><button class="ghost" id="qPrev" ${qi===0?"disabled":""}>上一题</button></div>
-    ${quizAll.some(r=>r.best)?renderGroup():""}`;
+    ${hasVoted()&&quizAll.some(r=>r.best)?renderGroup():""}`;
 }
 
 $("#quiz").addEventListener("click",async e=>{
@@ -435,7 +451,7 @@ $("#quiz").addEventListener("click",async e=>{
     return; }
   if(e.target.id==="qPrev"&&qi>0){qi--;renderQuiz();return;}
   if(e.target.id==="qRedo"){qi=0;answers=new Array(QS.length).fill(null);quizDone=false;renderQuiz();return;}
-  if(e.target.id==="qVote"){ await saveVote({choice:best(score(answers))}); e.target.textContent="已投票 ✓"; e.target.disabled=true; }
+  if(e.target.id==="qVote"){ await saveVote({choice:best(score(answers))}); renderQuiz(); }
 });
 
 async function saveQuiz(){
@@ -476,7 +492,7 @@ function loadScript(src){
     subscribed=true; uid=u.uid; db=firebase.firestore(); canWrite=true;
     db.collection("votes").onSnapshot(s=>{
       if(!connected){ connected=true; clearTimeout(timer); $("#who").textContent="已连接。每人一票，可以随时改。"; }
-      votes=s.docs.map(d=>({id:d.id,...d.data()})); renderCards(); renderMonths(); renderRoster();
+      votes=s.docs.map(d=>({id:d.id,...d.data()})); renderCards(); renderMonths(); renderRoster(); renderQuiz();
     }, fail);
     db.collection("quiz").onSnapshot(s=>{ quizAll=s.docs.map(d=>({id:d.id,...d.data()}));
       const mine=quizAll.find(r=>r.id===uid);
