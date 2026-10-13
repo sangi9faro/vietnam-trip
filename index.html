@@ -206,10 +206,6 @@ tr.me td{background:var(--sea-soft)}
   <div class="roadmap"><b>下一步计划：</b>投票结束后，这个页面会继续加上行程安排、机票酒店比价、预算分摊和出发清单。</div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
 <script>
 const DESTS = [
   { id:"pq", code:"PQC", name:"富国岛", vn:"Phú Quốc · 越南最南端海岛",
@@ -256,7 +252,7 @@ $("#idForm").addEventListener("submit",async e=>{
   if(taken){$("#idStatus").textContent="这个名字已经有人用了，换一个或加个后缀吧。";return;}
   $("#idSave").disabled=true;
   try{ await db.doc("people/"+uid).set({name:n,at:Date.now()}); myName=n; renderId(); renderAll(); renderQuiz(); }
-  catch(err){ $("#idStatus").textContent="保存失败：你可能只有查看权限，请让分享者把你设为 Contributor。"; }
+  catch(err){ $("#idStatus").textContent="保存失败，请刷新后再试。"; }
   $("#idSave").disabled=false;
 });
 
@@ -338,7 +334,7 @@ async function saveVote(patch){
   const cur=myVote();
   const body={choice:cur.choice||null, months:cur.months||[], ...patch, at:Date.now()};
   try{ await (await myVoteDoc()).set(body); }
-  catch(e){ if(e&&e.code==="permission-denied"){canWrite=false;$("#who").textContent="你目前只能查看，不能投票。请让分享者把你设为可参与（Contributor）。";renderAll();} else {$("#monthStatus").textContent="保存失败，请稍后再试。";} }
+  catch(e){ if(e&&e.code==="permission-denied"){canWrite=false;$("#who").textContent="保存失败，请刷新后再试。";renderAll();} else {$("#monthStatus").textContent="保存失败，请稍后再试。";} }
 }
 
 document.addEventListener("click",async e=>{
@@ -451,13 +447,28 @@ renderId();
 renderQuiz();
 renderAll();
 
-(function start(){
+function loadScript(src){
+  return new Promise((resolve,reject)=>{
+    const el=document.createElement("script");
+    el.src=src; el.async=false;
+    el.onload=resolve; el.onerror=()=>reject(new Error("load failed: "+src));
+    document.head.appendChild(el);
+  });
+}
+
+(async function start(){
   const FAIL="无法连接数据库。如果你在中国大陆，可能需要开启 VPN。";
   let connected=false, subscribed=false;
   const fail=()=>{ $("#who").textContent=FAIL; };
+  // One 10 s budget covers script loading, anonymous sign-in and the first snapshot.
   const timer=setTimeout(()=>{ if(!connected) fail(); },10000);
-  if(!window.firebase||!window.FIREBASE_CONFIG){ clearTimeout(timer); fail(); return; }
   $("#who").textContent="正在连接投票数据…";
+  const SDK="https://www.gstatic.com/firebasejs/10.12.2/";
+  try{
+    for(const src of [SDK+"firebase-app-compat.js",SDK+"firebase-auth-compat.js",SDK+"firebase-firestore-compat.js","firebase-config.js"])
+      await loadScript(src);
+  }catch(e){ clearTimeout(timer); fail(); return; }
+  if(!window.firebase||!window.FIREBASE_CONFIG){ clearTimeout(timer); fail(); return; }
   try{ firebase.initializeApp(window.FIREBASE_CONFIG); }catch(e){ clearTimeout(timer); fail(); return; }
   firebase.auth().onAuthStateChanged(u=>{
     if(!u||subscribed) return;
