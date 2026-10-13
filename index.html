@@ -1,7 +1,12 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>越南去哪儿投票</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700;900&display=swap">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <style>
 /* Layout: a postcard header, three destination "tickets" side by side, then a live tally + comment wall */
 :root{
@@ -21,7 +26,7 @@
   --sea:#3fbfb2; --sea-soft:#183a37; --lantern:#f07355; --lantern-soft:#3a201a; --saffron:#f0bd4a;
   --good:#5cc98a; --bad:#f08a70; color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65}
 .wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:28px 64px;display:grid;gap:36px}
 header{display:grid;gap:10px}
 .stamp{font-family:var(--latin);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--lantern)}
@@ -134,6 +139,8 @@ td.dim{color:var(--muted)}
 tr.me td{background:var(--sea-soft)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header>
@@ -199,6 +206,10 @@ tr.me td{background:var(--sea-soft)}
   <div class="roadmap"><b>下一步计划：</b>投票结束后，这个页面会继续加上行程安排、机票酒店比价、预算分摊和出发清单。</div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script>
 const DESTS = [
   { id:"pq", code:"PQC", name:"富国岛", vn:"Phú Quốc · 越南最南端海岛",
@@ -223,7 +234,7 @@ const DESTS = [
 const MONTHS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
 const $ = s => document.querySelector(s);
 
-let db=null, user=null, uid=null, canWrite=true;
+let db=null, uid=null, canWrite=true;
 let votes=[], notes=[], people={}, myName="";
 function ready(){return !!(db&&uid&&canWrite&&myName);}
 function nameOf(id){return id===uid&&myName? myName : (people[id]||"");}
@@ -240,7 +251,7 @@ $("#idForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const n=$("#idName").value.trim().slice(0,20);
   if(!n){$("#idStatus").textContent="请先填写名字。";return;}
-  if(!db||!uid){$("#idStatus").textContent="登录 claude.ai 后才能保存名字。";return;}
+  if(!db||!uid){$("#idStatus").textContent="还没连上数据库，请稍后再试。";return;}
   const taken=Object.entries(people).some(([id,v])=>id!==uid&&v===n);
   if(taken){$("#idStatus").textContent="这个名字已经有人用了，换一个或加个后缀吧。";return;}
   $("#idSave").disabled=true;
@@ -303,15 +314,13 @@ function renderMonths(){
   $("#months").innerHTML = MONTHS.map((m,i)=>`<button class="chip ${mine.includes(i+1)?"on":""}" data-month="${i+1}" ${!ready()?"disabled":""}>${m}<span class="n">${cnt[i]||""}</span></button>`).join("");
 }
 
-async function renderNotes(){
+function renderNotes(){
   const feed=$("#feed");
   if(!notes.length){feed.innerHTML='<div class="empty">还没有留言，来写第一条吧。</div>';return;}
   const sorted=[...notes].sort((a,b)=>(b.at||0)-(a.at||0));
-  let profiles={};
-  try{ if(user) profiles = await user.profiles([...new Set(sorted.map(n=>n.author).filter(Boolean))]) || {}; }catch(e){}
   const dn={pq:"富国岛",nt:"芽庄",dn:"岘港"};
   feed.innerHTML = sorted.map(n=>{
-    const name = n.author===uid ? (myName? myName+"（我）":"我") : (people[n.author] || profiles[n.author]?.name || "朋友");
+    const name = n.author===uid ? (myName? myName+"（我）":"我") : (people[n.author] || "朋友");
     const t = n.at? new Date(n.at).toLocaleString("zh-CN",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
     return `<div class="note" data-d="${esc(n.dest||"")}">
       <div class="meta"><b>${esc(name)}</b>${n.dest&&dn[n.dest]?`<span>关于 ${dn[n.dest]}</span>`:""}<span>${t}</span>
@@ -329,7 +338,7 @@ async function saveVote(patch){
   const cur=myVote();
   const body={choice:cur.choice||null, months:cur.months||[], ...patch, at:Date.now()};
   try{ await (await myVoteDoc()).set(body); }
-  catch(e){ if(e&&e.code==="invalid_argument"){canWrite=false;$("#who").textContent="你目前只能查看，不能投票。请让分享者把你设为可参与（Contributor）。";renderAll();} else {$("#monthStatus").textContent="保存失败，请稍后再试。";} }
+  catch(e){ if(e&&e.code==="permission-denied"){canWrite=false;$("#who").textContent="你目前只能查看，不能投票。请让分享者把你设为可参与（Contributor）。";renderAll();} else {$("#monthStatus").textContent="保存失败，请稍后再试。";} }
 }
 
 document.addEventListener("click",async e=>{
@@ -352,7 +361,7 @@ $("#noteForm").addEventListener("submit",async e=>{
     await db.collection("notes").add({text, dest:$("#noteDest").value||null, author:uid, at:Date.now()});
     $("#noteText").value=""; $("#noteStatus").textContent="已发布。";
   }catch(err){
-    $("#noteStatus").textContent = err&&err.code==="quota_exceeded" ? "留言已满，请先删除一些旧留言。" : "发布失败：你可能只有查看权限。";
+    $("#noteStatus").textContent = err&&err.code==="resource-exhausted" ? "留言已满，请先删除一些旧留言。" : "发布失败：你可能只有查看权限。";
   }
   $("#noteSend").disabled=false;
 });
@@ -442,26 +451,35 @@ renderId();
 renderQuiz();
 renderAll();
 
-(async()=>{
-  if(!window.claude){ $("#who").textContent="这个预览里无法连接投票数据，打开分享链接后即可投票。"; return; }
-  [db,user] = await Promise.all([claude.use("db"), claude.use("user")]);
-  if(!db){ $("#who").textContent="登录 claude.ai 后即可投票和留言，现在只能浏览。"; renderAll(); return; }
-  if(user){ try{ uid = await user.id(); }catch(e){}
-    try{ const w = await user.can("data.write"); if(w===false) canWrite=false; }catch(e){} }
-  $("#who").textContent = !uid ? "无法识别你的身份，暂时只能浏览。" : canWrite ? "已连接。每人一票，可以随时改。" : "你目前只能查看，不能投票。请让分享者把你设为可参与（Contributor）。";
-  db.collection("votes").onSnapshot(s=>{ votes=s.docs.map(d=>({id:d.id,...d.data()})); renderCards(); renderMonths(); }, ()=>{ $("#who").textContent="投票数据连接中断，请刷新页面。"; });
-  db.collection("quiz").onSnapshot(s=>{ quizAll=s.docs.map(d=>({id:d.id,...d.data()}));
-    const mine=quizAll.find(r=>r.id===uid);
-    if(mine&&Array.isArray(mine.answers)&&mine.answers.length===QS.length&&!quizDone&&answers.every(a=>a==null)){answers=mine.answers.slice();quizDone=true;}
-    renderQuiz(); renderRoster(); }, ()=>{});
-  db.collection("people").onSnapshot(s=>{
-    people={}; s.docs.forEach(d=>{const n=d.data()?.name; if(typeof n==="string"&&n) people[d.id]=n.slice(0,20);});
-    if(uid&&people[uid]&&!myName) myName=people[uid];
-    renderId(); renderAll(); renderQuiz();
-  }, ()=>{});
-  db.collection("notes").onSnapshot(s=>{ notes=s.docs.map(d=>({id:d.id,...d.data()})); renderNotes(); }, ()=>{});
-  renderAll();
-})();
+(function start(){
+  const FAIL="无法连接数据库。如果你在中国大陆，可能需要开启 VPN。";
+  let connected=false, subscribed=false;
+  const fail=()=>{ $("#who").textContent=FAIL; };
+  const timer=setTimeout(()=>{ if(!connected) fail(); },10000);
+  if(!window.firebase||!window.FIREBASE_CONFIG){ clearTimeout(timer); fail(); return; }
+  $("#who").textContent="正在连接投票数据…";
+  try{ firebase.initializeApp(window.FIREBASE_CONFIG); }catch(e){ clearTimeout(timer); fail(); return; }
+  firebase.auth().onAuthStateChanged(u=>{
+    if(!u||subscribed) return;
+    subscribed=true; uid=u.uid; db=firebase.firestore(); canWrite=true;
+    db.collection("votes").onSnapshot(s=>{
+      if(!connected){ connected=true; clearTimeout(timer); $("#who").textContent="已连接。每人一票，可以随时改。"; }
+      votes=s.docs.map(d=>({id:d.id,...d.data()})); renderCards(); renderMonths(); renderRoster();
+    }, fail);
+    db.collection("quiz").onSnapshot(s=>{ quizAll=s.docs.map(d=>({id:d.id,...d.data()}));
+      const mine=quizAll.find(r=>r.id===uid);
+      if(mine&&Array.isArray(mine.answers)&&mine.answers.length===QS.length&&!quizDone&&answers.every(a=>a==null)){answers=mine.answers.slice();quizDone=true;}
+      renderQuiz(); renderRoster(); }, fail);
+    db.collection("people").onSnapshot(s=>{
+      people={}; s.docs.forEach(d=>{const n=d.data()?.name; if(typeof n==="string"&&n) people[d.id]=n.slice(0,20);});
+      if(uid&&people[uid]&&!myName) myName=people[uid];
+      renderId(); renderAll(); renderQuiz();
+    }, fail);
+    db.collection("notes").onSnapshot(s=>{ notes=s.docs.map(d=>({id:d.id,...d.data()})); renderNotes(); }, fail);
+    renderAll();
+  });
+  firebase.auth().signInAnonymously().catch(()=>{ clearTimeout(timer); fail(); });
+})()
 </script>
 
 </body></html>

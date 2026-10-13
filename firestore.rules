@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isMe(uid) { return signedIn() && request.auth.uid == uid; }
+    function okDest(d) { return d == null || d in ['pq', 'nt', 'dn']; }
+
+    // 名字：所有人可读，只能写自己的
+    match /people/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isMe(uid)
+        && request.resource.data.keys().hasOnly(['name', 'at'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 20
+        && request.resource.data.at is int;
+      allow delete: if isMe(uid);
+    }
+
+    // 投票 + 月份：所有人可读，只能写自己的
+    match /votes/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isMe(uid)
+        && request.resource.data.keys().hasOnly(['choice', 'months', 'at'])
+        && okDest(request.resource.data.choice)
+        && request.resource.data.months is list
+        && request.resource.data.months.size() <= 12
+        && request.resource.data.at is int;
+      allow delete: if isMe(uid);
+    }
+
+    // 测试结果：所有人可读，只能写自己的
+    match /quiz/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isMe(uid)
+        && request.resource.data.keys().hasOnly(['answers', 'scores', 'pcts', 'best', 'at'])
+        && request.resource.data.best in ['pq', 'nt', 'dn']
+        && request.resource.data.answers is list
+        && request.resource.data.answers.size() <= 30
+        && request.resource.data.scores is map
+        && request.resource.data.pcts is map
+        && request.resource.data.at is int;
+      allow delete: if isMe(uid);
+    }
+
+    // 留言：所有人可读，作者必须是自己，只能删自己的，不能修改
+    match /notes/{noteId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['text', 'dest', 'author', 'at'])
+        && request.resource.data.author == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 500
+        && okDest(request.resource.data.dest)
+        && request.resource.data.at is int;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.author == request.auth.uid;
+    }
+  }
+}
