@@ -6,33 +6,33 @@
 <meta name="robots" content="noindex,nofollow">
 <title>越南去哪儿投票</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700;900&display=swap">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <style>
 /* Layout: a postcard header, three destination "tickets" side by side, then a live tally + comment wall */
 :root{
-  --bg:#f3f6f4; --surface:#ffffff; --ink:#15302c; --muted:#5d716d; --line:#d6e0dc;
-  --sea:#0e7c73; --sea-soft:#d8efec; --lantern:#d9482b; --lantern-soft:#fbe3dc; --saffron:#e9a81c;
-  --good:#1f8a4c; --bad:#b4442c;
-  --display:"Noto Serif SC","Songti SC",serif;
-  --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
-  --latin:"Be Vietnam Pro","Noto Sans SC",system-ui,sans-serif;
+  /* Fresh light theme, tokens follow the Apple design system used by trip-map-builder */
+  --bg:#f5f5f7; --surface:#ffffff; --ink:#1d1d1f; --muted:#6e6e73; --line:rgba(60,60,67,.12);
+  --sea:#0071e3; --sea-soft:#e8f2fd; --lantern:#ff9500; --lantern-soft:#fff3e0; --saffron:#34c759;
+  --good:#248a3d; --bad:#d70015;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04); --shadow-md:0 4px 14px rgba(0,0,0,.08);
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
+  --latin:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0d1a19; --surface:#152523; --ink:#e6efec; --muted:#9ab0ab; --line:#2a3d3a;
-  --sea:#3fbfb2; --sea-soft:#183a37; --lantern:#f07355; --lantern-soft:#3a201a; --saffron:#f0bd4a;
-  --good:#5cc98a; --bad:#f08a70; color-scheme:dark}}
+  --bg:#000000; --surface:#1c1c1e; --ink:#f5f5f7; --muted:#98989d; --line:rgba(84,84,88,.55);
+  --sea:#0a84ff; --sea-soft:#0d2a4a; --lantern:#ff9f0a; --lantern-soft:#3a2a10; --saffron:#30d158;
+  --good:#30d158; --bad:#ff453a; --shadow:none; --shadow-md:none; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0d1a19; --surface:#152523; --ink:#e6efec; --muted:#9ab0ab; --line:#2a3d3a;
-  --sea:#3fbfb2; --sea-soft:#183a37; --lantern:#f07355; --lantern-soft:#3a201a; --saffron:#f0bd4a;
-  --good:#5cc98a; --bad:#f08a70; color-scheme:dark}
+  --bg:#000000; --surface:#1c1c1e; --ink:#f5f5f7; --muted:#98989d; --line:rgba(84,84,88,.55);
+  --sea:#0a84ff; --sea-soft:#0d2a4a; --lantern:#ff9f0a; --lantern-soft:#3a2a10; --saffron:#30d158;
+  --good:#30d158; --bad:#ff453a; --shadow:none; --shadow-md:none; color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;letter-spacing:-0.01em;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:28px 64px;display:grid;gap:36px}
 header{display:grid;gap:10px}
 .stamp{font-family:var(--latin);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--lantern)}
-h1{font-family:var(--display);font-weight:900;font-size:clamp(30px,6vw,52px);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-family:var(--display);font-weight:700;letter-spacing:-0.025em;font-size:clamp(30px,6vw,52px);line-height:1.15;margin:0;text-wrap:balance}
 h1 em{font-style:normal;color:var(--sea)}
 .lede{color:var(--muted);max-width:60ch;margin:0}
 .who{font-size:13px;color:var(--muted)}
@@ -141,6 +141,18 @@ td.dim{color:var(--muted)}
 tr.me td{background:var(--sea-soft)}
 .unlock{font-size:14px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:14px 18px;text-align:center}
 .weather{font-size:14px;background:var(--sea-soft);color:var(--ink);border-radius:10px;padding:10px 14px;margin-top:10px}
+/* Fresh theme overrides: borderless cards with soft shadow, pill buttons */
+.card,.panel,.quiz,.roster,.idbox,.unlock{border-color:transparent;box-shadow:var(--shadow);border-radius:20px}
+.idbox{border:1.5px solid var(--sea)} .idbox.done{border-color:transparent}
+.card.mine{box-shadow:0 0 0 2px var(--sea),var(--shadow-md)}
+.ticket{border-bottom:1px dashed var(--line)}
+.vote,.send,.primary,.ghost,.chip{border-radius:980px}
+.vote{background:var(--sea);color:#fff} .card.mine .vote{background:var(--saffron)}
+.send{background:var(--sea)}
+.chip.on{background:var(--sea);border-color:var(--sea);color:#fff}
+.opt{border-radius:14px;background:var(--surface)} .opt.on{background:var(--sea-soft)}
+.unlock{border-style:solid}
+.weather{background:var(--lantern-soft)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
