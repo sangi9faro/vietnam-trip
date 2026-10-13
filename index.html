@@ -438,7 +438,7 @@ async function saveVote(patch){
   const cur=myVote();
   const body={choice:cur.choice||null, months:cur.months||[], ...patch, at:Date.now()};
   try{ await (await myVoteDoc()).set(body); }
-  catch(e){ if(e&&e.code==="permission-denied"){canWrite=false;$("#who").textContent="保存失败，请刷新后再试。";toast("保存失败，请刷新后再试");renderAll();} else {$("#monthStatus").textContent="保存失败，请稍后再试。";} }
+  catch(e){ if(e&&e.code==="permission-denied"){canWrite=false;$("#who").textContent="保存失败，请刷新后再试。";toast("保存失败，请刷新后再试");renderAll();} else {$("#monthStatus").textContent="保存失败，请稍后再试。";toast("保存失败，请稍后再试");} }
 }
 
 document.addEventListener("click",async e=>{
