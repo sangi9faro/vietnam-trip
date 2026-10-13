@@ -1,0 +1,467 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>越南去哪儿投票</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700;900&display=swap">
+<style>
+/* Layout: a postcard header, three destination "tickets" side by side, then a live tally + comment wall */
+:root{
+  --bg:#f3f6f4; --surface:#ffffff; --ink:#15302c; --muted:#5d716d; --line:#d6e0dc;
+  --sea:#0e7c73; --sea-soft:#d8efec; --lantern:#d9482b; --lantern-soft:#fbe3dc; --saffron:#e9a81c;
+  --good:#1f8a4c; --bad:#b4442c;
+  --display:"Noto Serif SC","Songti SC",serif;
+  --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --latin:"Be Vietnam Pro","Noto Sans SC",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1a19; --surface:#152523; --ink:#e6efec; --muted:#9ab0ab; --line:#2a3d3a;
+  --sea:#3fbfb2; --sea-soft:#183a37; --lantern:#f07355; --lantern-soft:#3a201a; --saffron:#f0bd4a;
+  --good:#5cc98a; --bad:#f08a70; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1a19; --surface:#152523; --ink:#e6efec; --muted:#9ab0ab; --line:#2a3d3a;
+  --sea:#3fbfb2; --sea-soft:#183a37; --lantern:#f07355; --lantern-soft:#3a201a; --saffron:#f0bd4a;
+  --good:#5cc98a; --bad:#f08a70; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:28px 64px;display:grid;gap:36px}
+header{display:grid;gap:10px}
+.stamp{font-family:var(--latin);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--lantern)}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(30px,6vw,52px);line-height:1.15;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--sea)}
+.lede{color:var(--muted);max-width:60ch;margin:0}
+.who{font-size:13px;color:var(--muted)}
+h2{font-family:var(--display);font-size:22px;margin:0 0 4px;text-wrap:balance}
+.sub{color:var(--muted);font-size:13.5px;margin:0}
+
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:860px){.cards{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.card.mine{border-color:var(--sea);box-shadow:0 0 0 2px var(--sea)}
+.ticket{padding:18px 18px 14px;border-bottom:2px dashed var(--line);display:grid;gap:4px;position:relative}
+.ticket .code{font-family:var(--latin);font-weight:800;font-size:13px;letter-spacing:.12em;color:var(--muted)}
+.ticket h3{font-family:var(--display);font-size:26px;margin:0;line-height:1.2}
+.ticket .vn{font-family:var(--latin);font-size:13px;color:var(--muted)}
+.ticket .tag{font-size:13.5px;color:var(--ink);margin-top:4px}
+.season{display:flex;gap:2px;margin-top:10px}
+.season span{flex:1;height:22px;border-radius:3px;font-family:var(--latin);font-size:10px;display:grid;place-items:center;color:var(--muted);background:var(--bg)}
+.season span.ok{background:var(--sea-soft);color:var(--sea);font-weight:600}
+.season span.rain{background:var(--lantern-soft);color:var(--lantern)}
+.legend{font-size:11.5px;color:var(--muted);display:flex;gap:12px;margin-top:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.body{padding:14px 18px 18px;display:grid;gap:12px;flex:1;align-content:start}
+.list h4{margin:0 0 4px;font-size:12px;letter-spacing:.08em;font-weight:700}
+.list.pro h4{color:var(--good)} .list.con h4{color:var(--bad)}
+.list ul{margin:0;padding-left:0;list-style:none;display:grid;gap:4px}
+.list li{position:relative;padding-left:18px;font-size:14px}
+.list.pro li::before{content:"+";position:absolute;left:2px;color:var(--good);font-weight:700}
+.list.con li::before{content:"−";position:absolute;left:2px;color:var(--bad);font-weight:700}
+.fit{font-size:13px;background:var(--bg);border-radius:8px;padding:8px 10px;color:var(--muted)}
+.fit b{color:var(--ink)}
+.voteRow{padding:0 18px 18px;display:grid;gap:8px}
+button{font:inherit;cursor:pointer}
+.vote{width:100%;border:0;border-radius:10px;padding:11px 14px;font-weight:700;background:var(--ink);color:var(--surface);transition:transform .1s,background .2s}
+.vote:hover{transform:translateY(-1px)}
+.vote:focus-visible,.chip:focus-visible,textarea:focus-visible,select:focus-visible,.send:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+.card.mine .vote{background:var(--sea)}
+.vote:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.bar{height:8px;border-radius:99px;background:var(--bg);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--sea);width:0;transition:width .5s}
+.count{font-family:var(--latin);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+
+.lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px}
+@media (max-width:860px){.lower{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px;align-content:start}
+.months{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:5px 11px;font-family:var(--latin);font-size:13px;font-variant-numeric:tabular-nums}
+.chip.on{background:var(--saffron);border-color:var(--saffron);color:#2a1c00;font-weight:600}
+.chip .n{margin-left:4px;opacity:.7}
+form{display:grid;gap:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+textarea{width:100%;min-height:72px;resize:vertical}
+.send{border:0;border-radius:10px;padding:9px 18px;background:var(--lantern);color:#fff;font-weight:700}
+.send:disabled{opacity:.5}
+.feed{display:grid;gap:10px;max-height:420px;overflow:auto;padding-right:2px}
+.note{border-left:3px solid var(--line);padding:4px 0 4px 12px}
+.note[data-d="pq"]{border-color:var(--sea)} .note[data-d="nt"]{border-color:var(--saffron)} .note[data-d="dn"]{border-color:var(--lantern)}
+.note .meta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.note .meta b{color:var(--ink)}
+.note p{margin:2px 0 0;white-space:pre-wrap;word-break:break-word}
+.del{border:0;background:none;color:var(--muted);font-size:12px;padding:0;text-decoration:underline}
+.empty{color:var(--muted);font-size:14px}
+.status{font-size:13px;color:var(--muted);min-height:1.2em}
+.roadmap{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+.roadmap b{color:var(--ink)}
+.quiz{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:16px}
+.qhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.prog{height:6px;border-radius:99px;background:var(--bg);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--saffron);transition:width .3s}
+.qnum{font-family:var(--latin);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.qtext{font-family:var(--display);font-size:clamp(19px,3.2vw,24px);margin:0;text-wrap:balance}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.opt{text-align:left;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14.5px;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--sea)}
+.opt.on{border-color:var(--sea);background:var(--sea-soft)}
+.opt:focus-visible,.ghost:focus-visible,.primary:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+.qnav{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.ghost{border:1px solid var(--line);background:none;color:var(--ink);border-radius:10px;padding:9px 16px}
+.ghost:disabled{opacity:.4}
+.primary{border:0;background:var(--sea);color:#fff;border-radius:10px;padding:9px 18px;font-weight:700}
+.result{display:grid;gap:14px}
+.result .big{font-family:var(--display);font-size:clamp(26px,5vw,38px);margin:0}
+.result .big em{font-style:normal;color:var(--sea)}
+.mbars{display:grid;gap:8px}
+.mbar{display:grid;grid-template-columns:60px minmax(0,1fr) 44px;align-items:center;gap:10px;font-size:14px}
+.mbar .t{height:12px;border-radius:99px;background:var(--bg);overflow:hidden}
+.mbar .t i{display:block;height:100%;background:var(--sea);transition:width .6s}
+.mbar .t i.top{background:var(--lantern)}
+.mbar span:last-child{font-family:var(--latin);text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.why{font-size:14px;color:var(--muted);margin:0}
+.group{border-top:1px dashed var(--line);padding-top:14px;display:grid;gap:8px}
+.group h3{margin:0;font-size:15px}
+.idbox{background:var(--surface);border:1.5px solid var(--saffron);border-radius:14px;padding:16px 18px;display:grid;gap:10px;max-width:560px}
+.idbox.done{border-color:var(--line)}
+.idbox label{font-weight:700}
+.idbox input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;flex:1;min-width:0}
+.idbox input:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+.idrow{display:flex;gap:8px;flex-wrap:wrap}
+.gate{color:var(--muted);font-size:14px;background:var(--bg);border-radius:10px;padding:12px 14px}
+.roster{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:700}
+td.dim{color:var(--muted)}
+tr.me td{background:var(--sea-soft)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="stamp">Việt Nam · 2026–27 Trip Poll</div>
+    <h1>越南去哪儿？<em>富国岛、芽庄、岘港</em>，大家投一票</h1>
+    <p class="lede">先看三个地方的优缺点和天气，再投出你的选择。每人一票，随时可以改。下面可以选想去的月份，也可以留言说说理由。</p>
+    <div class="who" id="who">正在连接投票数据…</div>
+    <form class="idbox" id="idForm">
+      <label for="idName" id="idLabel">先告诉大家你是谁</label>
+      <div class="idrow">
+        <input id="idName" maxlength="20" placeholder="填你的名字或昵称，例如：小杨" autocomplete="nickname">
+        <button class="send" id="idSave" type="submit">确定</button>
+      </div>
+      <div class="status" id="idStatus">填写后才能答题、投票和留言。</div>
+    </form>
+  </header>
+
+  <section class="quiz" id="quiz" aria-live="polite"></section>
+
+  <section>
+    <h2>三个候选地</h2>
+    <p class="sub">月份条：绿色是旱季（推荐），红色是雨季或台风季。</p>
+  </section>
+  <div class="cards" id="cards"></div>
+
+  <div class="lower">
+    <div class="panel">
+      <div>
+        <h2>什么时候去？</h2>
+        <p class="sub">可多选，点一下选中，再点取消。数字是选这个月的人数。</p>
+      </div>
+      <div class="months" id="months"></div>
+      <div class="status" id="monthStatus"></div>
+    </div>
+
+    <div class="panel">
+      <div>
+        <h2>留言板</h2>
+        <p class="sub">说说你为什么选它，或者想在那里干什么。</p>
+      </div>
+      <form id="noteForm">
+        <textarea id="noteText" maxlength="500" placeholder="例如：我想去会安看灯笼，岘港顺路"></textarea>
+        <div class="row">
+          <select id="noteDest" aria-label="留言关于哪个地方">
+            <option value="">不限地点</option>
+            <option value="pq">富国岛</option>
+            <option value="nt">芽庄</option>
+            <option value="dn">岘港</option>
+          </select>
+          <button class="send" id="noteSend" type="submit">发布留言</button>
+        </div>
+        <div class="status" id="noteStatus"></div>
+      </form>
+      <div class="feed" id="feed"><div class="empty">还没有留言，来写第一条吧。</div></div>
+    </div>
+  </div>
+
+  <section class="roster">
+    <div><h2>参与名单</h2><p class="sub">每个人的投票、测试结果和想去的月份，用来统计。</p></div>
+    <div class="tablewrap" id="roster"><p class="empty">还没有人报名。填写上面的名字后就会出现在这里。</p></div>
+  </section>
+
+  <div class="roadmap"><b>下一步计划：</b>投票结束后，这个页面会继续加上行程安排、机票酒店比价、预算分摊和出发清单。</div>
+</div>
+
+<script>
+const DESTS = [
+  { id:"pq", code:"PQC", name:"富国岛", vn:"Phú Quốc · 越南最南端海岛",
+    tag:"适合纯度假：躺海边、看日落、浮潜",
+    dry:[1,2,3,4,11,12], rain:[7,8,9],
+    pros:["11月到4月旱季天气最稳，海水清","海滩好，南部有跨海缆车和珍珠岛乐园","度假村多，适合放空","对多国游客有免签政策（以出发前官方信息为准）"],
+    cons:["岛上景点分散，基本要打车或租车","城市感弱，夜生活和美食选择少","度假村价格偏高","7到9月西南季风，浪大不宜下水"],
+    fit:"<b>适合：</b>情侣、想休息的人、预算稍宽松" },
+  { id:"nt", code:"CXR", name:"芽庄", vn:"Nha Trang · 中南部海滨城市",
+    tag:"适合玩海岛：跳岛、潜水、泥浆浴",
+    dry:[1,2,3,4,5,6,7,8], rain:[10,11,12],
+    pros:["跳岛游、潜水、泥浆温泉，玩法集中","海鲜和住宿性价比高","市区就在海边，走路就能到沙滩","旱季长，1到8月都可以去"],
+    cons:["城市比较商业化，中国旅行团多","10到12月雨季，有台风风险","文化古迹少，玩法偏单一","部分区域拉客、宰客要留心"],
+    fit:"<b>适合：</b>学生党、喜欢玩水、想省钱" },
+  { id:"dn", code:"DAD", name:"岘港", vn:"Đà Nẵng · 中部城市 + 会安古城",
+    tag:"适合第一次去越南：海滩、古城、山都有",
+    dry:[2,3,4,5,6,7,8], rain:[10,11,12],
+    pros:["美溪海滩就在市区边上","40分钟到会安古城，晚上灯笼很美","巴拿山、山茶半岛、顺化都能顺路去","城市干净，吃喝交通方便，适合多人一起玩"],
+    cons:["10到12月雨季，常有台风和洪水","夏天6到8月很热","巴拿山门票贵、人多","海边酒店区离会安有一段距离"],
+    fit:"<b>适合：</b>第一次去、人多意见不一、想玩得丰富" }
+];
+const MONTHS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+const $ = s => document.querySelector(s);
+
+let db=null, user=null, uid=null, canWrite=true;
+let votes=[], notes=[], people={}, myName="";
+function ready(){return !!(db&&uid&&canWrite&&myName);}
+function nameOf(id){return id===uid&&myName? myName : (people[id]||"");}
+
+function renderId(){
+  const box=$("#idForm");
+  box.classList.toggle("done",!!myName);
+  $("#idLabel").textContent = myName? "你是：" : "先告诉大家你是谁";
+  if(document.activeElement!==$("#idName")) $("#idName").value=myName;
+  $("#idSave").textContent = myName? "修改名字" : "确定";
+  $("#idStatus").textContent = myName? "名字已保存，可以开始答题和投票了。" : "填写后才能答题、投票和留言。";
+}
+$("#idForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const n=$("#idName").value.trim().slice(0,20);
+  if(!n){$("#idStatus").textContent="请先填写名字。";return;}
+  if(!db||!uid){$("#idStatus").textContent="登录 claude.ai 后才能保存名字。";return;}
+  const taken=Object.entries(people).some(([id,v])=>id!==uid&&v===n);
+  if(taken){$("#idStatus").textContent="这个名字已经有人用了，换一个或加个后缀吧。";return;}
+  $("#idSave").disabled=true;
+  try{ await db.doc("people/"+uid).set({name:n,at:Date.now()}); myName=n; renderId(); renderAll(); renderQuiz(); }
+  catch(err){ $("#idStatus").textContent="保存失败：你可能只有查看权限，请让分享者把你设为 Contributor。"; }
+  $("#idSave").disabled=false;
+});
+
+function renderRoster(){
+  const ids=new Set([...Object.keys(people),...votes.map(v=>v.id),...quizAll.map(q=>q.id)]);
+  const rows=[...ids].filter(id=>nameOf(id)).map(id=>{
+    const v=votes.find(x=>x.id===id)||{}, q=quizAll.find(x=>x.id===id)||{};
+    return {id,name:nameOf(id),vote:v.choice?DN[v.choice]:"",match:q.best?`${DN[q.best]} ${q.pcts?.[q.best]??""}%`:"",months:(v.months||[]).map(m=>m+"月").join("、")};
+  }).sort((a,b)=>a.name.localeCompare(b.name,"zh"));
+  if(!rows.length){$("#roster").innerHTML='<p class="empty">还没有人报名。填写上面的名字后就会出现在这里。</p>';return;}
+  const voted=rows.filter(r=>r.vote).length, tested=rows.filter(r=>r.match).length;
+  $("#roster").innerHTML=`<p class="sub" style="margin-bottom:8px">共 ${rows.length} 人 · 已投票 ${voted} 人 · 已测试 ${tested} 人</p>
+  <table><thead><tr><th>名字</th><th>投票</th><th>测试匹配</th><th>想去月份</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr class="${r.id===uid?"me":""}"><td>${esc(r.name)}${r.id===uid?"（我）":""}</td><td class="${r.vote?"":"dim"}">${r.vote||"未投"}</td><td class="${r.match?"":"dim"}">${r.match||"未测"}</td><td class="${r.months?"":"dim"}">${esc(r.months)||"—"}</td></tr>`).join("")}
+  </tbody></table>`;
+}
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+function renderCards(){
+  const counts={pq:0,nt:0,dn:0}; let total=0;
+  for(const v of votes){ if(counts[v.choice]!=null){counts[v.choice]++;total++;} }
+  const mine = votes.find(v=>v.id===uid)?.choice;
+  const lead = total? Math.max(...Object.values(counts)) : -1;
+  $("#cards").innerHTML = DESTS.map(d=>{
+    const n=counts[d.id], pct= total? Math.round(n*100/total):0;
+    const season = MONTHS.map((m,i)=>{const k=i+1; const c=d.dry.includes(k)?"ok":d.rain.includes(k)?"rain":""; return `<span class="${c}">${k}</span>`}).join("");
+    return `<article class="card ${mine===d.id?"mine":""}">
+      <div class="ticket">
+        <div class="code">${d.code}${n===lead&&n>0?" · 目前领先":""}</div>
+        <h3>${d.name}</h3>
+        <div class="vn">${d.vn}</div>
+        <div class="tag">${d.tag}</div>
+        <div class="season" aria-label="月份天气">${season}</div>
+        <div class="legend"><span><i style="background:var(--sea-soft)"></i>旱季</span><span><i style="background:var(--lantern-soft)"></i>雨季/台风</span></div>
+      </div>
+      <div class="body">
+        <div class="list pro"><h4>优点</h4><ul>${d.pros.map(p=>`<li>${p}</li>`).join("")}</ul></div>
+        <div class="list con"><h4>缺点</h4><ul>${d.cons.map(p=>`<li>${p}</li>`).join("")}</ul></div>
+        <div class="fit">${d.fit}</div>
+      </div>
+      <div class="voteRow">
+        <div class="count"><span>${n} 票</span><span>${pct}%</span></div>
+        <div class="bar"><i style="width:${pct}%"></i></div>
+        <button class="vote" data-vote="${d.id}" ${!ready()?"disabled":""}>${mine===d.id?"✓ 我投了这里（点击取消）":"投给"+d.name}</button>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+function renderMonths(){
+  const cnt=new Array(12).fill(0);
+  for(const v of votes) (v.months||[]).forEach(m=>{if(m>=1&&m<=12)cnt[m-1]++});
+  const mine = votes.find(v=>v.id===uid)?.months||[];
+  $("#months").innerHTML = MONTHS.map((m,i)=>`<button class="chip ${mine.includes(i+1)?"on":""}" data-month="${i+1}" ${!ready()?"disabled":""}>${m}<span class="n">${cnt[i]||""}</span></button>`).join("");
+}
+
+async function renderNotes(){
+  const feed=$("#feed");
+  if(!notes.length){feed.innerHTML='<div class="empty">还没有留言，来写第一条吧。</div>';return;}
+  const sorted=[...notes].sort((a,b)=>(b.at||0)-(a.at||0));
+  let profiles={};
+  try{ if(user) profiles = await user.profiles([...new Set(sorted.map(n=>n.author).filter(Boolean))]) || {}; }catch(e){}
+  const dn={pq:"富国岛",nt:"芽庄",dn:"岘港"};
+  feed.innerHTML = sorted.map(n=>{
+    const name = n.author===uid ? (myName? myName+"（我）":"我") : (people[n.author] || profiles[n.author]?.name || "朋友");
+    const t = n.at? new Date(n.at).toLocaleString("zh-CN",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+    return `<div class="note" data-d="${esc(n.dest||"")}">
+      <div class="meta"><b>${esc(name)}</b>${n.dest&&dn[n.dest]?`<span>关于 ${dn[n.dest]}</span>`:""}<span>${t}</span>
+      ${n.author===uid?`<button class="del" data-del="${esc(n.id)}">删除</button>`:""}</div>
+      <p>${esc(n.text)}</p></div>`;
+  }).join("");
+}
+
+function renderAll(){renderCards();renderMonths();renderNotes();renderRoster();}
+
+async function myVoteDoc(){ return db.doc("votes/"+uid); }
+function myVote(){ return votes.find(v=>v.id===uid)||{}; }
+
+async function saveVote(patch){
+  const cur=myVote();
+  const body={choice:cur.choice||null, months:cur.months||[], ...patch, at:Date.now()};
+  try{ await (await myVoteDoc()).set(body); }
+  catch(e){ if(e&&e.code==="invalid_argument"){canWrite=false;$("#who").textContent="你目前只能查看，不能投票。请让分享者把你设为可参与（Contributor）。";renderAll();} else {$("#monthStatus").textContent="保存失败，请稍后再试。";} }
+}
+
+document.addEventListener("click",async e=>{
+  const v=e.target.closest("[data-vote]");
+  if(v){ const c=v.dataset.vote; await saveVote({choice: myVote().choice===c? null : c}); return; }
+  const m=e.target.closest("[data-month]");
+  if(m){ const k=+m.dataset.month; const cur=new Set(myVote().months||[]); cur.has(k)?cur.delete(k):cur.add(k); await saveVote({months:[...cur].sort((a,b)=>a-b)}); return; }
+  const d=e.target.closest("[data-del]");
+  if(d){ try{ await db.doc("notes/"+d.dataset.del).delete(); }catch(err){ $("#noteStatus").textContent="删除失败。"; } }
+});
+
+$("#noteForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const text=$("#noteText").value.trim();
+  if(!text){$("#noteStatus").textContent="先写点内容再发布。";return;}
+  if(!db||!uid){$("#noteStatus").textContent="登录后才能留言。";return;}
+  if(!myName){$("#noteStatus").textContent="请先在页面顶部填写你是谁。";$("#idName").focus();return;}
+  $("#noteSend").disabled=true;
+  try{
+    await db.collection("notes").add({text, dest:$("#noteDest").value||null, author:uid, at:Date.now()});
+    $("#noteText").value=""; $("#noteStatus").textContent="已发布。";
+  }catch(err){
+    $("#noteStatus").textContent = err&&err.code==="quota_exceeded" ? "留言已满，请先删除一些旧留言。" : "发布失败：你可能只有查看权限。";
+  }
+  $("#noteSend").disabled=false;
+});
+
+/* ---------- 倾向问卷：每个选项给三地加分 pq/nt/dn ---------- */
+const QS = [
+  ["这次旅行你最想做什么？",[["躺着发呆，什么都不想",{pq:3}],["出海跳岛、下水玩",{nt:3}],["逛古城、吃街头小吃",{dn:3}],["都想要一点",{dn:2,nt:1}]]],
+  ["你的预算大概是？",[["宽松，舒服最重要",{pq:3}],["中等，花得值就行",{dn:2,pq:1}],["越省越好",{nt:3}]]],
+  ["你理想的住宿是？",[["海边度假村，带泳池",{pq:3}],["市区酒店，出门就能吃喝",{dn:2,nt:1}],["便宜干净的民宿就够",{nt:2,dn:1}]]],
+  ["你最想拍到什么照片？",[["海上日落",{pq:3}],["会安的灯笼夜景",{dn:3}],["清澈海水和水下鱼群",{nt:3}]]],
+  ["旅行中你最怕什么？",[["怕无聊，没东西玩",{dn:3}],["怕人多、吵闹",{pq:3}],["怕花太多钱",{nt:3}]]],
+  ["晚上你想怎么过？",[["早点休息，听海浪",{pq:3}],["逛夜市吃宵夜",{dn:2,nt:1}],["去酒吧、热闹一点",{nt:2,dn:1}]]],
+  ["你能接受多少交通移动？",[["基本不想动，待在酒店附近",{pq:3}],["走路或打车逛市区",{nt:2,dn:1}],["愿意包车跑远一点的景点",{dn:3}]]],
+  ["你下水的程度是？",[["不太下水，看看海就好",{dn:2,pq:1}],["浮潜一下",{pq:2,nt:1}],["想认真潜水",{nt:3}]]],
+  ["你对历史文化感兴趣吗？",[["很感兴趣",{dn:3}],["一般，有就看看",{nt:1,dn:1,pq:1}],["不感兴趣",{pq:2,nt:1}]]],
+  ["你能玩几天？",[["3 到 4 天",{nt:2,dn:1}],["5 到 6 天",{dn:2,pq:1}],["7 天以上",{pq:2,dn:1}]]],
+  ["你最可能哪几个月出发？",[["11 月到 1 月",{pq:3}],["2 月到 4 月",{dn:2,pq:1,nt:1}],["5 月到 8 月",{nt:2,dn:2}],["9 月到 10 月",{dn:1,nt:1}]]],
+  ["这次和谁一起去？",[["情侣两个人",{pq:3}],["一群朋友",{dn:2,nt:1}],["家人，有老人或小孩",{dn:2,pq:1}],["一个人",{nt:2,dn:1}]]],
+  ["吃的方面你更期待？",[["海鲜大餐",{nt:3}],["越南街头小吃，河粉、法棍",{dn:3}],["酒店里舒舒服服吃",{pq:3}]]],
+  ["对缆车、乐园这类项目？",[["想去山上看风景、坐缆车",{dn:3}],["想去海上乐园、跨海缆车",{pq:2,nt:1}],["不太感兴趣",{nt:1,pq:1}]]],
+  ["对中国游客多不多，你介意吗？",[["多点好，中文方便",{nt:3}],["无所谓",{dn:1,pq:1,nt:1}],["希望少一点",{pq:2,dn:1}]]]
+];
+const DN = {pq:"富国岛",nt:"芽庄",dn:"岘港"};
+const WHY = {
+  pq:"你更看重安静、舒服和海景，富国岛的度假村和日落最对你胃口。11 月到 4 月去最好。",
+  nt:"你想玩水、想吃海鲜、也在意花费，芽庄的跳岛游和性价比最适合你。避开 10 到 12 月。",
+  dn:"你什么都想体验一点，岘港能把海滩、会安古城和巴拿山串起来，玩法最丰富。2 到 5 月最舒服。"
+};
+let qi=0, answers=new Array(QS.length).fill(null), quizDone=false, quizAll=[];
+function score(ans){const s={pq:0,nt:0,dn:0};ans.forEach((a,i)=>{if(a==null)return;const w=QS[i][1][a][1];for(const k in w)s[k]+=w[k];});return s;}
+function pcts(s){const t=s.pq+s.nt+s.dn||1;return {pq:Math.round(s.pq*100/t),nt:Math.round(s.nt*100/t),dn:Math.round(s.dn*100/t)};}
+function best(s){return Object.keys(s).sort((a,b)=>s[b]-s[a])[0];}
+function bars(p,top){return `<div class="mbars">${["pq","nt","dn"].map(k=>`<div class="mbar"><span>${DN[k]}</span><div class="t"><i class="${k===top?"top":""}" style="width:${p[k]}%"></i></div><span>${p[k]}%</span></div>`).join("")}</div>`;}
+
+function renderGroup(){
+  const done=quizAll.filter(r=>r.best);
+  if(!done.length) return `<div class="group"><h3>大家的测试结果</h3><p class="why">还没有人完成测试。</p></div>`;
+  const cnt={pq:0,nt:0,dn:0}, sum={pq:0,nt:0,dn:0};
+  done.forEach(r=>{cnt[r.best]=(cnt[r.best]||0)+1; const p=r.pcts||{}; for(const k in sum) sum[k]+=p[k]||0;});
+  const avg={}; for(const k in sum) avg[k]=Math.round(sum[k]/done.length);
+  const top=best(avg);
+  return `<div class="group"><h3>大家的测试结果（${done.length} 人完成）</h3>
+    <p class="why">平均倾向最高的是 <b>${DN[top]}</b>。匹配人数：富国岛 ${cnt.pq} 人，芽庄 ${cnt.nt} 人，岘港 ${cnt.dn} 人。</p>${bars(avg,top)}</div>`;
+}
+
+function renderQuiz(){
+  const el=$("#quiz");
+  if(quizDone){
+    const s=score(answers), p=pcts(s), b=best(s);
+    el.innerHTML=`<div class="qhead"><h2>测试结果</h2><span class="qnum">${QS.length} / ${QS.length}</span></div>
+      <div class="result"><p class="big">你最适合去 <em>${DN[b]}</em></p>${bars(p,b)}<p class="why">${WHY[b]}</p>
+      <div class="qnav"><button class="ghost" id="qRedo">重新测一次</button>${ready()?`<button class="primary" id="qVote">把我的一票投给${DN[b]}</button>`:""}</div></div>${renderGroup()}`;
+    return;
+  }
+  if(db&&uid&&!myName){
+    el.innerHTML=`<div class="qhead"><div><h2>测一测：你适合去哪里？</h2><p class="sub">${QS.length} 道题，大约 2 分钟。</p></div></div>
+      <div class="gate">请先在上面填写 <b>你是谁</b>，再开始答题。这样你的结果才会算进大家的统计里。</div>${quizAll.some(r=>r.best)?renderGroup():""}`;
+    return;
+  }
+  const [q,opts]=QS[qi];
+  el.innerHTML=`<div class="qhead"><div><h2>测一测：你适合去哪里？</h2><p class="sub">${QS.length} 道题，大约 2 分钟。答完会告诉你最适合哪个地方。</p></div><span class="qnum">第 ${qi+1} / ${QS.length} 题</span></div>
+    <div class="prog"><i style="width:${qi*100/QS.length}%"></i></div>
+    <p class="qtext">${q}</p>
+    <div class="opts">${opts.map((o,j)=>`<button class="opt ${answers[qi]===j?"on":""}" data-opt="${j}">${o[0]}</button>`).join("")}</div>
+    <div class="qnav"><button class="ghost" id="qPrev" ${qi===0?"disabled":""}>上一题</button></div>
+    ${quizAll.some(r=>r.best)?renderGroup():""}`;
+}
+
+$("#quiz").addEventListener("click",async e=>{
+  const o=e.target.closest("[data-opt]");
+  if(o){ answers[qi]=+o.dataset.opt;
+    if(qi<QS.length-1){qi++;renderQuiz();}
+    else { quizDone=true; renderQuiz(); await saveQuiz(); }
+    return; }
+  if(e.target.id==="qPrev"&&qi>0){qi--;renderQuiz();return;}
+  if(e.target.id==="qRedo"){qi=0;answers=new Array(QS.length).fill(null);quizDone=false;renderQuiz();return;}
+  if(e.target.id==="qVote"){ await saveVote({choice:best(score(answers))}); e.target.textContent="已投票 ✓"; e.target.disabled=true; }
+});
+
+async function saveQuiz(){
+  if(!ready()) return;
+  const s=score(answers);
+  try{ await db.doc("quiz/"+uid).set({answers, scores:s, pcts:pcts(s), best:best(s), at:Date.now()}); }catch(e){}
+}
+
+renderId();
+renderQuiz();
+renderAll();
+
+(async()=>{
+  if(!window.claude){ $("#who").textContent="这个预览里无法连接投票数据，打开分享链接后即可投票。"; return; }
+  [db,user] = await Promise.all([claude.use("db"), claude.use("user")]);
+  if(!db){ $("#who").textContent="登录 claude.ai 后即可投票和留言，现在只能浏览。"; renderAll(); return; }
+  if(user){ try{ uid = await user.id(); }catch(e){}
+    try{ const w = await user.can("data.write"); if(w===false) canWrite=false; }catch(e){} }
+  $("#who").textContent = !uid ? "无法识别你的身份，暂时只能浏览。" : canWrite ? "已连接。每人一票，可以随时改。" : "你目前只能查看，不能投票。请让分享者把你设为可参与（Contributor）。";
+  db.collection("votes").onSnapshot(s=>{ votes=s.docs.map(d=>({id:d.id,...d.data()})); renderCards(); renderMonths(); }, ()=>{ $("#who").textContent="投票数据连接中断，请刷新页面。"; });
+  db.collection("quiz").onSnapshot(s=>{ quizAll=s.docs.map(d=>({id:d.id,...d.data()}));
+    const mine=quizAll.find(r=>r.id===uid);
+    if(mine&&Array.isArray(mine.answers)&&mine.answers.length===QS.length&&!quizDone&&answers.every(a=>a==null)){answers=mine.answers.slice();quizDone=true;}
+    renderQuiz(); renderRoster(); }, ()=>{});
+  db.collection("people").onSnapshot(s=>{
+    people={}; s.docs.forEach(d=>{const n=d.data()?.name; if(typeof n==="string"&&n) people[d.id]=n.slice(0,20);});
+    if(uid&&people[uid]&&!myName) myName=people[uid];
+    renderId(); renderAll(); renderQuiz();
+  }, ()=>{});
+  db.collection("notes").onSnapshot(s=>{ notes=s.docs.map(d=>({id:d.id,...d.data()})); renderNotes(); }, ()=>{});
+  renderAll();
+})();
+</script>
+
+</body></html>
