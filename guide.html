@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>越南跨年攻略</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
+<meta name="description" content="12/29–1/3 胡志明市进出的越南跨年行程">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   Design System — edit :root to change theme
+   ═══════════════════════════════════════════ */
+:root {
+  --bg-primary:    #ffffff;
+  --bg-secondary:  #f5f5f7;
+  --bg-tertiary:   #fbfbfd;
+  --bg-grouped:    #f2f2f7;
+  --bg-elevated:   #ffffff;
+  --text-primary:   #1d1d1f;
+  --text-secondary: #86868b;
+  --text-tertiary:  #aeaeb2;
+  --accent:        #0071e3;
+  --accent-hover:  #0077ed;
+  --tint-red:    #ff3b30;
+  --tint-orange: #ff9500;
+  --tint-green:  #34c759;
+  --tint-blue:   #007aff;
+  --tint-purple: #af52de;
+  --tint-pink:   #ff2d55;
+  --separator:  rgba(60, 60, 67, .12);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:  0 4px 14px rgba(0,0,0,.08);
+  --shadow-lg:  0 8px 30px rgba(0,0,0,.12);
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  20px;
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+               "Helvetica Neue", "Arial", sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.47059;
+  letter-spacing: -0.022em;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Map ── */
+#map { width: 100%; height: 40vh; min-height: 280px; position: sticky; top: 0; z-index: 100; }
+.locate-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
+  border: none; box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.locate-btn.active { color: #007aff; }
+@keyframes loc-pulse {
+  0%   { transform: scale(1); opacity: .55; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+.loc-pulse {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(0,122,255,.25);
+  animation: loc-pulse 1.6s ease-out infinite;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex; gap: 6px; padding: 12px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  background: rgba(255,255,255,.85); -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px); position: sticky; top: 40vh; z-index: 99;
+  border-bottom: .5px solid var(--separator); scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0; padding: 7px 16px; border-radius: 980px; border: none;
+  background: var(--bg-grouped); color: var(--text-secondary);
+  font-size: 14px; font-weight: 500; cursor: pointer; transition: all .25s ease;
+  white-space: nowrap; letter-spacing: -0.01em;
+}
+.tab:active { transform: scale(.96); }
+.tab.active { background: var(--accent); color: #fff; }
+
+/* ── Main content ── */
+.content { max-width: 680px; margin: 0 auto; padding: 16px 16px calc(24px + var(--safe-bottom)); }
+
+/* ── Overview ── */
+.hero { text-align: center; padding: 28px 20px 20px; }
+.hero h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; }
+.hero .subtitle { font-size: 17px; color: var(--text-secondary); margin-top: 6px; font-weight: 400; }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.info-card { background: var(--bg-elevated); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
+.info-card .label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .02em; margin-bottom: 6px; }
+.info-card .value { font-size: 15px; font-weight: 600; line-height: 1.4; }
+
+/* ── Section headers ── */
+.section-head { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .03em; padding: 20px 0 8px; }
+
+/* ── Day header ── */
+.day-head { padding: 20px 0 12px; }
+.day-head h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.day-head p { font-size: 15px; color: var(--text-secondary); margin-top: 2px; }
+
+/* ── Route bar ── */
+.route-bar { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--shadow-sm); font-size: 13px; color: var(--text-secondary); line-height: 1.7; white-space: pre-line; }
+.route-bar strong { color: var(--text-primary); }
+
+/* ── Timeline ── */
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before { content: ''; position: absolute; left: 7px; top: 20px; bottom: 20px; width: 1.5px; background: var(--separator); }
+.tl-item { position: relative; margin-bottom: 10px; }
+.tl-dot { position: absolute; left: -20px; top: 18px; width: 10px; height: 10px; border-radius: 50%; z-index: 1; box-shadow: 0 0 0 3px var(--bg-secondary); }
+.tl-dot.food    { background: var(--tint-red); }
+.tl-dot.spot    { background: var(--tint-blue); }
+.tl-dot.hotel   { background: var(--tint-orange); }
+.tl-dot.drink   { background: var(--tint-purple); }
+.tl-dot.transport { background: var(--text-tertiary); }
+
+/* ── Card ── */
+.card { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 14px 16px; box-shadow: var(--shadow-sm); transition: box-shadow .25s ease; cursor: pointer; }
+.card:active { box-shadow: var(--shadow-md); }
+.card .time { font-size: 12px; font-weight: 600; color: var(--text-tertiary); letter-spacing: .01em; }
+.card .name { font-size: 17px; font-weight: 600; margin: 2px 0 4px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 6px; }
+.card .desc { font-size: 14px; color: var(--text-secondary); line-height: 1.45; }
+
+/* Badge */
+.badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 4px; }
+.badge.food   { background: rgba(255,59,48,.1);  color: var(--tint-red); }
+.badge.spot   { background: rgba(0,122,255,.1);  color: var(--tint-blue); }
+.badge.drink  { background: rgba(175,82,222,.1); color: var(--tint-purple); }
+
+/* Budget */
+.budget { display: inline-block; margin-top: 6px; padding: 3px 10px; background: var(--bg-grouped); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+
+/* Payment */
+.pays { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.pay { font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+.pay.ok  { background: rgba(52,199,89,.1);  color: var(--tint-green); }
+.pay.no  { background: rgba(255,59,48,.08); color: var(--tint-red); }
+.pay.idk { background: rgba(255,149,0,.1);  color: var(--tint-orange); }
+
+/* Links row */
+.links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; border: none; cursor: pointer;
+  text-decoration: none !important; transition: filter .2s;
+}
+.btn:active { filter: brightness(.9); }
+.btn.nav    { background: var(--accent); color: #fff; }
+.btn.xhs    { background: #ff2442; color: #fff; }
+.btn.dp     { background: #ffa700; color: #fff; }
+.btn.rsv    { background: var(--tint-green); color: #fff; }
+
+/* Action Sheet */
+.as-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.as-overlay.show { opacity: 1; pointer-events: auto; }
+.as-sheet {
+  width: 100%; max-width: 420px;
+  padding: 0 8px 34px;
+  transform: translateY(100%); transition: transform .3s cubic-bezier(.22,1,.36,1);
+}
+.as-overlay.show .as-sheet { transform: translateY(0); }
+.as-group {
+  background: rgba(255,255,255,.88); backdrop-filter: blur(20px);
+  border-radius: 14px; overflow: hidden; margin-bottom: 8px;
+}
+.as-group .as-item {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 16px; font-size: 18px; color: #007aff; font-weight: 500;
+  border: none; background: none; width: 100%; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.as-group .as-item + .as-item { border-top: .5px solid rgba(0,0,0,.12); }
+.as-group .as-item:active { background: rgba(0,0,0,.06); }
+.as-cancel { font-weight: 600; }
+
+/* Details — default open */
+.details {
+  margin-top: 10px; padding-top: 10px;
+  border-top: .5px solid var(--separator);
+  font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+}
+.details.closed { display: none; }
+
+/* ── Overview day list ── */
+.day-list .card { margin-bottom: 8px; }
+.day-list .card .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+
+/* ── Payment summary ── */
+.pay-summary { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 14px 16px; box-shadow: var(--shadow-sm); font-size: 13px; line-height: 1.7; margin-bottom: 10px; }
+.pay-summary h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.pay-summary .warn { color: var(--tint-red); }
+.pay-summary .ok-text { color: var(--tint-green); }
+
+/* ── Legend ── */
+.legend { display: flex; gap: 14px; flex-wrap: wrap; padding: 8px 0; font-size: 12px; color: var(--text-secondary); }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── Leaflet overrides ── */
+.leaflet-popup-content-wrapper { border-radius: var(--radius-md) !important; box-shadow: var(--shadow-lg) !important; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif !important; }
+.leaflet-popup-content { font-size: 14px !important; line-height: 1.5 !important; margin: 12px 14px !important; }
+.leaflet-popup-content a { color: var(--accent) !important; }
+.leaflet-popup-tip { background: #fff !important; }
+.leaflet-control-zoom a { width: 34px !important; height: 34px !important; line-height: 34px !important; font-size: 16px !important; border-radius: 10px !important; background: rgba(255,255,255,.85) !important; -webkit-backdrop-filter: blur(10px) !important; backdrop-filter: blur(10px) !important; border: .5px solid var(--separator) !important; color: var(--text-primary) !important; }
+.leaflet-control-zoom { border-radius: 12px !important; overflow: hidden; box-shadow: var(--shadow-md) !important; border: none !important; }
+.leaflet-control-attribution { font-size: 9px !important; opacity: .5; }
+.dest-switch{display:flex;gap:6px;justify-content:center;margin-bottom:8px}
+.dest-switch .tab{text-decoration:none}
+.note{text-align:center;font-size:13px;color:var(--text-secondary);margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+<div class="tabs" id="tabs"></div>
+<div class="content" id="content"></div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  Trip data: Ho Chi Minh City in/out + one destination (?d=)  ║
+// ╚══════════════════════════════════════════════════════════════╝
+const DEST = { pq: '富国岛', nt: '芽庄', dn: '岘港' };
+const D = (new URLSearchParams(location.search).get('d') || 'pq').replace(/[^a-z]/g, '');
+const CUR = DEST[D] ? D : 'pq';
+const HOTEL = { name: '', lat: 0, lng: 0 };
+const g = q => encodeURIComponent(q);
+
+const HCMC_IN = { id: 1, label: 'D1 胡志明', date: '12/29 周二 · 从台北飞来', title: '抵达胡志明市 · 第一郡夜生活', color: '#ff9500', locations: [
+  { name: '新山一国际机场（SGN）', lat: 10.81798, lng: 106.65626, type: 'transport', time: '下午', desc: '台北飞来约 3 小时。出关后用 Grab 打车去第一郡，约 30–45 分钟。', gmap: g('Tan Son Nhat International Airport') },
+  { name: '入住：第一郡 · 阮惠步行街附近', lat: 10.77372, lng: 106.70405, type: 'hotel', time: '傍晚', desc: '第一晚和最后一晚都住这一区，走路能到大部分景点。', gmap: g('Nguyen Hue Walking Street') },
+  { name: 'Phở Hòa Pasteur 河粉', lat: 10.7868, lng: 106.68905, type: 'food', time: '19:00', desc: '老牌河粉店，游客多但口味稳定。到越南的第一顿。', xhsKeyword: '胡志明 Pho Hoa', gmap: g('Pho Hoa Pasteur Ho Chi Minh City') },
+  { name: '范五老 · 裴援步行街（Bùi Viện）', lat: 10.76683, lng: 106.69267, type: 'drink', time: '21:00', desc: '背包客酒吧街，热闹到凌晨。人挤，手机钱包看好。', xhsKeyword: '胡志明 裴援街', gmap: g('Bui Vien Walking Street') },
+  { name: 'Chill Skybar（AB Tower 楼顶）', lat: 10.77052, lng: 106.69439, type: 'drink', time: '—', desc: '楼顶酒吧看夜景，想安静一点就来这。有着装要求，以官方为准。', xhsKeyword: '胡志明 Chill Skybar', gmap: g('Chill Skybar Ho Chi Minh City') },
+]};
+
+const FLY_OUT = { pq: ['富国岛国际机场（PQC）', 10.17271, 103.99215, 'Phu Quoc International Airport', '约 1 小时'],
+                  nt: ['金兰国际机场（CXR）', 11.99825, 109.21738, 'Cam Ranh International Airport', '约 1 小时'],
+                  dn: ['岘港国际机场（DAD）', 16.04258, 108.19716, 'Da Nang International Airport', '约 1 小时 20 分'] }[CUR];
+
+const PLAN = {
+  pq: [
+    { title: '飞富国岛 · 丁庙日落', locations: [
+      { name: '飞往' + FLY_OUT[0], lat: FLY_OUT[1], lng: FLY_OUT[2], type: 'transport', time: '上午', desc: '胡志明市飞富国岛' + FLY_OUT[4] + '。下飞机打车到长滩约 15 分钟。', gmap: g(FLY_OUT[3]) },
+      { name: '入住：长滩（Bãi Trường）', lat: 10.13606, lng: 103.9764, type: 'hotel', time: '中午', desc: '西海岸中段，去南边日落小镇、北边大世界都方便。', gmap: g('Bai Truong Phu Quoc') },
+      { name: '丁庙（Dinh Cậu）看日落', lat: 10.21722, lng: 103.95643, type: 'spot', time: '17:30', desc: '阳东镇海边礁石上的小庙，日落很好看。', xhsKeyword: '富国岛 丁庙 日落', gmap: g('Dinh Cau Phu Quoc') },
+      { name: '富国岛夜市', lat: 10.2175, lng: 103.96, type: 'food', time: '19:00', desc: '就在丁庙旁边。海鲜现挑现做，先问清价格（按斤还是按只）再点。', xhsKeyword: '富国岛夜市', gmap: g('Phu Quoc Night Market Duong Dong') },
+    ]},
+    { title: '跳岛浮潜 · 日落小镇跨年', locations: [
+      { name: '安泰港出发 · 南部群岛浮潜', lat: 10.01258, lng: 104.0148, type: 'spot', time: '09:00', desc: '半日或一日跳岛游，浮潜看珊瑚。旱季海水清。可让酒店代订或网上预订。', xhsKeyword: '富国岛 跳岛 浮潜', gmap: g('An Thoi Port Phu Quoc') },
+      { name: '香岛跨海缆车（Hòn Thơm）', lat: 9.99201, lng: 104.01244, type: 'spot', time: '14:30', desc: '全长约 8 公里，从海面上飞过去，岛上有水上乐园。', xhsKeyword: '富国岛 香岛缆车', gmap: g('Hon Thom Cable Car') },
+      { name: '日落小镇 · 接吻桥', lat: 10.02826, lng: 104.00419, type: 'spot', time: '17:30', desc: '看日落、拍照。晚饭就在小镇里吃，早点吃完占位置。', xhsKeyword: '富国岛 日落小镇 接吻桥', gmap: g('Kiss Bridge Phu Quoc') },
+      { name: '日落小镇跨年倒数', lat: 10.02943, lng: 104.00831, type: 'spot', time: '23:00', desc: '往年有烟花和演出，具体以当年官方公告为准。人很多，结束后打车要等。', xhsKeyword: '富国岛 跨年 烟花', gmap: g('Sunset Town Phu Quoc') },
+    ]},
+    { title: '新年第一天 · 星星海滩和大世界', locations: [
+      { name: '睡到自然醒 · 酒店早午餐', lat: 10.13606, lng: 103.9764, type: 'hotel', time: '上午', desc: '跨年夜睡得晚，上午不安排。', gmap: g('Bai Truong Phu Quoc') },
+      { name: '星星海滩（Bãi Sao）', lat: 10.05247, lng: 104.03519, type: 'spot', time: '12:00', desc: '东海岸白沙滩，海水平静，适合躺一下午。', xhsKeyword: '富国岛 星星海滩', gmap: g('Bai Sao Phu Quoc') },
+      { name: '大世界（Grand World）', lat: 10.32494, lng: 103.85814, type: 'spot', time: '18:00', desc: '北部的威尼斯风格小镇，晚上有灯光和表演，吃的也多。', xhsKeyword: '富国岛 大世界', gmap: g('Grand World Phu Quoc') },
+    ]},
+  ],
+  nt: [
+    { title: '飞芽庄 · 海滩散步和夜市', locations: [
+      { name: '飞往' + FLY_OUT[0], lat: FLY_OUT[1], lng: FLY_OUT[2], type: 'transport', time: '上午', desc: '胡志明市飞芽庄' + FLY_OUT[4] + '。机场离市区约 35 公里，打车 40 分钟左右。', gmap: g(FLY_OUT[3]) },
+      { name: '入住：陈富路海滩沿线', lat: 12.242, lng: 109.197, type: 'hotel', time: '中午', desc: '市区就在海边，出门就是沙滩，吃饭也方便。', gmap: g('Tran Phu Beach Nha Trang') },
+      { name: '芽庄夜市', lat: 12.23965, lng: 109.19579, type: 'food', time: '19:00', desc: '小吃和海鲜，顺便买伴手礼。砍价正常。', xhsKeyword: '芽庄夜市', gmap: g('Nha Trang Night Market') },
+    ]},
+    { title: '占婆塔 · 泥浆浴 · 广场跨年', locations: [
+      { name: '婆那加占婆塔（Tháp Bà Ponagar）', lat: 12.26539, lng: 109.19518, type: 'spot', time: '09:00', desc: '一千多年的占婆古塔，进去要穿过膝的衣服。', xhsKeyword: '芽庄 占婆塔', gmap: g('Po Nagar Cham Towers') },
+      { name: '塔巴温泉泥浆浴', lat: 12.2716, lng: 109.1748, type: 'spot', time: '11:00', desc: '芽庄招牌项目，四个人可以包一个泥浆池。下雨天也能玩。', xhsKeyword: '芽庄 泥浆浴', gmap: g('Thap Ba Hot Spring Center Nha Trang') },
+      { name: '龙山寺（白色大佛）', lat: 12.25131, lng: 109.18064, type: 'spot', time: '15:30', desc: '爬一段台阶到大佛脚下，能俯看市区。', xhsKeyword: '芽庄 龙山寺', gmap: g('Long Son Pagoda Nha Trang') },
+      { name: '4月2日广场（沉香塔）跨年倒数', lat: 12.238, lng: 109.1967, type: 'spot', time: '23:00', desc: '海边主广场，往年跨年有活动，以当年官方公告为准。', xhsKeyword: '芽庄 跨年', gmap: g('Tram Huong Tower Nha Trang') },
+    ]},
+    { title: '新年第一天 · 跳岛或乐园', locations: [
+      { name: '蹈港出发 · 木岛浮潜（Hòn Mun）', lat: 12.2085, lng: 109.2163, type: 'spot', time: '10:00', desc: '12 月是雨季，风浪大会停航，前一天问清楚。', xhsKeyword: '芽庄 跳岛 浮潜', gmap: g('Cau Da Port Nha Trang') },
+      { name: 'VinWonders 珍珠岛乐园', lat: 12.2174, lng: 109.24122, type: 'spot', time: '—', desc: '出不了海时的备选，室内项目多。怎么上岛以官方为准。', xhsKeyword: '芽庄 VinWonders', gmap: g('VinWonders Nha Trang') },
+    ]},
+  ],
+  dn: [
+    { title: '飞岘港 · 美溪海滩和龙桥', locations: [
+      { name: '飞往' + FLY_OUT[0], lat: FLY_OUT[1], lng: FLY_OUT[2], type: 'transport', time: '上午', desc: '胡志明市飞岘港' + FLY_OUT[4] + '。机场在市区，打车到海边约 15 分钟。', gmap: g(FLY_OUT[3]) },
+      { name: '入住：美溪海滩（Mỹ Khê）', lat: 16.07563, lng: 108.24688, type: 'hotel', time: '中午', desc: '城市边上的长沙滩，酒店和餐厅都多。', gmap: g('My Khe Beach Da Nang') },
+      { name: '韩市场（Chợ Hàn）', lat: 16.06835, lng: 108.22428, type: 'food', time: '16:00', desc: '小吃、水果、做衣服。傍晚前去，晚上关门早。', xhsKeyword: '岘港 韩市场', gmap: g('Han Market Da Nang') },
+      { name: '龙桥夜景', lat: 16.06117, lng: 108.2279, type: 'spot', time: '20:00', desc: '喷火表演只在周六、周日 21:00 有，12/30 是周三，只能看灯。', xhsKeyword: '岘港 龙桥', gmap: g('Dragon Bridge Da Nang') },
+    ]},
+    { title: '巴拿山金桥 · 海边跨年', locations: [
+      { name: '巴拿山 · 金桥（Cầu Vàng）', lat: 15.99509, lng: 107.99641, type: 'spot', time: '08:30', desc: '看天气：12 月常有雨雾，山顶可能什么都看不到。出门前看山顶天气，不行就换五行山。', xhsKeyword: '巴拿山 金桥', gmap: g('Golden Bridge Ba Na Hills') },
+      { name: '五行山（Ngũ Hành Sơn）', lat: 16.00402, lng: 108.26277, type: 'spot', time: '—', desc: '巴拿山天气不好时的备选，有山洞和寺庙，离市区近。', xhsKeyword: '岘港 五行山', gmap: g('Marble Mountains Da Nang') },
+      { name: '东海公园跨年倒数', lat: 16.06835, lng: 108.24593, type: 'spot', time: '23:00', desc: '美溪海滩边的公园，往年跨年有活动，以当年官方公告为准。', xhsKeyword: '岘港 跨年', gmap: g('Bien Dong Park Da Nang') },
+    ]},
+    { title: '新年第一天 · 灵应寺和会安古城', locations: [
+      { name: '山茶半岛 · 灵应寺', lat: 16.10033, lng: 108.27786, type: 'spot', time: '10:30', desc: '海边 67 米高的观音像，能俯看整个岘港湾。', xhsKeyword: '岘港 灵应寺', gmap: g('Linh Ung Pagoda Son Tra') },
+      { name: '会安古城', lat: 15.87795, lng: 108.32399, type: 'spot', time: '15:00', desc: '打车约 45 分钟。下午逛街、做衣服，天黑后点灯笼。', xhsKeyword: '会安古城', gmap: g('Hoi An Ancient Town') },
+      { name: '日本桥 · 秋盆河放河灯', lat: 15.87715, lng: 108.326, type: 'spot', time: '18:30', desc: '会安最出片的地方。古城进门要买票，以现场为准。', xhsKeyword: '会安 日本桥 河灯', gmap: g('Japanese Covered Bridge Hoi An') },
+    ]},
+  ],
+};
+
+const HCMC_BACK = { title: '回胡志明市 · 阮惠步行街', locations: [
+  { name: '飞回新山一机场（SGN）', lat: 10.81798, lng: 106.65626, type: 'transport', time: '下午', desc: '从' + DEST[CUR] + '飞回胡志明市，再住一晚，第二天坐国际线不用赶。', gmap: g('Tan Son Nhat International Airport') },
+  { name: '入住：第一郡', lat: 10.77372, lng: 106.70405, type: 'hotel', time: '傍晚', desc: '跟第一晚同一区，可以住同一家。', gmap: g('Nguyen Hue Walking Street') },
+  { name: '阮惠步行街', lat: 10.77372, lng: 106.70405, type: 'spot', time: '20:00', desc: '周六晚上很热闹，两边咖啡楼可以上楼看街景。', xhsKeyword: '胡志明 阮惠步行街', gmap: g('Nguyen Hue Walking Street') },
+  { name: 'Bitexco 金融塔观景台', lat: 10.77186, lng: 106.70446, type: 'spot', time: '—', desc: '想看城市夜景的备选。', xhsKeyword: '胡志明 Bitexco', gmap: g('Saigon Skydeck Bitexco') },
+]};
+
+const HCMC_OUT = { title: '胡志明市半日 · 飞回首尔', locations: [
+  { name: 'Bánh Mì Huỳnh Hoa 法棍', lat: 10.77139, lng: 106.69272, type: 'food', time: '08:30', desc: '胡志明最有名的法棍之一，料很足。', xhsKeyword: '胡志明 Huynh Hoa 法棍', gmap: g('Banh Mi Huynh Hoa') },
+  { name: '西贡中央邮局 · 红教堂', lat: 10.77996, lng: 106.69999, type: 'spot', time: '09:30', desc: '法式老建筑，两个挨在一起。红教堂外立面可能还在修，以现场为准。', xhsKeyword: '西贡中央邮局', gmap: g('Saigon Central Post Office') },
+  { name: '战争遗迹博物馆', lat: 10.77936, lng: 106.69228, type: 'spot', time: '10:30', desc: '内容沉重，约 1.5 小时。', xhsKeyword: '胡志明 战争遗迹博物馆', gmap: g('War Remnants Museum') },
+  { name: '滨城市场（Chợ Bến Thành）', lat: 10.77253, lng: 106.69804, type: 'food', time: '12:00', desc: '午饭加买伴手礼：咖啡、腰果、干果。', xhsKeyword: '胡志明 滨城市场', gmap: g('Ben Thanh Market') },
+  { name: '新山一机场 · 飞首尔', lat: 10.81798, lng: 106.65626, type: 'transport', time: '下午', desc: '国际线提前 3 小时到。第一郡打车 30–60 分钟，周日下午也会堵。航班时间未定，确定后再调整这一天。', gmap: g('Tan Son Nhat International Airport') },
+]};
+
+const COLORS = ['#ff9500', '#0071e3', '#ff2d55', '#34c759', '#af52de', '#5ac8fa'];
+const DATES = ['12/29 周二', '12/30 周三', '12/31 周四 · 跨年夜', '1/1 周五 · 元旦', '1/2 周六', '1/3 周日'];
+const DAYS = [{ id: 0, label: '总览', color: '#0071e3', locations: [] }, HCMC_IN];
+PLAN[CUR].forEach((d, i) => DAYS.push({ id: i + 2, label: `D${i + 2} ${DEST[CUR]}`, date: DATES[i + 1], title: d.title, color: COLORS[i + 1], locations: d.locations }));
+DAYS.push({ id: 5, label: 'D5 回胡志明', date: DATES[4], title: HCMC_BACK.title, color: COLORS[4], locations: HCMC_BACK.locations });
+DAYS.push({ id: 6, label: 'D6 回首尔', date: DATES[5], title: HCMC_OUT.title, color: COLORS[5], locations: HCMC_OUT.locations });
+
+const WEATHER = { pq: '旱季，天气最稳，适合下水。', nt: '雨季尾巴，可能下雨、浪大，出海要看天气。', dn: '雨季，常有雨雾，巴拿山最受影响。' };
+
+function overviewContent() {
+  return `
+<div class="hero"><h1>越南跨年攻略</h1><p class="subtitle">12/29 – 1/3 · 胡志明市进出 + ${DEST[CUR]}</p></div>
+<div class="dest-switch">${Object.entries(DEST).map(([k, v]) => `<a class="tab${k === CUR ? ' active' : ''}" href="?d=${k}">${v}</a>`).join('')}</div>
+<p class="note">目的地还在投票，可以切换看三个方案。<a href="./">← 回投票页</a></p>
+<div class="info-grid">
+  <div class="info-card"><div class="label">国际航班</div><div class="value">12/29 台北 → 胡志明市<br>1/3 胡志明市 → 首尔</div></div>
+  <div class="info-card"><div class="label">国内线</div><div class="value">12/30 胡志明市 → ${DEST[CUR]}<br>1/2 ${DEST[CUR]} → 胡志明市</div></div>
+  <div class="info-card"><div class="label">住宿</div><div class="value">胡志明第一郡 2 晚<br>${DEST[CUR]} 3 晚</div></div>
+  <div class="info-card"><div class="label">跨年天气</div><div class="value">${WEATHER[CUR]}</div></div>
+</div>
+<div class="section-head">行程概览</div>
+<div class="day-list">${DAYS.slice(1).map(d => `<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${d.color}"></span>${d.label} · ${d.title}</div><div class="desc">${d.date}</div></div>`).join('')}</div>
+<div class="section-head">出发前要办</div>
+<div class="card"><div class="desc">
+① <b>尽早订国内线</b>：跨年前后机票涨得快，越捷、越南航空、越竹都有。<br>
+② <b>签证</b>：按各自护照查越南官方要求。韩国护照目前免签，中国护照要提前办电子签。<br>
+③ <b>手机和打车</b>：买越南 eSIM，装好 Grab（打车、送餐都能用）。<br>
+④ <b>钱</b>：越南盾现金备一些，小店和夜市多数只收现金。<br>
+⑤ <b>前一段</b>：12/25–12/29 在台北，这份攻略只排越南部分。
+</div></div>
+<div class="section-head">说明</div>
+<div class="card"><div class="desc">这是初版，按航班日期和常见路线排的。餐厅和跨年活动还没用小红书、Google Maps 核实，带「以官方为准」的地方出发前要再查。每个地点都可以点「导航」用 Google Maps 打开。</div></div>
+<div class="section-head">图例</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-red)"></div>吃饭</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-blue)"></div>景点</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-purple)"></div>酒吧</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-orange)"></div>住宿</div>
+</div>`;
+}
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  ENGINE — Do not modify below unless customizing behavior   ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+const map = L.map('map', { center: [HOTEL.lat || 35.69, HOTEL.lng || 139.74], zoom: 12, zoomControl: false, attributionControl: true });
+L.control.zoom({ position: 'topright' }).addTo(map);
+// CARTO basemaps now require an API key; use standard OpenStreetMap tiles with attribution.
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+
+/* ── Geolocation ── */
+const LocateControl = L.Control.extend({
+  options: { position: 'bottomright' },
+  onAdd() {
+    const btn = L.DomUtil.create('button', 'locate-btn');
+    btn.innerHTML = '📍';
+    btn.title = '我的位置';
+    L.DomEvent.disableClickPropagation(btn);
+    btn.addEventListener('click', () => {
+      btn.classList.add('active');
+      map.locate({ setView: true, maxZoom: 15 });
+    });
+    this._btn = btn;
+    return btn;
+  }
+});
+new LocateControl().addTo(map);
+let locMarker, locCircle;
+map.on('locationfound', e => {
+  const r = e.accuracy / 2;
+  if (locMarker) { locMarker.setLatLng(e.latlng); locCircle.setLatLng(e.latlng).setRadius(r); }
+  else {
+    locMarker = L.marker(e.latlng, {
+      icon: L.divIcon({ className:'', html:'<div style="width:14px;height:14px;border-radius:50%;background:#007aff;border:2.5px solid #fff;box-shadow:0 0 6px rgba(0,122,255,.5)"></div><div class="loc-pulse" style="position:absolute;top:0;left:0"></div>', iconSize:[14,14], iconAnchor:[7,7] }),
+      zIndexOffset: 2000
+    }).addTo(map);
+    locCircle = L.circle(e.latlng, { radius: r, color: '#007aff', fillColor: '#007aff', fillOpacity: .08, weight: 1 }).addTo(map);
+  }
+});
+map.on('locationerror', () => {});
+
+function icon(color, emoji) {
+  return L.divIcon({ className: '', html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.18)">${emoji||''}</div>`, iconSize: [28,28], iconAnchor: [14,14], popupAnchor: [0,-16] });
+}
+
+if (HOTEL.lat) L.marker([HOTEL.lat, HOTEL.lng], { icon: icon('#ff9500','🏨'), zIndexOffset: 1000 }).addTo(map).bindPopup(`<b>${HOTEL.name}</b>`);
+
+let markers = [], polylines = [];
+const emojis = { food:'🍽️', spot:'📍', hotel:'🏨', transport:'🚃', drink:'🍺' };
+
+function clearMap() { markers.forEach(m=>map.removeLayer(m)); polylines.forEach(p=>map.removeLayer(p)); markers=[]; polylines=[]; }
+
+function showDay(idx) {
+  clearMap();
+  if (idx === 0) {
+    const pts = [];
+    DAYS.forEach(d => d.locations.forEach(l => { if(l.lat) pts.push([l.lat,l.lng]); }));
+    if(pts.length) map.fitBounds(pts, {padding:[30,30]});
+    DAYS.slice(1).forEach(d => {
+      d.locations.filter(l=>l.time!=='—').forEach(l => {
+        const m = L.circleMarker([l.lat,l.lng], { radius:4, fillColor:d.color, color:'#fff', weight:1.5, fillOpacity:.9 }).addTo(map).bindPopup(`<b>${l.name}</b><br><span style="color:#86868b">${d.label}</span>`);
+        markers.push(m);
+      });
+    });
+    return;
+  }
+  const day = DAYS.find(d=>d.id===idx);
+  if(!day) return;
+  const coords = [];
+  day.locations.forEach(l => {
+    if(!l.lat) return;
+    const m = L.marker([l.lat,l.lng], { icon: icon(day.color, emojis[l.type]||'📌') }).addTo(map);
+    const gmapQ = l.gmap||encodeURIComponent(l.name+' Vietnam');
+    m.bindPopup(`<b>${l.name}</b>${l.time!=='—'?'<br><span style="color:#86868b">'+l.time+'</span>':''}<br>${l.desc}${l.budget?'<br><span style="color:#ff9500">'+l.budget+'</span>':''}<br><a href="#" onclick="event.preventDefault();openAS('${l.name.replace(/'/g,"\\'")}',${l.lat},${l.lng},'${gmapQ}')">📍 导航</a>${l.xhs?' · <a href="'+l.xhs+'" target="_blank">📕 小红书</a>':''}`);
+    markers.push(m);
+    if(l.time!=='—') coords.push([l.lat,l.lng]);
+  });
+  if(coords.length>1) { const pl = L.polyline(coords, { color:day.color, weight:2.5, opacity:.5, dashArray:'6,5' }).addTo(map); polylines.push(pl); }
+  if(coords.length) map.fitBounds(coords, { padding:[40,40], maxZoom:14 });
+}
+
+// ══════════ RENDER ══════════
+function payChips(pay) {
+  if(!pay) return '';
+  let h = '<div class="pays">';
+  const m = { cash:'💴', card:'💳', suica:'Suica', paypay:'PayPay', alipay:'支付宝', wechat:'微信' };
+  for(const [k,label] of Object.entries(m)) {
+    if(pay[k]!==undefined) { const c = pay[k]===1?'ok':pay[k]===0.5?'idk':'no'; h += `<span class="pay ${c}">${label}</span>`; }
+  }
+  return h+'</div>';
+}
+
+// ── 运行环境检测：在第三方 App 的 WebView 里，自定义 scheme 基本会被拦截 ──
+const IN_APP_WEBVIEW = (() => {
+  const ua = (navigator.userAgent || '').toLowerCase();
+  return /micromessenger|xhs|xhsdiscover|discover\/|tiktok|aweme|weibo|qq\/|qqbrowser|alipayclient|dingtalk|lark|feishu|ucbrowser|baiduboxapp|toutiao|newsarticle/.test(ua);
+})();
+
+function xhsKeyword(loc) {
+  if(loc.xhsKeyword) return loc.xhsKeyword.trim();
+  return (loc.name||'').replace(/⭐.*$/g,'').replace(/（.*?）/g,'').replace(/\(.*?\)/g,'').replace(/\s+/g,' ').trim();
+}
+function xhsAppUrl(loc) { return `xhsdiscover://search/result?keyword=${encodeURIComponent(xhsKeyword(loc))}&target_search=notes&source=deeplink`; }
+function xhsWebUrl(loc) { return `https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(xhsKeyword(loc))}&source=web_explore_feed`; }
+
+function dpKeyword(loc) {
+  if(loc.dianpingKeyword) return loc.dianpingKeyword.trim();
+  return (loc.name||'').replace(/⭐.*$/g,'').replace(/（.*?）/g,'').replace(/\(.*?\)/g,'').replace(/\s+/g,' ').trim();
+}
+function dpAppUrl(loc) { return `dianping://searchshoplist?keyword=${encodeURIComponent(dpKeyword(loc))}`; }
+function dpWebUrl(loc) { return `https://m.dianping.com/searchshop?keyword=${encodeURIComponent(dpKeyword(loc))}`; }
+
+window._extLocs = {};
+DAYS.forEach(d => d.locations.forEach(l => { window._extLocs[`${d.id}::${l.name}`] = l; }));
+window._xhsLocs = window._extLocs;
+
+function openExt(key, kind) {
+  const loc = window._extLocs[key]; if(!loc) return false;
+  if (IN_APP_WEBVIEW) {
+    window.location.href = kind==='dp' ? dpWebUrl(loc) : xhsWebUrl(loc);
+  } else {
+    window.location.href = kind==='dp' ? dpAppUrl(loc) : xhsAppUrl(loc);
+  }
+  return false;
+}
+function openXhs(key) { return openExt(key, 'xhs'); }
+function openDp(key)  { return openExt(key, 'dp'); }
+
+function locCard(loc, dayIdx) {
+  const dot = loc.type==='food'?'food':loc.type==='spot'?'spot':loc.type==='drink'?'drink':loc.type==='hotel'?'hotel':'transport';
+  const bdg = loc.type==='food'?'<span class="badge food">餐</span>':loc.type==='spot'?'<span class="badge spot">景</span>':loc.type==='drink'?'<span class="badge drink">饮</span>':'';
+  const uid = `d${dayIdx}-${loc.name.replace(/\W/g,'')}`;
+  const locKey = `${dayIdx}::${loc.name}`;
+  const gmapQ = loc.gmap||encodeURIComponent(loc.name+' Vietnam');
+  let lnk = `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
+  if(loc.xhs||loc.xhsKeyword) {
+    const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
+    const xhsLabel = IN_APP_WEBVIEW ? '📕 小红书' : '📕 小红书 App';
+    lnk += `<a href="${xhsHref}" onclick="return openXhs('${locKey.replace(/'/g,"\\'")}')" class="btn xhs">${xhsLabel}</a>`;
+  }
+  const dpEnabled = false; // 大众点评 has no Vietnam coverage
+  if(dpEnabled) {
+    const dpHref = IN_APP_WEBVIEW ? dpWebUrl(loc) : dpAppUrl(loc);
+    const dpLabel = IN_APP_WEBVIEW ? '🍜 大众点评' : '🍜 大众点评 App';
+    lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${dpLabel}</a>`;
+  }
+  if(loc.reserve) lnk += `<a href="${loc.reserve}" target="_blank" class="btn rsv">📅 预约</a>`;
+  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links'))toggle('${uid}')"><div class="time">${loc.time!=='—'?loc.time:'备选'}</div><div class="name">${bdg} ${loc.name}</div><div class="desc">${loc.desc}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
+}
+
+function renderDay(idx) {
+  const d = DAYS.find(x=>x.id===idx); if(!d) return '';
+  const main = d.locations.filter(l=>l.time!=='—');
+  const alt = d.locations.filter(l=>l.time==='—');
+  let h = `<div class="day-head"><h2>${d.title}</h2><p>${d.date}</p></div>`;
+  if(main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach(l => h += locCard(l, idx)); h += '</div>'; }
+  if(alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach(l => h += locCard(l, idx)); h += '</div>'; }
+  return h;
+}
+
+// ══════════ NAV ══════════
+let cur = 0;
+const tabsEl = document.getElementById('tabs');
+const contentEl = document.getElementById('content');
+
+DAYS.forEach(d => {
+  const btn = document.createElement('button');
+  btn.className = 'tab' + (d.id===0?' active':'');
+  btn.dataset.day = d.id;
+  btn.textContent = d.label;
+  tabsEl.appendChild(btn);
+});
+
+function go(idx) {
+  cur = idx;
+  tabsEl.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', +t.dataset.day===idx));
+  contentEl.innerHTML = idx===0 ? overviewContent() : renderDay(idx);
+  showDay(idx);
+  contentEl.scrollTo({top:0});
+  const tab = tabsEl.querySelector(`[data-day="${idx}"]`);
+  if(tab) tab.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+}
+
+function toggle(id) { const el=document.getElementById(id); if(el) el.classList.toggle('closed'); }
+
+tabsEl.addEventListener('click', e => { const t=e.target.closest('.tab'); if(t) go(+t.dataset.day); });
+
+go(0);
+
+/* ── Action Sheet for Navigation ── */
+const asOverlay = document.createElement('div');
+asOverlay.className = 'as-overlay';
+asOverlay.innerHTML = `<div class="as-sheet">
+  <div class="as-group" id="as-opts"></div>
+  <div class="as-group"><button class="as-item as-cancel" onclick="closeAS()">取消</button></div>
+</div>`;
+document.body.appendChild(asOverlay);
+asOverlay.addEventListener('click', e => { if (e.target === asOverlay) closeAS(); });
+
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+function amapAppUrl(name, lat, lng) {
+  const scheme = IS_IOS ? 'iosamap' : 'androidamap';
+  return `${scheme}://viewMap?sourceApplication=trip&poiname=${encodeURIComponent(name)}&lat=${lat}&lon=${lng}&dev=0`;
+}
+function amapWebUrl(name, lat, lng) {
+  return `https://uri.amap.com/marker?position=${lng},${lat}&name=${encodeURIComponent(name)}&src=trip&coordinate=wgs84&callnative=1`;
+}
+function openAmap(name, lat, lng) {
+  if (IN_APP_WEBVIEW) { window.open(amapWebUrl(name, lat, lng)); return; }
+  window.location.href = amapAppUrl(name, lat, lng);
+}
+
+function openAS(name, lat, lng, gmap) {
+  const q = gmap || encodeURIComponent(name + ' Vietnam');
+  const encName = encodeURIComponent(name);
+  const safeName = name.replace(/'/g,"\\'");
+  // WebView 内 maps:// 通常被拦截，改用 https Apple Maps URL —— iOS 系统会自动拉起 Apple Maps
+  const appleUrl = IN_APP_WEBVIEW
+    ? `https://maps.apple.com/?q=${lat},${lng}&ll=${lat},${lng}&name=${encName}`
+    : `maps://maps.apple.com/?q=${lat},${lng}&name=${encName}`;
+  const googleUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
+  document.getElementById('as-opts').innerHTML =
+    `<button class="as-item" onclick="window.open('${appleUrl}');closeAS()">🍎 Apple Maps</button>` +
+    `<button class="as-item" onclick="window.open('${googleUrl}');closeAS()">🗺️ Google Maps</button>` +
+    `<button class="as-item" onclick="openAmap('${safeName}',${lat},${lng});closeAS()">🧭 高德地图 App</button>`;
+  asOverlay.classList.add('show');
+}
+function closeAS() { asOverlay.classList.remove('show'); }
+</script>
+</body>
+</html>

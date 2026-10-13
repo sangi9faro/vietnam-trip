@@ -161,7 +161,9 @@ tr.me td{background:var(--sea-soft)}
 .stepbtn{border:0;border-radius:980px;padding:5px 12px;font-size:13px;font-weight:600;background:var(--surface);color:var(--muted);box-shadow:var(--shadow)}
 .stepbtn.done{color:var(--sea)}
 .stepbtn.on{background:var(--sea);color:#fff}
-.stepbtn:disabled{opacity:.4;cursor:default}
+.stepbtn:disabled,.stepbtn[aria-disabled="true"]{opacity:.4;cursor:default;pointer-events:none}
+a.stepbtn,a.primary{text-decoration:none;display:inline-block}
+@media (max-width:440px){.brand span{display:none}.stepbtn{padding:5px 10px;font-size:12.5px}}
 .page{display:grid;gap:28px}
 .page[data-page="1"]{min-height:calc(100svh - 160px);align-content:center}
 .page.enter{animation:pageIn .45s cubic-bezier(.2,.7,.2,1)}
@@ -180,11 +182,12 @@ tr.me td{background:var(--sea-soft)}
 <body>
 
 <nav class="topbar" aria-label="步骤"><div class="topbar-in">
-  <div class="brand">🌴 越南跨年</div>
+  <div class="brand">🌴<span> 越南跨年</span></div>
   <div class="steps">
     <button class="stepbtn" data-goto="1">1 名字</button>
     <button class="stepbtn" data-goto="2">2 投票</button>
     <button class="stepbtn" data-goto="3">3 结果</button>
+    <a class="stepbtn" id="guideStep" href="guide.html" aria-disabled="true">4 攻略</a>
   </div>
 </div></nav>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -221,7 +224,7 @@ tr.me td{background:var(--sea-soft)}
 
   <section class="page" data-page="3" hidden>
   <div class="pagehead"><div><p class="kicker">第 3 步</p><h2>大家的结果</h2><p class="sub">投票会实时更新。想改主意，随时可以回去改。</p></div>
-    <button class="ghost" data-goto="2">← 改投票</button></div>
+    <div class="row"><button class="ghost" data-goto="2">← 改投票</button><a class="primary guideLink" href="guide.html">看攻略 →</a></div></div>
   <div class="tally" id="tally"></div>
 
   <div class="lower">
@@ -338,7 +341,8 @@ function maxStep(){ return !myName?1 : !hasVoted()?2 : 3; }
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2200); }
 function renderSteps(){
   const m=maxStep();
-  document.querySelectorAll(".stepbtn").forEach(b=>{ const k=+b.dataset.goto;
+  $("#guideStep").setAttribute("aria-disabled",String(m<3));
+  document.querySelectorAll(".stepbtn[data-goto]").forEach(b=>{ const k=+b.dataset.goto;
     b.classList.toggle("on",k===page); b.classList.toggle("done",k<m&&k!==page); b.disabled=k>m; });
 }
 function showPage(n){
@@ -369,6 +373,9 @@ function renderTally(){
   const counts={pq:0,nt:0,dn:0}; let total=0;
   for(const v of votes){ if(counts[v.choice]!=null){counts[v.choice]++;total++;} }
   const top=total? Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0] : "";
+  const href="guide.html?d="+(top||"pq");
+  document.querySelectorAll("#guideStep,.guideLink").forEach(a=>a.href=href);
+  $("#guideStep").setAttribute("aria-disabled",String(maxStep()<3));
   $("#tally").innerHTML=`<h3 style="margin:0;font-size:17px">投票情况 · 共 ${total} 票</h3><div class="mbars">${["pq","nt","dn"].map(k=>{const pc=total?Math.round(counts[k]*100/total):0;
     return `<div class="mbar"><span>${DN[k]}</span><div class="t"><i class="${k===top&&counts[k]?"top":""}" style="width:${pc}%"></i></div><span>${counts[k]} 票</span></div>`;}).join("")}</div>`;
 }
