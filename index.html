@@ -4,604 +4,442 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>越南去哪儿投票</title>
+<title>越南跨年工具箱</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
-<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <style>
-/* Layout: a postcard header, three destination "tickets" side by side, then a live tally + comment wall */
+/* Same fresh light theme as the poll and guide pages */
 :root{
-  /* Fresh light theme, tokens follow the Apple design system used by trip-map-builder */
   --bg:#f5f5f7; --surface:#ffffff; --ink:#1d1d1f; --muted:#6e6e73; --line:rgba(60,60,67,.12);
-  --sea:#0071e3; --sea-soft:#e8f2fd; --lantern:#ff9500; --lantern-soft:#fff3e0; --saffron:#34c759;
-  --good:#248a3d; --bad:#d70015;
-  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04); --shadow-md:0 4px 14px rgba(0,0,0,.08);
-  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
-  --body:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
-  --latin:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+  --sea:#0071e3; --sea-soft:#e8f2fd; --orange:#ff9500; --orange-soft:#fff3e0; --green:#248a3d; --green-soft:#e6f5ea; --red:#d70015;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#000000; --surface:#1c1c1e; --ink:#f5f5f7; --muted:#98989d; --line:rgba(84,84,88,.55);
-  --sea:#0a84ff; --sea-soft:#0d2a4a; --lantern:#ff9f0a; --lantern-soft:#3a2a10; --saffron:#30d158;
-  --good:#30d158; --bad:#ff453a; --shadow:none; --shadow-md:none; color-scheme:dark}}
+  --bg:#000; --surface:#1c1c1e; --ink:#f5f5f7; --muted:#98989d; --line:rgba(84,84,88,.55);
+  --sea:#0a84ff; --sea-soft:#0d2a4a; --orange:#ff9f0a; --orange-soft:#3a2a10; --green:#30d158; --green-soft:#10301a; --red:#ff453a; --shadow:none; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#000000; --surface:#1c1c1e; --ink:#f5f5f7; --muted:#98989d; --line:rgba(84,84,88,.55);
-  --sea:#0a84ff; --sea-soft:#0d2a4a; --lantern:#ff9f0a; --lantern-soft:#3a2a10; --saffron:#30d158;
-  --good:#30d158; --bad:#ff453a; --shadow:none; --shadow-md:none; color-scheme:dark}
+  --bg:#000; --surface:#1c1c1e; --ink:#f5f5f7; --muted:#98989d; --line:rgba(84,84,88,.55);
+  --sea:#0a84ff; --sea-soft:#0d2a4a; --orange:#ff9f0a; --orange-soft:#3a2a10; --green:#30d158; --green-soft:#10301a; --red:#ff453a; --shadow:none; color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;letter-spacing:-0.01em;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:28px 64px;display:grid;gap:36px}
-header{display:grid;gap:10px}
-.stamp{font-family:var(--latin);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--lantern)}
-h1{font-family:var(--display);font-weight:700;letter-spacing:-0.025em;font-size:clamp(30px,6vw,52px);line-height:1.15;margin:0;text-wrap:balance}
-h1 em{font-style:normal;color:var(--sea)}
-.lede{color:var(--muted);max-width:60ch;margin:0}
-.who{font-size:13px;color:var(--muted)}
-h2{font-family:var(--display);font-size:22px;margin:0 0 4px;text-wrap:balance}
-.sub{color:var(--muted);font-size:13.5px;margin:0}
-
-.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-@media (max-width:860px){.cards{grid-template-columns:1fr}}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;transition:border-color .2s,box-shadow .2s}
-.card.mine{border-color:var(--sea);box-shadow:0 0 0 2px var(--sea)}
-.ticket{padding:18px 18px 14px;border-bottom:2px dashed var(--line);display:grid;gap:4px;position:relative}
-.ticket .code{font-family:var(--latin);font-weight:800;font-size:13px;letter-spacing:.12em;color:var(--muted)}
-.ticket h3{font-family:var(--display);font-size:26px;margin:0;line-height:1.2}
-.ticket .vn{font-family:var(--latin);font-size:13px;color:var(--muted)}
-.ticket .tag{font-size:13.5px;color:var(--ink);margin-top:4px}
-.season{display:flex;gap:2px;margin-top:10px}
-.season span{flex:1;height:22px;border-radius:3px;font-family:var(--latin);font-size:10px;display:grid;place-items:center;color:var(--muted);background:var(--bg)}
-.season span.ok{background:var(--sea-soft);color:var(--sea);font-weight:600}
-.season span.rain{background:var(--lantern-soft);color:var(--lantern)}
-.legend{font-size:11.5px;color:var(--muted);display:flex;gap:12px;margin-top:4px}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
-.body{padding:14px 18px 18px;display:grid;gap:12px;flex:1;align-content:start}
-.list h4{margin:0 0 4px;font-size:12px;letter-spacing:.08em;font-weight:700}
-.list.pro h4{color:var(--good)} .list.con h4{color:var(--bad)}
-.list ul{margin:0;padding-left:0;list-style:none;display:grid;gap:4px}
-.list li{position:relative;padding-left:18px;font-size:14px}
-.list.pro li::before{content:"+";position:absolute;left:2px;color:var(--good);font-weight:700}
-.list.con li::before{content:"−";position:absolute;left:2px;color:var(--bad);font-weight:700}
-.fit{font-size:13px;background:var(--bg);border-radius:8px;padding:8px 10px;color:var(--muted)}
-.fit b{color:var(--ink)}
-.voteRow{padding:0 18px 18px;display:grid;gap:8px}
-button{font:inherit;cursor:pointer}
-.vote{width:100%;border:0;border-radius:10px;padding:11px 14px;font-weight:700;background:var(--ink);color:var(--surface);transition:transform .1s,background .2s}
-.vote:hover{transform:translateY(-1px)}
-.vote:focus-visible,.chip:focus-visible,textarea:focus-visible,select:focus-visible,.send:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
-.card.mine .vote{background:var(--sea)}
-.vote:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.bar{height:8px;border-radius:99px;background:var(--bg);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--sea);width:0;transition:width .5s}
-.count{font-family:var(--latin);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
-
-.lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px}
-@media (max-width:860px){.lower{grid-template-columns:1fr}}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px;align-content:start}
-.months{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:5px 11px;font-family:var(--latin);font-size:13px;font-variant-numeric:tabular-nums}
-.chip.on{background:var(--saffron);border-color:var(--saffron);color:#2a1c00;font-weight:600}
-.chip .n{margin-left:4px;opacity:.7}
-form{display:grid;gap:8px}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
-textarea{width:100%;min-height:72px;resize:vertical}
-.send{border:0;border-radius:10px;padding:9px 18px;background:var(--lantern);color:#fff;font-weight:700}
-.send:disabled{opacity:.5}
-.feed{display:grid;gap:10px;max-height:420px;overflow:auto;padding-right:2px}
-.note{border-left:3px solid var(--line);padding:4px 0 4px 12px}
-.note[data-d="pq"]{border-color:var(--sea)} .note[data-d="nt"]{border-color:var(--saffron)} .note[data-d="dn"]{border-color:var(--lantern)}
-.note .meta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
-.note .meta b{color:var(--ink)}
-.note p{margin:2px 0 0;white-space:pre-wrap;word-break:break-word}
-.del{border:0;background:none;color:var(--muted);font-size:12px;padding:0;text-decoration:underline}
-.empty{color:var(--muted);font-size:14px}
-.status{font-size:13px;color:var(--muted);min-height:1.2em}
-.roadmap{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
-.roadmap b{color:var(--ink)}
-.quiz{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:16px}
-.qhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
-.prog{height:6px;border-radius:99px;background:var(--bg);overflow:hidden}
-.prog i{display:block;height:100%;background:var(--saffron);transition:width .3s}
-.qnum{font-family:var(--latin);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-.qtext{font-family:var(--display);font-size:clamp(19px,3.2vw,24px);margin:0;text-wrap:balance}
-.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-.opt{text-align:left;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14.5px;transition:border-color .15s,background .15s}
-.opt:hover{border-color:var(--sea)}
-.opt.on{border-color:var(--sea);background:var(--sea-soft)}
-.opt:focus-visible,.ghost:focus-visible,.primary:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
-.qnav{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
-.ghost{border:1px solid var(--line);background:none;color:var(--ink);border-radius:10px;padding:9px 16px}
-.ghost:disabled{opacity:.4}
-.primary{border:0;background:var(--sea);color:#fff;border-radius:10px;padding:9px 18px;font-weight:700}
-.result{display:grid;gap:14px}
-.result .big{font-family:var(--display);font-size:clamp(26px,5vw,38px);margin:0}
-.result .big em{font-style:normal;color:var(--sea)}
-.mbars{display:grid;gap:8px}
-.mbar{display:grid;grid-template-columns:60px minmax(0,1fr) 44px;align-items:center;gap:10px;font-size:14px}
-.mbar .t{height:12px;border-radius:99px;background:var(--bg);overflow:hidden}
-.mbar .t i{display:block;height:100%;background:var(--sea);transition:width .6s}
-.mbar .t i.top{background:var(--lantern)}
-.mbar span:last-child{font-family:var(--latin);text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
-.why{font-size:14px;color:var(--muted);margin:0}
-.group{border-top:1px dashed var(--line);padding-top:14px;display:grid;gap:8px}
-.group h3{margin:0;font-size:15px}
-.idbox{background:var(--surface);border:1.5px solid var(--saffron);border-radius:14px;padding:16px 18px;display:grid;gap:10px;max-width:560px}
-.idbox.done{border-color:var(--line)}
-.idbox label{font-weight:700}
-.idbox input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;flex:1;min-width:0}
-.idbox input:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
-.idrow{display:flex;gap:8px;flex-wrap:wrap}
-.gate{color:var(--muted);font-size:14px;background:var(--bg);border-radius:10px;padding:12px 14px}
-.roster{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px}
-.tablewrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
-th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
-th{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:700}
-td.dim{color:var(--muted)}
-tr.me td{background:var(--sea-soft)}
-.unlock{font-size:14px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:14px 18px;text-align:center}
-.weather{font-size:14px;background:var(--sea-soft);color:var(--ink);border-radius:10px;padding:10px 14px;margin-top:10px}
-/* Fresh theme overrides: borderless cards with soft shadow, pill buttons */
-.card,.panel,.quiz,.roster,.idbox,.unlock{border-color:transparent;box-shadow:var(--shadow);border-radius:20px}
-.idbox{border:1.5px solid var(--sea)} .idbox.done{border-color:transparent}
-.card.mine{box-shadow:0 0 0 2px var(--sea),var(--shadow-md)}
-.ticket{border-bottom:1px dashed var(--line)}
-.vote,.send,.primary,.ghost,.chip{border-radius:980px}
-.vote{background:var(--sea);color:#fff} .card.mine .vote{background:var(--saffron)}
-.send{background:var(--sea)}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--font);letter-spacing:-0.01em;-webkit-font-smoothing:antialiased}
+a{color:var(--sea);text-decoration:none}
+button,input,select{font:inherit;color:inherit}
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--line)}
+.top-in{max-width:760px;margin:0 auto;padding:10px 16px;display:grid;gap:8px}
+.links{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
+.links b{color:var(--ink);font-size:15px}
+.tabs{display:flex;gap:6px}
+.tab{flex:1;border:0;border-radius:980px;padding:7px 10px;font-weight:600;font-size:14px;background:var(--surface);color:var(--muted);box-shadow:var(--shadow);cursor:pointer}
+.tab.on{background:var(--sea);color:#fff}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 64px;display:grid;gap:14px}
+.card{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:16px;display:grid;gap:10px}
+.card h2{margin:0;font-size:18px}
+.sub{margin:0;color:var(--muted);font-size:13px}
+.status{font-size:13px;color:var(--muted);text-align:center}
+.big{font-size:34px;font-weight:700;letter-spacing:-0.03em;line-height:1.1}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.pill{display:inline-block;border-radius:980px;padding:3px 10px;font-size:12.5px;font-weight:600;background:var(--sea-soft);color:var(--sea)}
+.btn{border:0;border-radius:980px;padding:8px 16px;font-weight:600;background:var(--sea);color:#fff;cursor:pointer}
+.btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:5px 12px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:default}
+input[type=text],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.flight{display:grid;gap:2px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.flight:first-of-type{border-top:0;padding-top:0}
+.flight b{font-size:15px}
+.muted{color:var(--muted)}
+.phr{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
+.phr span:nth-child(odd){font-weight:600}
+.phr i{display:block;font-style:normal;font-weight:400;font-size:12.5px;color:var(--sea)}
+.phr span:nth-child(even){align-self:center}
+/* checklist grid: item + one checkbox per member */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,44px);align-items:center;gap:6px 4px;font-size:14px}
+.grid .h{font-size:12px;font-weight:700;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid .h.me{color:var(--sea)}
+.grid label{display:flex;justify-content:center}
+.grid input{width:22px;height:22px;accent-color:var(--green)}
+.prog{font-size:12px;text-align:center;color:var(--muted)}
+.task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.task:first-child{border-top:0}
+.task input[type=checkbox]{width:22px;height:22px;accent-color:var(--green)}
+.task.done .t{text-decoration:line-through;color:var(--muted)}
+.task select{font-size:13px;padding:5px 8px}
+/* expenses */
+.form{display:grid;gap:8px}
+.form .two{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:980px;padding:5px 12px;font-size:13.5px;cursor:pointer}
 .chip.on{background:var(--sea);border-color:var(--sea);color:#fff}
-.opt{border-radius:14px;background:var(--surface)} .opt.on{background:var(--sea-soft)}
-.unlock{border-style:solid}
-.weather{background:var(--lantern-soft)}
-/* Step flow: sticky step bar + one page at a time */
-.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--line)}
-.topbar-in{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.brand{font-weight:700;font-size:15px;white-space:nowrap}
-.steps{display:flex;gap:6px}
-.stepbtn{border:0;border-radius:980px;padding:5px 12px;font-size:13px;font-weight:600;background:var(--surface);color:var(--muted);box-shadow:var(--shadow)}
-.stepbtn.done{color:var(--sea)}
-.stepbtn.on{background:var(--sea);color:#fff}
-.stepbtn:disabled,.stepbtn[aria-disabled="true"]{opacity:.4;cursor:default;pointer-events:none}
-a.stepbtn,a.primary{text-decoration:none;display:inline-block}
-@media (max-width:440px){.brand span{display:none}.stepbtn{padding:5px 10px;font-size:12.5px}}
-.page{display:grid;gap:28px}
-.page[data-page="1"]{min-height:calc(100svh - 160px);align-content:center}
-.page.enter{animation:pageIn .45s cubic-bezier(.2,.7,.2,1)}
-.page.leave{animation:pageOut .25s ease forwards}
-@keyframes pageIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-@keyframes pageOut{to{opacity:0;transform:translateY(-14px)}}
-.pagehead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
-.pagehead h2{font-size:26px;margin:0}
-.kicker{font-size:13px;font-weight:600;color:var(--sea);margin:0 0 2px}
-.tally{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:18px;display:grid;gap:10px}
-#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:980px;font-weight:600;font-size:14px;box-shadow:var(--shadow-md);transition:opacity .25s,transform .25s;pointer-events:none;z-index:30;white-space:nowrap}
+.exp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.exp:first-child{border-top:0}
+.exp .amt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.exp .meta{font-size:12.5px;color:var(--muted)}
+.exp .del{border:0;background:none;color:var(--red);font-size:12.5px;padding:0;cursor:pointer;justify-self:end}
+.bal{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 12px;font-size:14px;font-variant-numeric:tabular-nums}
+.bal .pos{color:var(--green);font-weight:700;text-align:right} .bal .neg{color:var(--red);font-weight:700;text-align:right}
+.xfer{background:var(--green-soft);border-radius:12px;padding:10px 12px;font-weight:600}
+.empty{color:var(--muted);font-size:14px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:980px;font-weight:600;font-size:14px;transition:opacity .25s,transform .25s;pointer-events:none;z-index:30;white-space:nowrap}
 #toast.show{opacity:1;transform:translate(-50%,0)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-
-<nav class="topbar" aria-label="步骤"><div class="topbar-in">
-  <div class="brand">🌴<span> 越南跨年</span></div>
-  <div class="steps">
-    <button class="stepbtn" data-goto="1">1 名字</button>
-    <button class="stepbtn" data-goto="2">2 投票</button>
-    <button class="stepbtn" data-goto="3">3 结果</button>
-    <a class="stepbtn" id="guideStep" href="guide.html" aria-disabled="true">4 攻略</a>
+<header class="top"><div class="top-in">
+  <div class="links"><b>🌴 越南跨年工具箱</b><span><a href="guide.html">攻略</a> · <a href="vote.html">投票</a></span></div>
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-tab="info" role="tab">基础信息</button>
+    <button class="tab" data-tab="check" role="tab">准备清单</button>
+    <button class="tab" data-tab="aa" role="tab">AA 记账</button>
   </div>
-</div></nav>
+</div></header>
 <div id="toast" role="status" aria-live="polite"></div>
 
-<div class="wrap">
-  <section class="page" data-page="1">
-  <header>
-    <div class="stamp">Việt Nam · 2026–27 Trip Poll</div>
-    <h1>越南去哪儿？<em>富国岛、芽庄、岘港</em>，大家投一票</h1>
-    <p class="lede">这次跨年（12 月底到 1 月初）一起去越南。先填名字，做个小测试、看看三个地方，再投出你的选择。投完票，就能看到大家的结果、留言板和参与名单。每人一票，随时可以改。</p>
-    <div class="who" id="who">正在连接投票数据…</div>
-    <form class="idbox" id="idForm">
-      <label for="idName" id="idLabel">先告诉大家你是谁</label>
-      <div class="idrow">
-        <input id="idName" maxlength="20" placeholder="填你的名字或昵称，例如：小杨" autocomplete="nickname">
-        <button class="send" id="idSave" type="submit">确定</button>
-      </div>
-      <div class="status" id="idStatus">填好后会自动进入投票。</div>
-    </form>
-  </header>
-  </section>
+<main class="wrap">
+  <div class="status" id="who">正在连接数据…</div>
 
-  <section class="page" data-page="2" hidden>
-  <div class="pagehead"><div><p class="kicker">第 2 步</p><h2>投出你的一票</h2><p class="sub">拿不定主意？先做下面的小测试。也可以直接往下看三个地方，点按钮投票。</p></div></div>
-  <section class="quiz" id="quiz" aria-live="polite"></section>
-
-  <section>
-    <h2>三个候选地</h2>
-    <p class="sub">月份条：绿色是旱季（推荐），红色是雨季或台风季。</p>
-    <p class="weather"><b>跨年天气提醒：</b>12 月底到 1 月初，只有富国岛在旱季。芽庄、岘港 12 月是雨季，岘港 1 月也不算稳定。</p>
-  </section>
-  <div class="cards" id="cards"></div>
-  </section>
-
-  <section class="page" data-page="3" hidden>
-  <div class="pagehead"><div><p class="kicker">第 3 步</p><h2>大家的结果</h2><p class="sub">投票会实时更新。想改主意，随时可以回去改。</p></div>
-    <div class="row"><button class="ghost" data-goto="2">← 改投票</button><a class="primary guideLink" href="guide.html">看攻略 →</a><a class="ghost" href="tools.html" style="text-decoration:none">工具箱 · 记账</a></div></div>
-  <div class="tally" id="tally"></div>
-
-  <div class="lower">
-    <div class="panel">
-      <div>
-        <h2>什么时候去？</h2>
-        <p class="sub">可多选，点一下选中，再点取消。数字是选这个月的人数。</p>
-      </div>
-      <div class="months" id="months"></div>
-      <div class="status" id="monthStatus"></div>
+  <!-- ================= 基础信息 ================= -->
+  <section data-panel="info" class="wrap" style="padding:0">
+    <div class="card">
+      <p class="sub">距离 12/29 胡志明集合</p>
+      <div class="big" id="countdown">—</div>
+      <p class="sub">12/29 – 1/3 · 胡志明 → 芽庄 → 金兰湾</p>
     </div>
 
-    <div class="panel">
-      <div>
-        <h2>留言板</h2>
-        <p class="sub">说说你为什么选它，或者想在那里干什么。</p>
+    <div class="card">
+      <h2>我是谁</h2>
+      <p class="sub">选一下，记账时默认是你付的，清单里你那一列会高亮。只存在这台手机上。</p>
+      <select id="meSel" aria-label="我是谁"></select>
+    </div>
+
+    <div class="card">
+      <h2>成员和航班</h2>
+      <div id="flights"></div>
+    </div>
+
+    <div class="card">
+      <h2>住宿</h2>
+      <div id="hotels"></div>
+    </div>
+
+
+    <div class="card">
+      <h2>钱和汇率</h2>
+      <p class="sub" id="rateLine">—</p>
+      <div class="row">
+        <input type="number" id="cnyIn" inputmode="decimal" placeholder="人民币" style="width:120px" aria-label="人民币金额">
+        <span>元 ≈</span><b id="vndOut">—</b>
       </div>
-      <form id="noteForm">
-        <textarea id="noteText" maxlength="500" placeholder="例如：我想去会安看灯笼，岘港顺路"></textarea>
-        <div class="row">
-          <select id="noteDest" aria-label="留言关于哪个地方">
-            <option value="">不限地点</option>
-            <option value="pq">富国岛</option>
-            <option value="nt">芽庄</option>
-            <option value="dn">岘港</option>
-          </select>
-          <button class="send" id="noteSend" type="submit">发布留言</button>
+      <div class="row">
+        <input type="number" id="vndIn" inputmode="numeric" placeholder="越南盾" style="width:140px" aria-label="越南盾金额">
+        <span>₫ ≈</span><b id="cnyOut">—</b>
+      </div>
+      <p class="sub">越南盾面额大、0 很多，付钱前看清楚。夜市和小店多数只收现金；大酒店、Grab 可以刷卡。不用给小费。</p>
+    </div>
+
+
+
+    <div class="card">
+      <h2>常用越南语</h2>
+      <p class="sub">拼音是近似读音（按南部口音），说慢一点、配合手势基本能懂。</p>
+      <div class="phr">
+        <span>Cảm ơn<i>gǎm ēn</i></span><span>谢谢</span>
+        <span>Xin chào<i>xīn zhào</i></span><span>你好</span>
+        <span>Bao nhiêu tiền?<i>bāo niū dièn</i></span><span>多少钱？</span>
+        <span>Tính tiền<i>dǐng dièn</i></span><span>买单</span>
+        <span>Mắc quá<i>mǎ guā</i></span><span>太贵了（砍价用）</span>
+        <span>Không cay<i>kōng gāi</i></span><span>不要辣</span>
+        <span>Không đá<i>kōng dá</i></span><span>不加冰</span>
+        <span>Ngon quá<i>ngōn guā</i></span><span>好吃！</span>
+        <span>Bốn người<i>bōn ngúi</i></span><span>四个人（进餐厅用）</span>
+        <span>Nhà vệ sinh ở đâu?<i>nyà wē xīn ē dōu</i></span><span>厕所在哪？</span>
+        <span>Không, cảm ơn<i>kōng, gǎm ēn</i></span><span>不用了，谢谢（拒绝拉客）</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>小知识</h2>
+      <dl class="kv">
+        <dt>时差</dt><dd>比北京晚 1 小时，比首尔晚 2 小时</dd>
+        <dt>天气</dt><dd>胡志明 12 月是旱季，白天 30°C 左右；芽庄 12 月底可能下雨，22–28°C</dd>
+        <dt>插座</dt><dd>220V，两脚扁插、两脚圆插大多能用，带个转换头保险</dd>
+        <dt>喝水</dt><dd>不要喝自来水，买瓶装水</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h2>紧急电话（越南）</h2>
+      <dl class="kv">
+        <dt>报警</dt><dd><a href="tel:113">113</a></dd>
+        <dt>火警</dt><dd><a href="tel:114">114</a></dd>
+        <dt>急救</dt><dd><a href="tel:115">115</a></dd>
+        <dt>领事馆</dt><dd><a href="https://www.google.com/maps/search/?api=1&query=Consulate+General+of+China+Ho+Chi+Minh+City" target="_blank" rel="noopener">中国驻胡志明市总领事馆</a> · 其他护照查各自国家的领事馆</dd>
+      </dl>
+      <p class="sub">打车时把酒店名字给司机看最方便。Grab 打车、送餐都能用。</p>
+    </div>
+    <div class="card">
+      <h2>成员名字</h2>
+      <p class="sub">名字改了以后，清单和账本会跟着变，以前的账不受影响。</p>
+      <div id="nameEdit" class="form"></div>
+      <button class="btn small" id="saveNames">保存名字</button>
+    </div>
+  </section>
+
+  <!-- ================= 准备清单 ================= -->
+  <section data-panel="check" class="wrap" style="padding:0" hidden>
+    <div class="card">
+      <h2>每个人自己准备</h2>
+      <p class="sub">办好了就在自己那一列打勾，四个人都能看到进度。</p>
+      <div class="grid" id="personal"></div>
+    </div>
+    <div class="card">
+      <h2>集体要办的</h2>
+      <p class="sub">选一下谁负责，办好了打勾。</p>
+      <div id="group"></div>
+    </div>
+  </section>
+
+  <!-- ================= AA 记账 ================= -->
+  <section data-panel="aa" class="wrap" style="padding:0" hidden>
+    <div class="card">
+      <h2>结算</h2>
+      <p class="sub" id="aaTotal">—</p>
+      <div id="transfers"></div>
+      <div class="bal" id="balances"></div>
+    </div>
+    <div class="card">
+      <h2>记一笔</h2>
+      <form class="form" id="expForm">
+        <input type="text" id="expTitle" maxlength="60" placeholder="花在什么上，例如：芽庄凯悦房费" aria-label="用途">
+        <div class="two">
+          <input type="number" id="expAmt" inputmode="decimal" step="any" min="0" placeholder="金额" aria-label="金额">
+          <select id="expCur" aria-label="币种"><option value="VND">₫ 越南盾</option><option value="CNY">¥ 人民币</option><option value="KRW">₩ 韩元</option><option value="USD">$ 美元</option></select>
         </div>
-        <div class="status" id="noteStatus"></div>
+        <div class="row"><span class="muted">谁付的</span><select id="expPayer" aria-label="谁付的"></select></div>
+        <div><span class="muted">谁来分</span><div class="chips" id="expSplit"></div></div>
+        <button class="btn" id="expAdd" type="submit">记一笔</button>
       </form>
-      <div class="feed" id="feed"><div class="empty">还没有留言，来写第一条吧。</div></div>
     </div>
-  </div>
-
-  <section class="roster">
-    <div><h2>参与名单</h2><p class="sub">每个人的投票、测试结果和想去的月份，用来统计。</p></div>
-    <div class="tablewrap" id="roster"><p class="empty">还没有人报名。填写上面的名字后就会出现在这里。</p></div>
+    <div class="card">
+      <h2>账本</h2>
+      <p class="sub">只有记账的那台手机能删。都按人民币结算，汇率四个人共用一份。</p>
+      <div id="expList"><p class="empty">还没有记账。</p></div>
+      <div class="row"><span class="sub" id="rateLine2">—</span><button class="btn ghost small" id="refreshRates">更新成最新汇率</button></div>
+    </div>
   </section>
-
-  <div class="roadmap"><b>下一步计划：</b>投票结束后，这个页面会继续加上行程安排、机票酒店比价、预算分摊和出发清单。</div>
-  </section>
-</div>
+</main>
 
 <script>
-const DESTS = [
-  { id:"pq", code:"PQC", name:"富国岛", vn:"Phú Quốc · 越南最南端海岛",
-    tag:"适合纯度假：躺海边、看日落、浮潜",
-    dry:[1,2,3,4,11,12], rain:[7,8,9],
-    pros:["11月到4月旱季天气最稳，海水清","海滩好，南部有跨海缆车和珍珠岛乐园","度假村多，适合放空","对多国游客有免签政策（以出发前官方信息为准）"],
-    cons:["岛上景点分散，基本要打车或租车","城市感弱，夜生活和美食选择少","度假村价格偏高","7到9月西南季风，浪大不宜下水"],
-    fit:"<b>适合：</b>情侣、想休息的人、预算稍宽松" },
-  { id:"nt", code:"CXR", name:"芽庄", vn:"Nha Trang · 中南部海滨城市",
-    tag:"适合玩海岛：跳岛、潜水、泥浆浴",
-    dry:[1,2,3,4,5,6,7,8], rain:[10,11,12],
-    pros:["跳岛游、潜水、泥浆温泉，玩法集中","海鲜和住宿性价比高","市区就在海边，走路就能到沙滩","旱季长，1到8月都可以去"],
-    cons:["城市比较商业化，中国旅行团多","10到12月雨季，有台风风险","文化古迹少，玩法偏单一","部分区域拉客、宰客要留心"],
-    fit:"<b>适合：</b>学生党、喜欢玩水、想省钱" },
-  { id:"dn", code:"DAD", name:"岘港", vn:"Đà Nẵng · 中部城市 + 会安古城",
-    tag:"适合第一次去越南：海滩、古城、山都有",
-    dry:[2,3,4,5,6,7,8], rain:[10,11,12],
-    pros:["美溪海滩就在市区边上","40分钟到会安古城，晚上灯笼很美","巴拿山、山茶半岛、顺化都能顺路去","城市干净，吃喝交通方便，适合多人一起玩"],
-    cons:["10到12月雨季，常有台风和洪水","夏天6到8月很热","巴拿山门票贵、人多","海边酒店区离会安有一段距离"],
-    fit:"<b>适合：</b>第一次去、人多意见不一、想玩得丰富" }
-];
-const MONTHS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
 const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const IDS = ["m1", "m2", "m3", "m4"];
+const DEFAULT_SETTINGS = { members: { m1: "酸根", m2: "泰坦", m3: "朋友A", m4: "朋友B" }, rates: { VND: 3650, KRW: 195, USD: 0.14 }, ratesAt: 0 };
+const SYM = { CNY: "¥", VND: "₫", KRW: "₩", USD: "$" };
 
-let db=null, uid=null, canWrite=true;
-let votes=[], notes=[], people={}, myName="";
-function ready(){return !!(db&&uid&&canWrite&&myName);}
-function nameOf(id){return id===uid&&myName? myName : (people[id]||"");}
-
-function renderId(){
-  const box=$("#idForm");
-  box.classList.toggle("done",!!myName);
-  $("#idLabel").textContent = myName? "你是：" : "先告诉大家你是谁";
-  if(document.activeElement!==$("#idName")) $("#idName").value=myName;
-  $("#idSave").textContent = myName? "修改名字" : "确定";
-  $("#idStatus").textContent = myName? "名字已保存。" : "填好后会自动进入投票。";
-  renderGates();
-}
-$("#idForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const n=$("#idName").value.trim().slice(0,20);
-  if(!n){$("#idStatus").textContent="请先填写名字。";return;}
-  if(!db||!uid){$("#idStatus").textContent="还没连上数据库，请稍后再试。";return;}
-  const taken=Object.entries(people).some(([id,v])=>id!==uid&&v===n);
-  if(taken){$("#idStatus").textContent="这个名字已经有人用了，换一个或加个后缀吧。";return;}
-  $("#idSave").disabled=true;
-  try{ await db.doc("people/"+uid).set({name:n,at:Date.now()}); myName=n; renderId(); renderAll(); renderQuiz(); if(page===1) showPage(maxStep()); }
-  catch(err){ $("#idStatus").textContent="保存失败，请刷新后再试。"; }
-  $("#idSave").disabled=false;
-});
-
-function renderRoster(){
-  const ids=new Set([...Object.keys(people),...votes.map(v=>v.id),...quizAll.map(q=>q.id)]);
-  const rows=[...ids].filter(id=>nameOf(id)).map(id=>{
-    const v=votes.find(x=>x.id===id)||{}, q=quizAll.find(x=>x.id===id)||{};
-    return {id,name:nameOf(id),vote:v.choice?DN[v.choice]:"",match:q.best?`${DN[q.best]} ${q.pcts?.[q.best]??""}%`:"",months:(v.months||[]).map(m=>m+"月").join("、")};
-  }).sort((a,b)=>a.name.localeCompare(b.name,"zh"));
-  if(!rows.length){$("#roster").innerHTML='<p class="empty">还没有人报名。填写上面的名字后就会出现在这里。</p>';return;}
-  const voted=rows.filter(r=>r.vote).length, tested=rows.filter(r=>r.match).length;
-  $("#roster").innerHTML=`<p class="sub" style="margin-bottom:8px">共 ${rows.length} 人 · 已投票 ${voted} 人 · 已测试 ${tested} 人</p>
-  <table><thead><tr><th>名字</th><th>投票</th><th>测试匹配</th><th>想去月份</th></tr></thead><tbody>
-  ${rows.map(r=>`<tr class="${r.id===uid?"me":""}"><td>${esc(r.name)}${r.id===uid?"（我）":""}</td><td class="${r.vote?"":"dim"}">${r.vote||"未投"}</td><td class="${r.match?"":"dim"}">${r.match||"未测"}</td><td class="${r.months?"":"dim"}">${esc(r.months)||"—"}</td></tr>`).join("")}
-  </tbody></table>`;
-}
-
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-
-function hasVoted(){ return !!votes.find(v=>v.id===uid)?.choice; }
-let page=1, lastMax=1, holdAdvance=false, toastTimer=null;
-function maxStep(){ return !myName?1 : !hasVoted()?2 : 3; }
-function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2200); }
-function renderSteps(){
-  const m=maxStep();
-  $("#guideStep").setAttribute("aria-disabled",String(m<3));
-  document.querySelectorAll(".stepbtn[data-goto]").forEach(b=>{ const k=+b.dataset.goto;
-    b.classList.toggle("on",k===page); b.classList.toggle("done",k<m&&k!==page); b.disabled=k>m; });
-}
-function showPage(n){
-  if(n===page){ renderSteps(); return; }
-  const from=document.querySelector(`.page[data-page="${page}"]`), to=document.querySelector(`.page[data-page="${n}"]`);
-  page=n; renderSteps();
-  const swap=()=>{ from.hidden=true; from.classList.remove("leave"); to.hidden=false; to.classList.remove("enter"); void to.offsetWidth; to.classList.add("enter"); window.scrollTo(0,0); };
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches||from.hidden){ swap(); return; }
-  from.classList.add("leave"); setTimeout(swap,240);
-}
-// Follow the furthest reachable step when data changes (name saved, vote restored or cancelled).
-function renderGates(){
-  const m=maxStep();
-  if(m!==lastMax){ lastMax=m; if(!holdAdvance) showPage(m); }
-  if(page>m) showPage(m);
-  renderSteps();
-}
-document.addEventListener("click",e=>{ const g=e.target.closest("[data-goto]"); if(g&&+g.dataset.goto<=maxStep()) showPage(+g.dataset.goto); });
-// Vote, then confirm briefly before moving to the results page.
-async function voteAndAdvance(choice){
-  holdAdvance=true;
-  await saveVote({choice});
-  holdAdvance=false;
-  if(choice&&hasVoted()){ toast("已投给"+DN[choice]+" ✓"); setTimeout(()=>{ if(hasVoted()) showPage(3); },900); }
-  else renderGates();
-}
-function renderTally(){
-  const counts={pq:0,nt:0,dn:0}; let total=0;
-  for(const v of votes){ if(counts[v.choice]!=null){counts[v.choice]++;total++;} }
-  const top=total? Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0] : "";
-  const href="guide.html?d="+(top||"pq");
-  document.querySelectorAll("#guideStep,.guideLink").forEach(a=>a.href=href);
-  $("#guideStep").setAttribute("aria-disabled",String(maxStep()<3));
-  $("#tally").innerHTML=`<h3 style="margin:0;font-size:17px">投票情况 · 共 ${total} 票</h3><div class="mbars">${["pq","nt","dn"].map(k=>{const pc=total?Math.round(counts[k]*100/total):0;
-    return `<div class="mbar"><span>${DN[k]}</span><div class="t"><i class="${k===top&&counts[k]?"top":""}" style="width:${pc}%"></i></div><span>${counts[k]} 票</span></div>`;}).join("")}</div>`;
-}
-
-function renderCards(){
-  renderGates();
-  renderTally();
-  const voted=hasVoted();
-  const counts={pq:0,nt:0,dn:0}; let total=0;
-  for(const v of votes){ if(counts[v.choice]!=null){counts[v.choice]++;total++;} }
-  const mine = votes.find(v=>v.id===uid)?.choice;
-  const lead = total? Math.max(...Object.values(counts)) : -1;
-  $("#cards").innerHTML = DESTS.map(d=>{
-    const n=counts[d.id], pct= total? Math.round(n*100/total):0;
-    const season = MONTHS.map((m,i)=>{const k=i+1; const c=d.dry.includes(k)?"ok":d.rain.includes(k)?"rain":""; return `<span class="${c}">${k}</span>`}).join("");
-    return `<article class="card ${mine===d.id?"mine":""}">
-      <div class="ticket">
-        <div class="code">${d.code}${voted&&n===lead&&n>0?" · 目前领先":""}</div>
-        <h3>${d.name}</h3>
-        <div class="vn">${d.vn}</div>
-        <div class="tag">${d.tag}</div>
-        <div class="season" aria-label="月份天气">${season}</div>
-        <div class="legend"><span><i style="background:var(--sea-soft)"></i>旱季</span><span><i style="background:var(--lantern-soft)"></i>雨季/台风</span></div>
-      </div>
-      <div class="body">
-        <div class="list pro"><h4>优点</h4><ul>${d.pros.map(p=>`<li>${p}</li>`).join("")}</ul></div>
-        <div class="list con"><h4>缺点</h4><ul>${d.cons.map(p=>`<li>${p}</li>`).join("")}</ul></div>
-        <div class="fit">${d.fit}</div>
-      </div>
-      <div class="voteRow">
-        ${voted?`<div class="count"><span>${n} 票</span><span>${pct}%</span></div>
-        <div class="bar"><i style="width:${pct}%"></i></div>`:`<div class="count"><span>票数投票后可见</span></div>`}
-        <button class="vote" data-vote="${d.id}" ${!ready()?"disabled":""}>${mine===d.id?"✓ 我投了这里（点击取消）":"投给"+d.name}</button>
-      </div>
-    </article>`;
-  }).join("");
-}
-
-function renderMonths(){
-  const cnt=new Array(12).fill(0);
-  for(const v of votes) (v.months||[]).forEach(m=>{if(m>=1&&m<=12)cnt[m-1]++});
-  const mine = votes.find(v=>v.id===uid)?.months||[];
-  $("#months").innerHTML = MONTHS.map((m,i)=>`<button class="chip ${mine.includes(i+1)?"on":""}" data-month="${i+1}" ${!ready()?"disabled":""}>${m}<span class="n">${cnt[i]||""}</span></button>`).join("");
-}
-
-function renderNotes(){
-  const feed=$("#feed");
-  if(!notes.length){feed.innerHTML='<div class="empty">还没有留言，来写第一条吧。</div>';return;}
-  const sorted=[...notes].sort((a,b)=>(b.at||0)-(a.at||0));
-  const dn={pq:"富国岛",nt:"芽庄",dn:"岘港"};
-  feed.innerHTML = sorted.map(n=>{
-    const name = n.author===uid ? (myName? myName+"（我）":"我") : (people[n.author] || "朋友");
-    const t = n.at? new Date(n.at).toLocaleString("zh-CN",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
-    return `<div class="note" data-d="${esc(n.dest||"")}">
-      <div class="meta"><b>${esc(name)}</b>${n.dest&&dn[n.dest]?`<span>关于 ${dn[n.dest]}</span>`:""}<span>${t}</span>
-      ${n.author===uid?`<button class="del" data-del="${esc(n.id)}">删除</button>`:""}</div>
-      <p>${esc(n.text)}</p></div>`;
-  }).join("");
-}
-
-function renderAll(){renderCards();renderMonths();renderNotes();renderRoster();}
-
-async function myVoteDoc(){ return db.doc("votes/"+uid); }
-function myVote(){ return votes.find(v=>v.id===uid)||{}; }
-
-async function saveVote(patch){
-  const cur=myVote();
-  const body={choice:cur.choice||null, months:cur.months||[], ...patch, at:Date.now()};
-  try{ await (await myVoteDoc()).set(body); }
-  catch(e){ if(e&&e.code==="permission-denied"){canWrite=false;$("#who").textContent="保存失败，请刷新后再试。";toast("保存失败，请刷新后再试");renderAll();} else {$("#monthStatus").textContent="保存失败，请稍后再试。";toast("保存失败，请稍后再试");} }
-}
-
-document.addEventListener("click",async e=>{
-  const v=e.target.closest("[data-vote]");
-  if(v){ const c=v.dataset.vote; await voteAndAdvance(myVote().choice===c? null : c); return; }
-  const m=e.target.closest("[data-month]");
-  if(m){ const k=+m.dataset.month; const cur=new Set(myVote().months||[]); cur.has(k)?cur.delete(k):cur.add(k); await saveVote({months:[...cur].sort((a,b)=>a-b)}); return; }
-  const d=e.target.closest("[data-del]");
-  if(d){ try{ await db.doc("notes/"+d.dataset.del).delete(); }catch(err){ $("#noteStatus").textContent="删除失败。"; } }
-});
-
-$("#noteForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const text=$("#noteText").value.trim();
-  if(!text){$("#noteStatus").textContent="先写点内容再发布。";return;}
-  if(!db||!uid){$("#noteStatus").textContent="登录后才能留言。";return;}
-  if(!myName){$("#noteStatus").textContent="请先在页面顶部填写你是谁。";$("#idName").focus();return;}
-  $("#noteSend").disabled=true;
-  try{
-    await db.collection("notes").add({text, dest:$("#noteDest").value||null, author:uid, at:Date.now()});
-    $("#noteText").value=""; $("#noteStatus").textContent="已发布。";
-  }catch(err){
-    $("#noteStatus").textContent = err&&err.code==="resource-exhausted" ? "留言已满，请先删除一些旧留言。" : "发布失败：你可能只有查看权限。";
-  }
-  $("#noteSend").disabled=false;
-});
-
-/* ---------- 倾向问卷：每个选项给三地加分 pq/nt/dn ---------- */
-const QS = [
-  ["这次旅行你最想做什么？",[["躺着发呆，什么都不想",{pq:3}],["出海跳岛、下水玩",{nt:3}],["逛古城、吃街头小吃",{dn:3}],["都想要一点",{dn:2,nt:1}]]],
-  ["你的预算大概是？",[["宽松，舒服最重要",{pq:3}],["中等，花得值就行",{dn:2,pq:1}],["越省越好",{nt:3}]]],
-  ["你理想的住宿是？",[["海边度假村，带泳池",{pq:3}],["市区酒店，出门就能吃喝",{dn:2,nt:1}],["便宜干净的民宿就够",{nt:2,dn:1}]]],
-  ["你最想拍到什么照片？",[["海上日落",{pq:3}],["会安的灯笼夜景",{dn:3}],["清澈海水和水下鱼群",{nt:3}]]],
-  ["旅行中你最怕什么？",[["怕无聊，没东西玩",{dn:3}],["怕人多、吵闹",{pq:3}],["怕花太多钱",{nt:3}]]],
-  ["晚上你想怎么过？",[["早点休息，听海浪",{pq:3}],["逛夜市吃宵夜",{dn:2,nt:1}],["去酒吧、热闹一点",{nt:2,dn:1}]]],
-  ["你能接受多少交通移动？",[["基本不想动，待在酒店附近",{pq:3}],["走路或打车逛市区",{nt:2,dn:1}],["愿意包车跑远一点的景点",{dn:3}]]],
-  ["你下水的程度是？",[["不太下水，看看海就好",{dn:2,pq:1}],["浮潜一下",{pq:2,nt:1}],["想认真潜水",{nt:3}]]],
-  ["你对历史文化感兴趣吗？",[["很感兴趣",{dn:3}],["一般，有就看看",{nt:1,dn:1,pq:1}],["不感兴趣",{pq:2,nt:1}]]],
-  ["你能玩几天？",[["3 到 4 天",{nt:2,dn:1}],["5 到 6 天",{dn:2,pq:1}],["7 天以上",{pq:2,dn:1}]]],
-  ["跨年夜你想怎么过？",[["海边看烟花倒数",{pq:2,nt:1}],["去酒吧或海滩派对，玩到天亮",{nt:3}],["在古城或河边，安静一点跨年",{dn:3}],["四个人在别墅里自己开派对",{pq:3}]]],
-  ["住宿你想怎么安排？",[["四个人包一栋带泳池的别墅",{pq:3}],["两间海景房，住海边高楼酒店",{nt:2,pq:1}],["两间市区酒店房，出门就能吃喝逛",{dn:2,nt:1}]]],
-  ["吃的方面你更期待？",[["海鲜大餐",{nt:3}],["越南街头小吃，河粉、法棍",{dn:3}],["酒店里舒舒服服吃",{pq:3}]]],
-  ["对缆车、乐园这类项目？",[["想去山上看风景、坐缆车",{dn:3}],["想去海上乐园、跨海缆车",{pq:2,nt:1}],["不太感兴趣",{nt:1,pq:1}]]],
-  ["对中国游客多不多，你介意吗？",[["多点好，中文方便",{nt:3}],["无所谓",{dn:1,pq:1,nt:1}],["希望少一点",{pq:2,dn:1}]]]
+// Static trip facts (no real names or booking codes on this public page)
+const FLIGHTS = [
+  { who: "m1", inb: "12/29 晚 台北 → 胡志明（航班待补充）", out: "1/3 胡志明 → 首尔（待补充）" },
+  { who: "m3", inb: "12/30 VJ5011 浦东 T2 02:15 → 新山一 T2 05:40", out: "1/3 9G634 新山一 T2 21:45 → 浦东 1/4 02:45" },
+  { who: "m4", inb: "12/30 VJ5011 浦东 T2 02:15 → 新山一 T2 05:40", out: "1/3 9G634 新山一 T2 21:45 → 浦东 1/4 02:45" },
+  { who: "m2", inb: "12/30 CZ6089 白云 T2 23:30 → 新山一 T2 12/31 01:20", out: "1/4 CZ6090 新山一 T2 02:25 → 白云 06:20" },
 ];
-const DN = {pq:"富国岛",nt:"芽庄",dn:"岘港"};
-const WHY = {
-  pq:"你更看重安静、舒服和海景，富国岛的度假村和日落最对你胃口。11 月到 4 月去最好。",
-  nt:"你想玩水、想吃海鲜、也在意花费，芽庄的跳岛游和性价比最适合你。避开 10 到 12 月。",
-  dn:"你什么都想体验一点，岘港能把海滩、会安古城和巴拿山串起来，玩法最丰富。2 到 5 月最舒服。"
-};
-let qi=0, answers=new Array(QS.length).fill(null), quizDone=false, quizAll=[];
-function score(ans){const s={pq:0,nt:0,dn:0};ans.forEach((a,i)=>{if(a==null)return;const w=QS[i][1][a][1];for(const k in w)s[k]+=w[k];});return s;}
-function pcts(s){const t=s.pq+s.nt+s.dn||1;return {pq:Math.round(s.pq*100/t),nt:Math.round(s.nt*100/t),dn:Math.round(s.dn*100/t)};}
-function best(s){return Object.keys(s).sort((a,b)=>s[b]-s[a])[0];}
-function bars(p,top){return `<div class="mbars">${["pq","nt","dn"].map(k=>`<div class="mbar"><span>${DN[k]}</span><div class="t"><i class="${k===top?"top":""}" style="width:${p[k]}%"></i></div><span>${p[k]}%</span></div>`).join("")}</div>`;}
+const HOTELS = [
+  { when: "12/29（1 晚）", name: "胡志明第一郡酒店（名字待补充）", q: "Nguyen Hue Walking Street" },
+  { when: "12/31（1 晚）", name: "芽庄凯悦 Hyatt Regency Nha Trang", q: "Hyatt Regency Nha Trang" },
+  { when: "1/1 – 1/3（2 晚）", name: "金兰湾 Fusion Resort Cam Ranh", q: "Fusion Resort Cam Ranh" },
+];
+const PERSONAL = [
+  ["passport", "护照有效期 6 个月以上"], ["visa", "越南电子签 / 确认免签"], ["ticket", "机票已出票"],
+  ["esim", "越南 eSIM / 流量"], ["grab", "装好 Grab"], ["cash", "换一些越南盾"],
+  ["insurance", "旅行保险"], ["adapter", "转换头、充电宝"], ["beach", "泳衣、防晒、拖鞋"], ["meds", "常用药"],
+];
+const GROUP = [
+  ["bus1231", "12/31 胡志明 → 芽庄大巴票（03:30 后）"], ["cxr0103", "1/3 金兰 → 胡志明机票（17:00 前到）"],
+  ["island", "1/1 跳岛游预订（问清停航怎么退）"], ["hcmc", "12/29 胡志明酒店：登记入住人数、问夜里取行李"],
+  ["hyatt", "芽庄凯悦：房间怎么分"], ["fusion", "Fusion：房间怎么分"],
+];
 
-function renderGroup(){
-  const done=quizAll.filter(r=>r.best);
-  if(!done.length) return `<div class="group"><h3>大家的测试结果</h3><p class="why">还没有人完成测试。</p></div>`;
-  const cnt={pq:0,nt:0,dn:0}, sum={pq:0,nt:0,dn:0};
-  done.forEach(r=>{cnt[r.best]=(cnt[r.best]||0)+1; const p=r.pcts||{}; for(const k in sum) sum[k]+=p[k]||0;});
-  const avg={}; for(const k in sum) avg[k]=Math.round(sum[k]/done.length);
-  const top=best(avg);
-  return `<div class="group"><h3>大家的测试结果（${done.length} 人完成）</h3>
-    <p class="why">平均倾向最高的是 <b>${DN[top]}</b>。匹配人数：富国岛 ${cnt.pq} 人，芽庄 ${cnt.nt} 人，岘港 ${cnt.dn} 人。</p>${bars(avg,top)}</div>`;
+let db = null, uid = null, settings = DEFAULT_SETTINGS, expenses = [], checks = {}, me = "";
+try { me = localStorage.getItem("trip-me") || ""; } catch (e) {}
+let toastTimer = null;
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2000); }
+const nm = id => settings.members?.[id] || id;
+const rate = c => c === "CNY" ? 1 : (settings.rates?.[c] || DEFAULT_SETTINGS.rates[c]);
+const toCNY = (amt, c) => amt / rate(c);
+const fmt = (n, c) => c === "VND" || c === "KRW" ? Math.round(n).toLocaleString("zh-CN") : (Math.round(n * 100) / 100).toLocaleString("zh-CN");
+const ready = () => !!(db && uid);
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+function showTab(t) {
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== t);
+  try { localStorage.setItem("trip-tab", t); } catch (e) {}
 }
+try { const t = localStorage.getItem("trip-tab"); if (t) showTab(t); } catch (e) {}
 
-function renderQuiz(){
-  const el=$("#quiz");
-  if(quizDone){
-    const s=score(answers), p=pcts(s), b=best(s);
-    el.innerHTML=`<div class="qhead"><h2>测试结果</h2><span class="qnum">${QS.length} / ${QS.length}</span></div>
-      <div class="result"><p class="big">你最适合去 <em>${DN[b]}</em></p>${bars(p,b)}<p class="why">${WHY[b]}</p>
-      <div class="qnav"><button class="ghost" id="qRedo">重新测一次</button>${ready()?(myVote().choice===b?`<button class="primary" disabled>已投给${DN[b]} ✓</button>`:`<button class="primary" id="qVote">把我的一票投给${DN[b]}</button>`):""}</div></div>${hasVoted()?renderGroup():""}`;
-    return;
-  }
-  if(db&&uid&&!myName){
-    el.innerHTML=`<div class="qhead"><div><h2>测一测：你适合去哪里？</h2><p class="sub">${QS.length} 道题，大约 2 分钟。</p></div></div>
-      <div class="gate">请先在上面填写 <b>你是谁</b>，再开始答题。这样你的结果才会算进大家的统计里。</div>${hasVoted()&&quizAll.some(r=>r.best)?renderGroup():""}`;
-    return;
-  }
-  const [q,opts]=QS[qi];
-  el.innerHTML=`<div class="qhead"><div><h2>测一测：你适合去哪里？</h2><p class="sub">${QS.length} 道题，大约 2 分钟。答完会告诉你最适合哪个地方。</p></div><span class="qnum">第 ${qi+1} / ${QS.length} 题</span></div>
-    <div class="prog"><i style="width:${qi*100/QS.length}%"></i></div>
-    <p class="qtext">${q}</p>
-    <div class="opts">${opts.map((o,j)=>`<button class="opt ${answers[qi]===j?"on":""}" data-opt="${j}">${o[0]}</button>`).join("")}</div>
-    <div class="qnav"><button class="ghost" id="qPrev" ${qi===0?"disabled":""}>上一题</button></div>
-    ${hasVoted()&&quizAll.some(r=>r.best)?renderGroup():""}`;
+/* ---------- info ---------- */
+function renderCountdown() {
+  const d = Math.ceil((new Date("2026-12-29T00:00:00+07:00") - Date.now()) / 86400000);
+  $("#countdown").textContent = d > 0 ? `还有 ${d} 天` : d === 0 ? "就是今天！" : "旅行中 / 已结束";
 }
-
-$("#quiz").addEventListener("click",async e=>{
-  const o=e.target.closest("[data-opt]");
-  if(o){ answers[qi]=+o.dataset.opt;
-    if(qi<QS.length-1){qi++;renderQuiz();}
-    else { quizDone=true; renderQuiz(); await saveQuiz(); }
-    return; }
-  if(e.target.id==="qPrev"&&qi>0){qi--;renderQuiz();return;}
-  if(e.target.id==="qRedo"){qi=0;answers=new Array(QS.length).fill(null);quizDone=false;renderQuiz();return;}
-  if(e.target.id==="qVote"){ await voteAndAdvance(best(score(answers))); renderQuiz(); }
+function renderInfo() {
+  $("#meSel").innerHTML = `<option value="">— 选一下 —</option>` + IDS.map(id => `<option value="${id}" ${id === me ? "selected" : ""}>${esc(nm(id))}</option>`).join("");
+  $("#flights").innerHTML = FLIGHTS.map(f => `<div class="flight"><b>${esc(nm(f.who))}</b><span>去：${f.inb}</span><span class="muted">回：${f.out}</span></div>`).join("");
+  $("#hotels").innerHTML = HOTELS.map(h => `<div class="flight"><span class="pill">${h.when}</span><b>${h.name}</b><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.q)}" target="_blank" rel="noopener">📍 Google Maps 导航</a></div>`).join("");
+  const r = settings.rates, when = settings.ratesAt ? new Date(settings.ratesAt).toLocaleDateString("zh-CN") : "默认估算";
+  const line = `1 元人民币 ≈ ${fmt(r.VND, "VND")} 越南盾 ≈ ${fmt(r.KRW, "KRW")} 韩元（${when}）`;
+  $("#rateLine").textContent = line; $("#rateLine2").textContent = line;
+  $("#nameEdit").innerHTML = IDS.map(id => `<div class="row"><span class="muted" style="width:56px">成员 ${id.slice(1)}</span><input type="text" maxlength="20" data-name="${id}" value="${esc(nm(id))}" style="flex:1"></div>`).join("");
+  convert();
+}
+function convert() {
+  const c = parseFloat($("#cnyIn").value), v = parseFloat($("#vndIn").value);
+  $("#vndOut").textContent = isFinite(c) ? fmt(c * rate("VND"), "VND") + " ₫" : "—";
+  $("#cnyOut").textContent = isFinite(v) ? "¥" + fmt(v / rate("VND"), "CNY") : "—";
+}
+$("#cnyIn").addEventListener("input", convert); $("#vndIn").addEventListener("input", convert);
+$("#meSel").addEventListener("change", e => { me = e.target.value; try { localStorage.setItem("trip-me", me); } catch (er) {} renderAll(); });
+$("#saveNames").addEventListener("click", async () => {
+  if (!ready()) return toast("还没连上数据库");
+  const members = {}; for (const id of IDS) { const v = document.querySelector(`[data-name="${id}"]`).value.trim().slice(0, 20); members[id] = v || DEFAULT_SETTINGS.members[id]; }
+  try { await saveSettings({ members }); toast("名字已保存"); } catch (e) { toast("保存失败，请稍后再试"); }
+});
+async function saveSettings(patch) {
+  const next = { members: settings.members, rates: settings.rates, ratesAt: settings.ratesAt || 0, ...patch, at: Date.now() };
+  await db.doc("meta/settings").set(next);
+}
+$("#refreshRates").addEventListener("click", async () => {
+  if (!ready()) return toast("还没连上数据库");
+  $("#refreshRates").disabled = true;
+  try {
+    const r = await (await fetch("https://open.er-api.com/v6/latest/CNY")).json();
+    if (r.result !== "success") throw new Error("rate api");
+    await saveSettings({ rates: { VND: r.rates.VND, KRW: r.rates.KRW, USD: r.rates.USD }, ratesAt: Date.now() });
+    toast("汇率已更新");
+  } catch (e) { toast("汇率获取失败，先用原来的"); }
+  $("#refreshRates").disabled = false;
 });
 
-async function saveQuiz(){
-  if(!ready()) return;
-  const s=score(answers);
-  try{ await db.doc("quiz/"+uid).set({answers, scores:s, pcts:pcts(s), best:best(s), at:Date.now()}); }catch(e){}
+/* ---------- checklist ---------- */
+function renderChecklist() {
+  let h = `<div></div>` + IDS.map(id => `<div class="h ${id === me ? "me" : ""}">${esc(nm(id))}</div>`).join("");
+  for (const [k, label] of PERSONAL) {
+    h += `<div>${label}</div>` + IDS.map(id => `<label><input type="checkbox" data-p="${id}" data-k="${k}" ${checks[id]?.[k] ? "checked" : ""} ${ready() ? "" : "disabled"} aria-label="${esc(nm(id))}：${label}"></label>`).join("");
+  }
+  h += `<div class="prog">完成</div>` + IDS.map(id => { const n = PERSONAL.filter(([k]) => checks[id]?.[k]).length; return `<div class="prog">${n}/${PERSONAL.length}</div>`; }).join("");
+  $("#personal").innerHTML = h;
+  const g = checks.group || {};
+  $("#group").innerHTML = GROUP.map(([k, label]) => {
+    const it = g[k] || {}; return `<div class="task ${it.done ? "done" : ""}">
+      <input type="checkbox" data-g="${k}" ${it.done ? "checked" : ""} ${ready() ? "" : "disabled"} aria-label="${label}">
+      <span class="t">${label}</span>
+      <select data-owner="${k}" ${ready() ? "" : "disabled"} aria-label="谁负责"><option value="">谁负责</option>${IDS.map(id => `<option value="${id}" ${it.owner === id ? "selected" : ""}>${esc(nm(id))}</option>`).join("")}</select></div>`;
+  }).join("");
+}
+document.addEventListener("change", async e => {
+  const t = e.target;
+  try {
+    if (t.dataset.p) {
+      const items = { ...(checks[t.dataset.p] || {}), [t.dataset.k]: t.checked };
+      await db.doc("checklist/" + t.dataset.p).set({ items, at: Date.now() });
+    } else if (t.dataset.g || t.dataset.owner) {
+      const k = t.dataset.g || t.dataset.owner, cur = (checks.group || {})[k] || {};
+      const next = t.dataset.g ? { done: t.checked, owner: cur.owner || "" } : { done: !!cur.done, owner: t.value };
+      await db.doc("checklist/group").set({ items: { ...(checks.group || {}), [k]: next }, at: Date.now() });
+    }
+  } catch (err) { if (t.dataset.p || t.dataset.g || t.dataset.owner) { toast("保存失败，请稍后再试"); renderChecklist(); } }
+});
+
+/* ---------- AA ---------- */
+let split = new Set(IDS);
+function renderForm() {
+  const payer = $("#expPayer").value || me || "m1";
+  $("#expPayer").innerHTML = IDS.map(id => `<option value="${id}" ${id === payer ? "selected" : ""}>${esc(nm(id))}</option>`).join("");
+  $("#expSplit").innerHTML = IDS.map(id => `<button type="button" class="chip ${split.has(id) ? "on" : ""}" data-split="${id}" aria-pressed="${split.has(id)}">${esc(nm(id))}</button>`).join("");
+  $("#expAdd").disabled = !ready();
+}
+$("#expSplit").addEventListener("click", e => { const b = e.target.closest("[data-split]"); if (!b) return; const id = b.dataset.split; split.has(id) ? split.delete(id) : split.add(id); renderForm(); });
+$("#expForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const title = $("#expTitle").value.trim(), amount = parseFloat($("#expAmt").value), currency = $("#expCur").value;
+  if (!title) return toast("先写花在什么上");
+  if (!(amount > 0)) return toast("金额要大于 0");
+  if (!split.size) return toast("至少选一个人来分");
+  $("#expAdd").disabled = true;
+  try {
+    await db.collection("expenses").add({ title: title.slice(0, 60), amount, currency, payer: $("#expPayer").value, split: IDS.filter(id => split.has(id)), at: Date.now(), by: uid });
+    $("#expTitle").value = ""; $("#expAmt").value = ""; toast("已记账");
+  } catch (err) { toast("保存失败，请稍后再试"); }
+  $("#expAdd").disabled = !ready();
+});
+$("#expList").addEventListener("click", async e => {
+  const b = e.target.closest("[data-del]"); if (!b) return;
+  if (!confirm("删除这笔账？")) return;
+  try { await db.doc("expenses/" + b.dataset.del).delete(); toast("已删除"); } catch (err) { toast("删除失败"); }
+});
+// Net balance per member in CNY, then greedily match debtors to creditors.
+function settle() {
+  const bal = Object.fromEntries(IDS.map(id => [id, 0])), paid = { ...bal }, share = { ...bal }; let total = 0;
+  for (const x of expenses) {
+    const cny = toCNY(x.amount, x.currency), parts = (x.split || []).filter(id => IDS.includes(id)); if (!parts.length) continue;
+    total += cny; paid[x.payer] += cny; bal[x.payer] += cny;
+    for (const id of parts) { share[id] += cny / parts.length; bal[id] -= cny / parts.length; }
+  }
+  const cred = IDS.filter(id => bal[id] > 0.005).map(id => [id, bal[id]]).sort((a, b) => b[1] - a[1]);
+  const debt = IDS.filter(id => bal[id] < -0.005).map(id => [id, -bal[id]]).sort((a, b) => b[1] - a[1]);
+  const xfers = []; let i = 0, j = 0;
+  while (i < debt.length && j < cred.length) {
+    const m = Math.min(debt[i][1], cred[j][1]); if (m > 0.005) xfers.push([debt[i][0], cred[j][0], m]);
+    debt[i][1] -= m; cred[j][1] -= m; if (debt[i][1] < 0.005) i++; if (cred[j][1] < 0.005) j++;
+  }
+  return { total, paid, share, bal, xfers };
+}
+function renderAA() {
+  const s = settle();
+  $("#aaTotal").textContent = expenses.length ? `共 ${expenses.length} 笔，合计 ¥${fmt(s.total, "CNY")}，人均 ¥${fmt(s.total / 4, "CNY")}（按实际参与的人分）` : "记了账以后，这里会算出谁该转给谁。";
+  $("#transfers").innerHTML = s.xfers.length ? s.xfers.map(([a, b, m]) => `<div class="xfer">${esc(nm(a))} → ${esc(nm(b))}：¥${fmt(m, "CNY")}</div>`).join("") : (expenses.length ? `<p class="empty">已经平账了 🎉</p>` : "");
+  $("#balances").innerHTML = expenses.length ? `<span class="muted">成员</span><span class="muted" style="text-align:right">已付 / 应摊</span><span class="muted" style="text-align:right">差额</span>` +
+    IDS.map(id => `<span>${esc(nm(id))}${id === me ? "（我）" : ""}</span><span style="text-align:right">¥${fmt(s.paid[id], "CNY")} / ¥${fmt(s.share[id], "CNY")}</span><span class="${s.bal[id] >= 0 ? "pos" : "neg"}">${s.bal[id] >= 0 ? "+" : "−"}¥${fmt(Math.abs(s.bal[id]), "CNY")}</span>`).join("") : "";
+  const list = [...expenses].sort((a, b) => (b.at || 0) - (a.at || 0));
+  $("#expList").innerHTML = list.length ? list.map(x => `<div class="exp">
+    <span>${esc(x.title)}</span><span class="amt">${SYM[x.currency] || ""}${fmt(x.amount, x.currency)}</span>
+    <span class="meta">${esc(nm(x.payer))} 付 · ${(x.split || []).length === 4 ? "四人平分" : (x.split || []).map(nm).map(esc).join("、") + " 分"} · ${new Date(x.at).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })}</span>
+    <span class="meta" style="text-align:right">${x.currency === "CNY" ? "" : "≈ ¥" + fmt(toCNY(x.amount, x.currency), "CNY")}</span>
+    ${x.by === uid ? `<span></span><button class="del" data-del="${esc(x.id)}">删除</button>` : ""}</div>`).join("") : `<p class="empty">还没有记账。</p>`;
 }
 
-renderId();
-renderQuiz();
-renderAll();
+function renderAll() { renderInfo(); renderChecklist(); renderForm(); renderAA(); }
+renderCountdown(); setInterval(renderCountdown, 3600000); renderAll();
 
-function loadScript(src){
-  return new Promise((resolve,reject)=>{
-    const el=document.createElement("script");
-    el.src=src; el.async=false;
-    el.onload=resolve; el.onerror=()=>reject(new Error("load failed: "+src));
-    document.head.appendChild(el);
-  });
-}
-
-(async function start(){
-  const FAIL="无法连接数据库。如果你在中国大陆，可能需要开启 VPN。";
-  let connected=false, subscribed=false;
-  const fail=()=>{ $("#who").textContent=FAIL; };
-  // One 10 s budget covers script loading, anonymous sign-in and the first snapshot.
-  const timer=setTimeout(()=>{ if(!connected) fail(); },10000);
-  $("#who").textContent="正在连接投票数据…";
-  const SDK="https://www.gstatic.com/firebasejs/10.12.2/";
-  try{
-    for(const src of [SDK+"firebase-app-compat.js",SDK+"firebase-auth-compat.js",SDK+"firebase-firestore-compat.js","firebase-config.js"])
-      await loadScript(src);
-  }catch(e){ clearTimeout(timer); fail(); return; }
-  if(!window.firebase||!window.FIREBASE_CONFIG){ clearTimeout(timer); fail(); return; }
-  try{ firebase.initializeApp(window.FIREBASE_CONFIG); }catch(e){ clearTimeout(timer); fail(); return; }
-  firebase.auth().onAuthStateChanged(u=>{
-    if(!u||subscribed) return;
-    subscribed=true; uid=u.uid; db=firebase.firestore(); canWrite=true;
-    db.collection("votes").onSnapshot(s=>{
-      if(!connected){ connected=true; clearTimeout(timer); $("#who").textContent="已连接。每人一票，可以随时改。"; }
-      votes=s.docs.map(d=>({id:d.id,...d.data()})); renderCards(); renderMonths(); renderRoster(); renderQuiz();
+/* ---------- Firebase: load in background, anonymous sign-in, live data ---------- */
+function loadScript(src) { return new Promise((res, rej) => { const el = document.createElement("script"); el.src = src; el.async = false; el.onload = res; el.onerror = () => rej(new Error(src)); document.head.appendChild(el); }); }
+(async function start() {
+  const FAIL = "无法连接数据库。如果你在中国大陆，可能需要开启 VPN。";
+  let connected = false, subscribed = false;
+  const fail = () => { $("#who").textContent = FAIL; };
+  const timer = setTimeout(() => { if (!connected) fail(); }, 10000);
+  const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
+  try { for (const s of [SDK + "firebase-app-compat.js", SDK + "firebase-auth-compat.js", SDK + "firebase-firestore-compat.js", "firebase-config.js"]) await loadScript(s); }
+  catch (e) { clearTimeout(timer); fail(); return; }
+  try { firebase.initializeApp(window.FIREBASE_CONFIG); } catch (e) { clearTimeout(timer); fail(); return; }
+  firebase.auth().onAuthStateChanged(u => {
+    if (!u || subscribed) return;
+    subscribed = true; uid = u.uid; db = firebase.firestore();
+    db.doc("meta/settings").onSnapshot(d => {
+      if (!connected) { connected = true; clearTimeout(timer); $("#who").textContent = "已连接，四个人看到的是同一份数据。"; }
+      if (d.exists) settings = { ...DEFAULT_SETTINGS, ...d.data() };
+      else db.doc("meta/settings").set({ ...DEFAULT_SETTINGS, at: Date.now() }).catch(() => {});
+      renderAll();
     }, fail);
-    db.collection("quiz").onSnapshot(s=>{ quizAll=s.docs.map(d=>({id:d.id,...d.data()}));
-      const mine=quizAll.find(r=>r.id===uid);
-      if(mine&&Array.isArray(mine.answers)&&mine.answers.length===QS.length&&!quizDone&&answers.every(a=>a==null)){answers=mine.answers.slice();quizDone=true;}
-      renderQuiz(); renderRoster(); }, fail);
-    db.collection("people").onSnapshot(s=>{
-      people={}; s.docs.forEach(d=>{const n=d.data()?.name; if(typeof n==="string"&&n) people[d.id]=n.slice(0,20);});
-      if(uid&&people[uid]&&!myName) myName=people[uid];
-      renderId(); renderAll(); renderQuiz();
-    }, fail);
-    db.collection("notes").onSnapshot(s=>{ notes=s.docs.map(d=>({id:d.id,...d.data()})); renderNotes(); }, fail);
+    db.collection("expenses").onSnapshot(s => { expenses = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAA(); }, fail);
+    db.collection("checklist").onSnapshot(s => { checks = {}; s.docs.forEach(d => { checks[d.id] = d.data().items || {}; }); renderChecklist(); }, fail);
     renderAll();
   });
-  firebase.auth().signInAnonymously().catch(()=>{ clearTimeout(timer); fail(); });
-})()
+  firebase.auth().signInAnonymously().catch(() => { clearTimeout(timer); fail(); });
+})();
 </script>
-
-</body></html>
+</body>
+</html>
