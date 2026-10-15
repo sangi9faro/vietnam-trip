@@ -31,7 +31,7 @@ button,input,select{font:inherit;color:inherit}
 .links{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
 .links b{color:var(--ink);font-size:15px}
 .tabs{display:flex;gap:6px}
-.tab{flex:1;border:0;border-radius:980px;padding:7px 10px;font-weight:600;font-size:14px;background:var(--surface);color:var(--muted);box-shadow:var(--shadow);cursor:pointer}
+.tab{flex:1;border:0;border-radius:980px;padding:7px 6px;font-weight:600;font-size:13.5px;white-space:nowrap;background:var(--surface);color:var(--muted);box-shadow:var(--shadow);cursor:pointer}
 .tab.on{background:var(--sea);color:#fff}
 .wrap{max-width:760px;margin:0 auto;padding:16px 16px 64px;display:grid;gap:14px}
 .card{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:16px;display:grid;gap:10px}
@@ -91,6 +91,10 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
 .bal .pos{color:var(--green);font-weight:700;text-align:right} .bal .neg{color:var(--red);font-weight:700;text-align:right}
 .xfer{background:var(--green-soft);border-radius:12px;padding:10px 12px;font-weight:600}
 .empty{color:var(--muted);font-size:14px}
+.lk{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.lk:first-of-type{border-top:0}
+.lk a.t{font-weight:600;font-size:15px;word-break:break-word}
+.lk .meta{font-size:12.5px;color:var(--muted)}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:980px;font-weight:600;font-size:14px;transition:opacity .25s,transform .25s;pointer-events:none;z-index:30;white-space:nowrap}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 /* ---------- Splash: cinematic Nha Trang photo loop, tap to enter ---------- */
@@ -151,6 +155,7 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
     <button class="tab on" data-tab="info" role="tab">基础信息</button>
     <button class="tab" data-tab="check" role="tab">准备清单</button>
     <button class="tab" data-tab="aa" role="tab">AA 记账</button>
+    <button class="tab" data-tab="links" role="tab">攻略收藏</button>
   </div>
 </div></header>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -192,7 +197,7 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
         <dt>护照</dt><dd>有效期 6 个月以上。</dd>
       </dl>
       <p class="sub">注意：网上有很多名字相似的代办网站，收费高，认准 evisa.gov.vn。</p>
-      <a class="btn ghost small" href="https://xhslink.cn/o/1snawsvsDZx" target="_blank" rel="noopener" style="justify-self:start">📕 小红书：越南电子签证指南（2026 最新版）</a>
+      <p class="sub">签证攻略在「攻略收藏」里。</p>
     </div>
 
     <div class="card">
@@ -301,6 +306,21 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
       <div class="row"><span class="sub" id="rateLine2">—</span><button class="btn ghost small" id="refreshRates">更新成最新汇率</button></div>
     </div>
   </section>
+
+  <!-- ================= 攻略收藏 ================= -->
+  <section data-panel="links" class="wrap" style="padding:0" hidden>
+    <div class="card">
+      <h2>加一条攻略</h2>
+      <p class="sub">把小红书的分享内容整段粘贴进来就行，会自动识别链接和标题。其他网站的链接也可以。</p>
+      <form class="form" id="lkForm">
+        <textarea id="lkText" rows="3" placeholder="例如：越南电子签证指南｜小白友好… https://xhslink.cn/… 打开【小红书】…" aria-label="分享内容或链接" style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;color:inherit;resize:vertical"></textarea>
+        <input type="text" id="lkTitle" maxlength="80" placeholder="标题（可不填）" aria-label="标题">
+        <div class="chips" id="lkTags"></div>
+        <button class="btn" id="lkAdd" type="submit">收藏</button>
+      </form>
+    </div>
+    <div id="lkList"><div class="card"><p class="empty">还没有收藏。</p></div></div>
+  </section>
 </main>
 
 <script>
@@ -318,7 +338,7 @@ const FLIGHTS = [
   { who: "m2", inb: "12/30 CZ6089 白云 T2 23:30 → 新山一 T2 12/31 01:20", out: "1/4 CZ6090 新山一 T2 02:25 → 白云 06:20" },
 ];
 const HOTELS = [
-  { when: "12/29（1 晚）", name: "胡志明第一郡酒店（名字待补充）", q: "Nguyen Hue Walking Street" },
+  { when: "12/29（1 晚）", name: "M Village 快捷酒店 南圻起义街（Express by M Village Nam Ky Khoi Nghia）", q: "Express by M Village Nam Ky Khoi Nghia", addr: "214 Nam Ky Khoi Nghia, Vo Thi Sau, 第三郡", note: "工作室房，1.6 米大床，有厨房。⚠️ 还没订（只收藏了）；页面上是 2 人，陈性情、王大气 12/30 早上也会来，订的时候按实际人数登记。北京时间 12/24 15:00 前可免费取消。" },
   { when: "12/31（1 晚）", name: "芽庄凯悦 Hyatt Regency Nha Trang", q: "Hyatt Regency Nha Trang" },
   { when: "1/1 – 1/3（2 晚）", name: "金兰湾 Fusion Resort Cam Ranh", q: "Fusion Resort Cam Ranh" },
 ];
@@ -329,11 +349,11 @@ const PERSONAL = [
 ];
 const GROUP = [
   ["bus1231", "12/31 胡志明 → 芽庄大巴票（03:30 后）"], ["cxr0103", "1/3 金兰 → 胡志明机票（17:00 前到）"],
-  ["island", "1/1 跳岛游预订（问清停航怎么退）"], ["hcmc", "12/29 胡志明酒店：登记入住人数、问夜里取行李"],
+  ["island", "1/1 跳岛游预订（问清停航怎么退）"], ["hcmc", "12/29 胡志明 M Village：预订（按 3 人登记）、问夜里取行李"],
   ["hyatt", "芽庄凯悦：房间怎么分"], ["fusion", "Fusion：房间怎么分"],
 ];
 
-let db = null, uid = null, settings = DEFAULT_SETTINGS, expenses = [], checks = {}, me = "";
+let db = null, uid = null, settings = DEFAULT_SETTINGS, expenses = [], checks = {}, checksLoaded = false, me = "";
 try { me = localStorage.getItem("trip-me") || ""; } catch (e) {}
 let toastTimer = null;
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2000); }
@@ -433,7 +453,7 @@ function renderCountdown() {
 function renderInfo() {
   $("#meSel").innerHTML = `<option value="">— 选一下 —</option>` + IDS.map(id => `<option value="${id}" ${id === me ? "selected" : ""}>${esc(nm(id))}</option>`).join("");
   $("#flights").innerHTML = FLIGHTS.map(f => `<div class="flight"><b>${esc(nm(f.who))}</b><span>去：${f.inb}</span><span class="muted">回：${f.out}</span></div>`).join("");
-  $("#hotels").innerHTML = HOTELS.map(h => `<div class="flight"><span class="pill">${h.when}</span><b>${h.name}</b><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.q)}" target="_blank" rel="noopener">📍 Google Maps 导航</a></div>`).join("");
+  $("#hotels").innerHTML = HOTELS.map(h => `<div class="flight"><span class="pill">${h.when}</span><b>${h.name}</b>${h.addr ? `<span class="muted">${h.addr}</span>` : ""}${h.note ? `<span>${h.note}</span>` : ""}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.q)}" target="_blank" rel="noopener">📍 Google Maps 导航</a></div>`).join("");
   const r = settings.rates, when = settings.ratesAt ? new Date(settings.ratesAt).toLocaleDateString("zh-CN") : "默认估算";
   const line = `1 元人民币 ≈ ${fmt(r.VND, "VND")} 越南盾 ≈ ${fmt(r.KRW, "KRW")} 韩元（${when}）`;
   $("#rateLine").textContent = line; $("#rateLine2").textContent = line;
@@ -472,28 +492,28 @@ $("#refreshRates").addEventListener("click", async () => {
 function renderChecklist() {
   let h = `<div></div>` + IDS.map(id => `<div class="h ${id === me ? "me" : ""}">${esc(nm(id))}</div>`).join("");
   for (const [k, label] of PERSONAL) {
-    h += `<div>${label}</div>` + IDS.map(id => `<label><input type="checkbox" data-p="${id}" data-k="${k}" ${checks[id]?.[k] ? "checked" : ""} ${ready() ? "" : "disabled"} aria-label="${esc(nm(id))}：${label}"></label>`).join("");
+    h += `<div>${label}</div>` + IDS.map(id => `<label><input type="checkbox" data-p="${id}" data-k="${k}" ${checks[id]?.[k] ? "checked" : ""} ${ready() && checksLoaded ? "" : "disabled"} aria-label="${esc(nm(id))}：${label}"></label>`).join("");
   }
   h += `<div class="prog">完成</div>` + IDS.map(id => { const n = PERSONAL.filter(([k]) => checks[id]?.[k]).length; return `<div class="prog">${n}/${PERSONAL.length}</div>`; }).join("");
   $("#personal").innerHTML = h;
   const g = checks.group || {};
   $("#group").innerHTML = GROUP.map(([k, label]) => {
     const it = g[k] || {}; return `<div class="task ${it.done ? "done" : ""}">
-      <input type="checkbox" data-g="${k}" ${it.done ? "checked" : ""} ${ready() ? "" : "disabled"} aria-label="${label}">
+      <input type="checkbox" data-g="${k}" ${it.done ? "checked" : ""} ${ready() && checksLoaded ? "" : "disabled"} aria-label="${label}">
       <span class="t">${label}</span>
-      <select data-owner="${k}" ${ready() ? "" : "disabled"} aria-label="谁负责"><option value="">谁负责</option>${IDS.map(id => `<option value="${id}" ${it.owner === id ? "selected" : ""}>${esc(nm(id))}</option>`).join("")}</select></div>`;
+      <select data-owner="${k}" ${ready() && checksLoaded ? "" : "disabled"} aria-label="谁负责"><option value="">谁负责</option>${IDS.map(id => `<option value="${id}" ${it.owner === id ? "selected" : ""}>${esc(nm(id))}</option>`).join("")}</select></div>`;
   }).join("");
 }
 document.addEventListener("change", async e => {
   const t = e.target;
   try {
     if (t.dataset.p) {
-      const items = { ...(checks[t.dataset.p] || {}), [t.dataset.k]: t.checked };
-      await db.doc("checklist/" + t.dataset.p).set({ items, at: Date.now() });
+      // Merge only the changed box so two people ticking at once can't wipe each other's ticks
+      await db.doc("checklist/" + t.dataset.p).set({ items: { [t.dataset.k]: t.checked }, at: Date.now() }, { merge: true });
     } else if (t.dataset.g || t.dataset.owner) {
       const k = t.dataset.g || t.dataset.owner, cur = (checks.group || {})[k] || {};
       const next = t.dataset.g ? { done: t.checked, owner: cur.owner || "" } : { done: !!cur.done, owner: t.value };
-      await db.doc("checklist/group").set({ items: { ...(checks.group || {}), [k]: next }, at: Date.now() });
+      await db.doc("checklist/group").set({ items: { [k]: next }, at: Date.now() }, { merge: true });
     }
   } catch (err) { if (t.dataset.p || t.dataset.g || t.dataset.owner) { toast("保存失败，请稍后再试"); renderChecklist(); } }
 });
@@ -556,7 +576,47 @@ function renderAA() {
     ${x.by === uid ? `<span></span><button class="del" data-del="${esc(x.id)}">删除</button>` : ""}</div>`).join("") : `<p class="empty">还没有记账。</p>`;
 }
 
-function renderAll() { renderInfo(); renderChecklist(); renderForm(); renderAA(); }
+
+/* ---------- 攻略收藏: shared link list; paste a 小红书 share text and the URL + title are extracted ---------- */
+const LINK_TAGS = ["签证", "交通", "住宿", "吃喝", "玩乐", "其他"];
+let links = [], lkTag = "其他";
+function parseShare(text) {
+  const m = text.match(/https?:\/\/[^\s，。、]+/);
+  if (!m) return null;
+  let title = text.slice(0, m.index).replace(/打开【小红书】.*$/s, "").replace(/(\.{3}|…)+\s*$/, "").replace(/\s+/g, " ").trim();
+  return { url: m[0], title };
+}
+function renderLinks() {
+  $("#lkTags").innerHTML = LINK_TAGS.map(t => `<button type="button" class="chip ${t === lkTag ? "on" : ""}" data-lktag="${t}" aria-pressed="${t === lkTag}">${t}</button>`).join("");
+  $("#lkAdd").disabled = !ready();
+  if (!links.length) { $("#lkList").innerHTML = `<div class="card"><p class="empty">还没有收藏。</p></div>`; return; }
+  $("#lkList").innerHTML = LINK_TAGS.filter(t => links.some(l => l.tag === t)).map(t => `<div class="card"><h2>${t}</h2>${
+    links.filter(l => l.tag === t).sort((a, b) => (b.at || 0) - (a.at || 0)).map(l => `<div class="lk">
+      <a class="t" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.title)}</a>
+      ${l.by === uid ? `<button class="del" data-lkdel="${esc(l.id)}" style="border:0;background:none;color:var(--red);font-size:12.5px;cursor:pointer">删除</button>` : "<span></span>"}
+      <span class="meta">${l.who ? esc(nm(l.who)) + " 收藏 · " : ""}${new Date(l.at).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })} · ${esc(new URL(l.url).hostname.replace(/^www\./, ""))}</span></div>`).join("")}</div>`).join("");
+}
+$("#lkTags").addEventListener("click", e => { const b = e.target.closest("[data-lktag]"); if (b) { lkTag = b.dataset.lktag; renderLinks(); } });
+$("#lkText").addEventListener("input", () => { const r = parseShare($("#lkText").value); if (r && r.title && !$("#lkTitle").value) $("#lkTitle").placeholder = "标题：" + r.title.slice(0, 40); });
+$("#lkForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!ready()) return toast("还没连上数据库");
+  const r = parseShare($("#lkText").value.trim());
+  if (!r) return toast("没找到链接，要以 http 开头");
+  const title = ($("#lkTitle").value.trim() || r.title || new URL(r.url).hostname).slice(0, 80);
+  $("#lkAdd").disabled = true;
+  try {
+    await db.collection("links").add({ title, url: r.url.slice(0, 500), tag: lkTag, who: me || "", by: uid, at: Date.now() });
+    $("#lkText").value = ""; $("#lkTitle").value = ""; $("#lkTitle").placeholder = "标题（可不填）"; toast("已收藏");
+  } catch (err) { toast("保存失败，请稍后再试"); }
+  $("#lkAdd").disabled = !ready();
+});
+$("#lkList").addEventListener("click", async e => {
+  const b = e.target.closest("[data-lkdel]"); if (!b || !confirm("删除这条收藏？")) return;
+  try { await db.doc("links/" + b.dataset.lkdel).delete(); toast("已删除"); } catch (err) { toast("删除失败"); }
+});
+
+function renderAll() { renderInfo(); renderChecklist(); renderForm(); renderAA(); renderLinks(); }
 renderCountdown(); setInterval(renderCountdown, 1000); renderAll();
 
 /* ---------- Firebase: load in background, anonymous sign-in, live data ---------- */
@@ -585,7 +645,8 @@ function loadScript(src) { return new Promise((res, rej) => { const el = documen
       renderAll();
     }, fail);
     db.collection("expenses").onSnapshot(s => { expenses = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAA(); }, fail);
-    db.collection("checklist").onSnapshot(s => { checks = {}; s.docs.forEach(d => { checks[d.id] = d.data().items || {}; }); renderChecklist(); }, fail);
+    db.collection("links").onSnapshot(s => { links = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(l => /^https?:\/\//.test(l.url || "")); renderLinks(); }, fail);
+    db.collection("checklist").onSnapshot(s => { checksLoaded = true; checks = {}; s.docs.forEach(d => { checks[d.id] = d.data().items || {}; }); renderChecklist(); }, fail);
     renderAll();
   });
   firebase.auth().signInAnonymously().catch(() => { clearTimeout(timer); fail(); });

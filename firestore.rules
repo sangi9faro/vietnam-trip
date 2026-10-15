@@ -101,5 +101,23 @@ service cloud.firestore {
         && request.resource.data.items.size() <= 40
         && request.resource.data.at is int;
     }
+
+    // ---------- 工具箱：攻略收藏（只收 http/https 链接，只能删自己加的）----------
+    match /links/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['title', 'url', 'tag', 'who', 'by', 'at'])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 80
+        && request.resource.data.url is string
+        && request.resource.data.url.size() <= 500
+        && request.resource.data.url.matches('https?://.+')
+        && request.resource.data.tag in ['签证', '交通', '住宿', '吃喝', '玩乐', '其他']
+        && (request.resource.data.who == '' || request.resource.data.who in memberIds())
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at is int;
+      allow delete: if signedIn() && resource.data.by == request.auth.uid;
+    }
   }
 }

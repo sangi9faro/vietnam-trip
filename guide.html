@@ -244,19 +244,19 @@ a:hover { text-decoration: underline; }
 // ╚══════════════════════════════════════════════════════════════╝
 const HOTEL = { name: '', lat: 0, lng: 0 };
 const g = q => encodeURIComponent(q);
-const SGN = [10.81798, 106.65626], D1 = [10.77372, 106.70405];
+const SGN = [10.81798, 106.65626], D1 = [10.77372, 106.70405], HCMC_HOTEL = [10.78246, 106.69186];
 
 const DAYS = [
   { id: 0, label: '总览', color: '#0071e3', locations: [] },
   { id: 1, label: 'D1 胡志明', date: '12/29 周二 · 晚上', title: '杨巧思先到 · 入住', color: '#ff9500', locations: [
-    { name: '新山一国际机场（SGN）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '晚上', desc: '从台北飞来。出关后用 Grab 打车去酒店，第一郡约 30–45 分钟。', gmap: g('Tan Son Nhat International Airport') },
-    { name: '入住胡志明酒店（第一郡）', lat: D1[0], lng: D1[1], type: 'hotel', time: '入住', desc: '胡志明只住这一晚。跟前台说一下陈性情和王大气 12/30 早上会来，提前登记入住人数。', gmap: g('Nguyen Hue Walking Street') },
+    { name: '新山一国际机场（SGN）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '晚上', desc: '从台北飞来。出关后用 Grab 打车去酒店，第三郡约 20–30 分钟。', gmap: g('Tan Son Nhat International Airport') },
+    { name: '入住：M Village 快捷酒店（南圻起义街）', lat: HCMC_HOTEL[0], lng: HCMC_HOTEL[1], type: 'hotel', time: '入住', desc: '214 Nam Ky Khoi Nghia，第三郡。工作室房，1.6 米大床，有厨房。胡志明只住这一晚。订的时候按实际人数登记，跟前台说陈性情和王大气 12/30 早上会来。到第一郡景点打车约 10 分钟。', gmap: g('Express by M Village Nam Ky Khoi Nghia') },
     { name: '范五老 · 裴援步行街', lat: 10.76683, lng: 106.69267, type: 'drink', time: '—', desc: '到得早、还有精神的话，酒吧街开到凌晨。', xhsKeyword: '胡志明 裴援街', gmap: g('Bui Vien Walking Street') },
   ]},
   { id: 2, label: 'D2 胡志明', date: '12/30 周三 · 杨巧思、陈性情、王大气', title: '市区一日游 · 酒吧等钟知心', color: '#34c759', locations: [
     { name: '陈性情抵达（VJ5011，从上海）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '05:40', desc: '浦东 02:15 起飞，到新山一 T2。出关后 Grab 到酒店，跟杨巧思住一间，补觉到中午。', gmap: g('Tan Son Nhat International Airport') },
     { name: '王大气抵达（越旅行航空，从深圳）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '06:50', desc: '宝安 T3 05:00 起飞，到新山一 T2（待出票）。比陈性情晚一个小时，可以在机场等他一起打车，或各自去酒店。', gmap: g('Tan Son Nhat International Airport') },
-    { name: '中午退房 · 行李寄存前台', lat: D1[0], lng: D1[1], type: 'hotel', time: '12:00', desc: '今晚不住酒店。退房后把行李寄存在前台，半夜去坐车前再取。', gmap: g('Nguyen Hue Walking Street') },
+    { name: '中午退房 · 行李寄存前台', lat: HCMC_HOTEL[0], lng: HCMC_HOTEL[1], type: 'hotel', time: '12:00', desc: '今晚不住酒店。退房后把行李寄存在 M Village 前台，半夜去坐车前再取。', gmap: g('Express by M Village Nam Ky Khoi Nghia') },
     { name: 'Phở Hòa Pasteur 河粉', lat: 10.7868, lng: 106.68905, type: 'food', time: '12:30', desc: '老牌河粉店，当午饭。', xhsKeyword: '胡志明 Pho Hoa', gmap: g('Pho Hoa Pasteur Ho Chi Minh City') },
     { name: '西贡中央邮局 · 红教堂', lat: 10.77996, lng: 106.69999, type: 'spot', time: '14:00', desc: '法式老建筑，挨在一起。红教堂外立面可能还在修，以现场为准。', xhsKeyword: '西贡中央邮局', gmap: g('Saigon Central Post Office') },
     { name: '战争遗迹博物馆', lat: 10.77936, lng: 106.69228, type: 'spot', time: '15:00', desc: '内容沉重，约 1.5 小时。', xhsKeyword: '胡志明 战争遗迹博物馆', gmap: g('War Remnants Museum') },
@@ -302,7 +302,7 @@ function overviewContent() {
 <div class="info-grid">
   <div class="info-card"><div class="label">到达</div><div class="value">12/29 晚 杨巧思<br>12/30 05:40 陈性情<br>12/30 06:50 王大气<br>12/31 01:20 钟知心</div></div>
   <div class="info-card"><div class="label">交通</div><div class="value">12/31 凌晨大巴去芽庄<br>1/3 飞机回胡志明（推荐）</div></div>
-  <div class="info-card"><div class="label">住宿</div><div class="value">胡志明 1 晚（12/29）<br>芽庄凯悦 1 晚<br>金兰湾 Fusion 2 晚</div></div>
+  <div class="info-card"><div class="label">住宿</div><div class="value">胡志明 M Village 1 晚（12/29）<br>芽庄凯悦 1 晚<br>金兰湾 Fusion 2 晚</div></div>
   <div class="info-card"><div class="label">跨年</div><div class="value">芽庄市区<br>4月2日广场，离凯悦走路几分钟</div></div>
 </div>
 <div class="section-head">航班</div>
@@ -332,7 +332,7 @@ function overviewContent() {
 ② <b>1/3 国内线</b>：金兰 → 胡志明，17:00 前到达的班次，尽早订。<br>
 ③ <b>12/30 晚上没有酒店</b>：退房后行李寄存前台，先问好前台夜里能不能取；酒吧到凌晨，留出取行李和去上车点的时间。<br>
 ④ <b>1/1 跳岛游</b>：提前订，问清楚停航怎么退。<br>
-⑤ <b>签证</b>：中国护照要提前在官网 <a href="https://evisa.gov.vn/" target="_blank" rel="noopener">evisa.gov.vn</a> 办电子签（小心代办假网站），韩国护照目前免签。<a href="https://xhslink.cn/o/1snawsvsDZx" target="_blank" rel="noopener">小红书签证攻略</a><br>
+⑤ <b>签证</b>：中国护照要提前在官网 <a href="https://evisa.gov.vn/" target="_blank" rel="noopener">evisa.gov.vn</a> 办电子签（小心代办假网站），韩国护照目前免签。<br>
 ⑥ <b>手机和打车</b>：买越南 eSIM，装好 Grab。<br>
 ⑦ <b>钱</b>：越南盾现金备一些，夜市和小店多数只收现金。
 </div></div>
