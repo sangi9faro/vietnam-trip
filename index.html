@@ -37,7 +37,14 @@ button,input,select{font:inherit;color:inherit}
 .card h2{margin:0;font-size:18px}
 .sub{margin:0;color:var(--muted);font-size:13px}
 .status{font-size:13px;color:var(--muted);text-align:center}
-.big{font-size:34px;font-weight:700;letter-spacing:-0.03em;line-height:1.1}
+.hero{background:linear-gradient(135deg,var(--sea),#34aadc);color:#fff;border-radius:22px;padding:18px 16px;display:grid;gap:10px;text-align:center;box-shadow:var(--shadow)}
+.hero-k,.hero-sub{margin:0;font-size:13px;opacity:.9}
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cd div{background:rgba(255,255,255,.18);border-radius:14px;padding:10px 0 6px;display:grid;gap:2px}
+.cd b{font-size:34px;line-height:1;font-weight:700;letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
+.cd span{font-size:12px;opacity:.85}
+.cd.msg{grid-template-columns:1fr}
+.cd.msg div{padding:14px 0}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px}
 .kv dt{color:var(--muted)} .kv dd{margin:0}
@@ -100,16 +107,20 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
 <div id="toast" role="status" aria-live="polite"></div>
 
 <main class="wrap">
+  <section class="hero" aria-label="出发倒计时">
+    <p class="hero-k" id="cdLabel">距离 12/29 胡志明集合（越南时间）</p>
+    <div class="cd" id="countdown" role="timer" aria-live="off">
+      <div><b id="cdD">—</b><span>天</span></div>
+      <div><b id="cdH">—</b><span>时</span></div>
+      <div><b id="cdM">—</b><span>分</span></div>
+      <div><b id="cdS">—</b><span>秒</span></div>
+    </div>
+    <p class="hero-sub">12/29 – 1/3 · 胡志明 → 芽庄 → 金兰湾</p>
+  </section>
   <div class="status" id="who">正在连接数据…</div>
 
   <!-- ================= 基础信息 ================= -->
   <section data-panel="info" class="wrap" style="padding:0">
-    <div class="card">
-      <p class="sub">距离 12/29 胡志明集合</p>
-      <div class="big" id="countdown">—</div>
-      <p class="sub">12/29 – 1/3 · 胡志明 → 芽庄 → 金兰湾</p>
-    </div>
-
     <div class="card">
       <h2>我是谁</h2>
       <p class="sub">选一下，记账时默认是你付的，清单里你那一列会高亮。只存在这台手机上。</p>
@@ -281,9 +292,22 @@ function showTab(t) {
 try { const t = localStorage.getItem("trip-tab"); if (t) showTab(t); } catch (e) {}
 
 /* ---------- info ---------- */
+const TRIP_START = new Date("2026-12-29T00:00:00+07:00").getTime();
+const TRIP_END = new Date("2027-01-04T00:00:00+07:00").getTime();
+const pad = n => String(n).padStart(2, "0");
 function renderCountdown() {
-  const d = Math.ceil((new Date("2026-12-29T00:00:00+07:00") - Date.now()) / 86400000);
-  $("#countdown").textContent = d > 0 ? `还有 ${d} 天` : d === 0 ? "就是今天！" : "旅行中 / 已结束";
+  const now = Date.now(), cd = $("#countdown");
+  if (now < TRIP_START) {
+    let s = Math.floor((TRIP_START - now) / 1000);
+    const d = Math.floor(s / 86400); s %= 86400;
+    if (cd.classList.contains("msg")) { cd.classList.remove("msg"); cd.innerHTML = '<div><b id="cdD"></b><span>天</span></div><div><b id="cdH"></b><span>时</span></div><div><b id="cdM"></b><span>分</span></div><div><b id="cdS"></b><span>秒</span></div>'; }
+    $("#cdD").textContent = d; $("#cdH").textContent = pad(Math.floor(s / 3600)); $("#cdM").textContent = pad(Math.floor(s % 3600 / 60)); $("#cdS").textContent = pad(s % 60);
+    return;
+  }
+  const day = Math.floor((now - TRIP_START) / 86400000) + 1;
+  $("#cdLabel").textContent = now < TRIP_END ? "越南跨年进行中" : "越南跨年";
+  cd.classList.add("msg");
+  cd.innerHTML = `<div><b>${now < TRIP_END ? `旅行中 · 第 ${day} 天` : "旅行结束，记得结清 AA 账"}</b></div>`;
 }
 function renderInfo() {
   $("#meSel").innerHTML = `<option value="">— 选一下 —</option>` + IDS.map(id => `<option value="${id}" ${id === me ? "selected" : ""}>${esc(nm(id))}</option>`).join("");
@@ -412,7 +436,7 @@ function renderAA() {
 }
 
 function renderAll() { renderInfo(); renderChecklist(); renderForm(); renderAA(); }
-renderCountdown(); setInterval(renderCountdown, 3600000); renderAll();
+renderCountdown(); setInterval(renderCountdown, 1000); renderAll();
 
 /* ---------- Firebase: load in background, anonymous sign-in, live data ---------- */
 function loadScript(src) { return new Promise((res, rej) => { const el = document.createElement("script"); el.src = src; el.async = false; el.onload = res; el.onerror = () => rej(new Error(src)); document.head.appendChild(el); }); }
