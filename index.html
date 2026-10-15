@@ -185,6 +185,17 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
     </div>
 
     <div class="card">
+      <h2>签证</h2>
+      <dl class="kv">
+        <dt>中国护照</dt><dd>要办<b>越南电子签</b>，只在官网申请：<a href="https://evisa.gov.vn/" target="_blank" rel="noopener">evisa.gov.vn</a>。至少提前 1–2 周，审核要几个工作日。</dd>
+        <dt>韩国护照</dt><dd>目前免签，出发前再按官方信息确认。</dd>
+        <dt>护照</dt><dd>有效期 6 个月以上。</dd>
+      </dl>
+      <p class="sub">注意：网上有很多名字相似的代办网站，收费高，认准 evisa.gov.vn。</p>
+      <a class="btn ghost small" href="https://xhslink.cn/o/1snawsvsDZx" target="_blank" rel="noopener" style="justify-self:start">📕 小红书：越南电子签证指南（2026 最新版）</a>
+    </div>
+
+    <div class="card">
       <h2>我是谁</h2>
       <p class="sub">选一下，记账时默认是你付的，清单里你那一列会高亮。只存在这台手机上。</p>
       <select id="meSel" aria-label="我是谁"></select>
@@ -296,14 +307,14 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const IDS = ["m1", "m2", "m3", "m4"];
-const DEFAULT_SETTINGS = { members: { m1: "酸根", m2: "泰坦", m3: "朋友A", m4: "朋友B" }, rates: { VND: 3650, KRW: 195, USD: 0.14 }, ratesAt: 0 };
+const DEFAULT_SETTINGS = { members: { m1: "杨巧思", m2: "钟知心", m3: "陈性情", m4: "王大气" }, rates: { VND: 3650, KRW: 195, USD: 0.14 }, ratesAt: 0 };
 const SYM = { CNY: "¥", VND: "₫", KRW: "₩", USD: "$" };
 
 // Static trip facts (no real names or booking codes on this public page)
 const FLIGHTS = [
   { who: "m1", inb: "12/29 晚 台北 → 胡志明（航班待补充）", out: "1/3 胡志明 → 首尔（待补充）" },
   { who: "m3", inb: "12/30 VJ5011 浦东 T2 02:15 → 新山一 T2 05:40", out: "1/3 9G634 新山一 T2 21:45 → 浦东 1/4 02:45" },
-  { who: "m4", inb: "12/30 VJ5011 浦东 T2 02:15 → 新山一 T2 05:40", out: "1/3 9G634 新山一 T2 21:45 → 浦东 1/4 02:45" },
+  { who: "m4", inb: "12/30 越旅行航空 宝安 T3 05:00 → 新山一 T2 06:50（待出票）", out: "1/4 越旅行航空 新山一 00:10 → 宝安 04:00（待出票）" },
   { who: "m2", inb: "12/30 CZ6089 白云 T2 23:30 → 新山一 T2 12/31 01:20", out: "1/4 CZ6090 新山一 T2 02:25 → 白云 06:20" },
 ];
 const HOTELS = [
@@ -312,7 +323,7 @@ const HOTELS = [
   { when: "1/1 – 1/3（2 晚）", name: "金兰湾 Fusion Resort Cam Ranh", q: "Fusion Resort Cam Ranh" },
 ];
 const PERSONAL = [
-  ["passport", "护照有效期 6 个月以上"], ["visa", "越南电子签 / 确认免签"], ["ticket", "机票已出票"],
+  ["passport", "护照有效期 6 个月以上"], ["visa", "越南电子签 / 确认免签（看基础信息里的签证）"], ["ticket", "机票已出票"],
   ["esim", "越南 eSIM / 流量"], ["grab", "装好 Grab"], ["cash", "换一些越南盾"],
   ["insurance", "旅行保险"], ["adapter", "转换头、充电宝"], ["beach", "泳衣、防晒、拖鞋"], ["meds", "常用药"],
 ];
