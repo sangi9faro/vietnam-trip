@@ -6,7 +6,7 @@
 <title>越南跨年攻略</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
-<meta name="description" content="12/29–1/3 胡志明市进出的越南跨年行程">
+<meta name="description" content="12/29–1/3 胡志明 → 芽庄 → 金兰湾 跨年行程">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -228,6 +228,7 @@ a:hover { text-decoration: underline; }
 .leaflet-control-attribution { font-size: 9px !important; opacity: .5; }
 .dest-switch{display:flex;gap:6px;justify-content:center;margin-bottom:8px}
 .dest-switch .tab{text-decoration:none}
+.card.warn{border-left:4px solid var(--tint-orange)}
 .note{text-align:center;font-size:13px;color:var(--text-secondary);margin-bottom:16px}
 </style>
 </head>
@@ -239,130 +240,83 @@ a:hover { text-decoration: underline; }
 
 <script>
 // ╔══════════════════════════════════════════════════════════════╗
-// ║  Trip data: Ho Chi Minh City in/out + one destination (?d=)  ║
+// ║  Trip data: HCMC 12/29–12/31 → Nha Trang → Cam Ranh → HCMC  ║
 // ╚══════════════════════════════════════════════════════════════╝
-const DEST = { pq: '富国岛', nt: '芽庄', dn: '岘港' };
-const D = (new URLSearchParams(location.search).get('d') || 'pq').replace(/[^a-z]/g, '');
-const CUR = DEST[D] ? D : 'pq';
 const HOTEL = { name: '', lat: 0, lng: 0 };
 const g = q => encodeURIComponent(q);
+const SGN = [10.81798, 106.65626], D1 = [10.77372, 106.70405];
 
-const HCMC_IN = { id: 1, label: 'D1 胡志明', date: '12/29 周二 · 从台北飞来', title: '抵达胡志明市 · 第一郡夜生活', color: '#ff9500', locations: [
-  { name: '新山一国际机场（SGN）', lat: 10.81798, lng: 106.65626, type: 'transport', time: '下午', desc: '台北飞来约 3 小时。出关后用 Grab 打车去第一郡，约 30–45 分钟。', gmap: g('Tan Son Nhat International Airport') },
-  { name: '入住：第一郡 · 阮惠步行街附近', lat: 10.77372, lng: 106.70405, type: 'hotel', time: '傍晚', desc: '第一晚和最后一晚都住这一区，走路能到大部分景点。', gmap: g('Nguyen Hue Walking Street') },
-  { name: 'Phở Hòa Pasteur 河粉', lat: 10.7868, lng: 106.68905, type: 'food', time: '19:00', desc: '老牌河粉店，游客多但口味稳定。到越南的第一顿。', xhsKeyword: '胡志明 Pho Hoa', gmap: g('Pho Hoa Pasteur Ho Chi Minh City') },
-  { name: '范五老 · 裴援步行街（Bùi Viện）', lat: 10.76683, lng: 106.69267, type: 'drink', time: '21:00', desc: '背包客酒吧街，热闹到凌晨。人挤，手机钱包看好。', xhsKeyword: '胡志明 裴援街', gmap: g('Bui Vien Walking Street') },
-  { name: 'Chill Skybar（AB Tower 楼顶）', lat: 10.77052, lng: 106.69439, type: 'drink', time: '—', desc: '楼顶酒吧看夜景，想安静一点就来这。有着装要求，以官方为准。', xhsKeyword: '胡志明 Chill Skybar', gmap: g('Chill Skybar Ho Chi Minh City') },
-]};
-
-const FLY_OUT = { pq: ['富国岛国际机场（PQC）', 10.17271, 103.99215, 'Phu Quoc International Airport', '约 1 小时'],
-                  nt: ['金兰国际机场（CXR）', 11.99825, 109.21738, 'Cam Ranh International Airport', '约 1 小时'],
-                  dn: ['岘港国际机场（DAD）', 16.04258, 108.19716, 'Da Nang International Airport', '约 1 小时 20 分'] }[CUR];
-
-const PLAN = {
-  pq: [
-    { title: '飞富国岛 · 丁庙日落', locations: [
-      { name: '飞往' + FLY_OUT[0], lat: FLY_OUT[1], lng: FLY_OUT[2], type: 'transport', time: '上午', desc: '胡志明市飞富国岛' + FLY_OUT[4] + '。下飞机打车到长滩约 15 分钟。', gmap: g(FLY_OUT[3]) },
-      { name: '入住：长滩（Bãi Trường）', lat: 10.13606, lng: 103.9764, type: 'hotel', time: '中午', desc: '西海岸中段，去南边日落小镇、北边大世界都方便。', gmap: g('Bai Truong Phu Quoc') },
-      { name: '丁庙（Dinh Cậu）看日落', lat: 10.21722, lng: 103.95643, type: 'spot', time: '17:30', desc: '阳东镇海边礁石上的小庙，日落很好看。', xhsKeyword: '富国岛 丁庙 日落', gmap: g('Dinh Cau Phu Quoc') },
-      { name: '富国岛夜市', lat: 10.2175, lng: 103.96, type: 'food', time: '19:00', desc: '就在丁庙旁边。海鲜现挑现做，先问清价格（按斤还是按只）再点。', xhsKeyword: '富国岛夜市', gmap: g('Phu Quoc Night Market Duong Dong') },
-    ]},
-    { title: '跳岛浮潜 · 日落小镇跨年', locations: [
-      { name: '安泰港出发 · 南部群岛浮潜', lat: 10.01258, lng: 104.0148, type: 'spot', time: '09:00', desc: '半日或一日跳岛游，浮潜看珊瑚。旱季海水清。可让酒店代订或网上预订。', xhsKeyword: '富国岛 跳岛 浮潜', gmap: g('An Thoi Port Phu Quoc') },
-      { name: '香岛跨海缆车（Hòn Thơm）', lat: 9.99201, lng: 104.01244, type: 'spot', time: '14:30', desc: '全长约 8 公里，从海面上飞过去，岛上有水上乐园。', xhsKeyword: '富国岛 香岛缆车', gmap: g('Hon Thom Cable Car') },
-      { name: '日落小镇 · 接吻桥', lat: 10.02826, lng: 104.00419, type: 'spot', time: '17:30', desc: '看日落、拍照。晚饭就在小镇里吃，早点吃完占位置。', xhsKeyword: '富国岛 日落小镇 接吻桥', gmap: g('Kiss Bridge Phu Quoc') },
-      { name: '日落小镇跨年倒数', lat: 10.02943, lng: 104.00831, type: 'spot', time: '23:00', desc: '往年有烟花和演出，具体以当年官方公告为准。人很多，结束后打车要等。', xhsKeyword: '富国岛 跨年 烟花', gmap: g('Sunset Town Phu Quoc') },
-    ]},
-    { title: '新年第一天 · 星星海滩和大世界', locations: [
-      { name: '睡到自然醒 · 酒店早午餐', lat: 10.13606, lng: 103.9764, type: 'hotel', time: '上午', desc: '跨年夜睡得晚，上午不安排。', gmap: g('Bai Truong Phu Quoc') },
-      { name: '星星海滩（Bãi Sao）', lat: 10.05247, lng: 104.03519, type: 'spot', time: '12:00', desc: '东海岸白沙滩，海水平静，适合躺一下午。', xhsKeyword: '富国岛 星星海滩', gmap: g('Bai Sao Phu Quoc') },
-      { name: '大世界（Grand World）', lat: 10.32494, lng: 103.85814, type: 'spot', time: '18:00', desc: '北部的威尼斯风格小镇，晚上有灯光和表演，吃的也多。', xhsKeyword: '富国岛 大世界', gmap: g('Grand World Phu Quoc') },
-    ]},
-  ],
-  nt: [
-    { title: '飞芽庄 · 海滩散步和夜市', locations: [
-      { name: '飞往' + FLY_OUT[0], lat: FLY_OUT[1], lng: FLY_OUT[2], type: 'transport', time: '上午', desc: '胡志明市飞芽庄' + FLY_OUT[4] + '。机场离市区约 35 公里，打车 40 分钟左右。', gmap: g(FLY_OUT[3]) },
-      { name: '入住：陈富路海滩沿线', lat: 12.242, lng: 109.197, type: 'hotel', time: '中午', desc: '市区就在海边，出门就是沙滩，吃饭也方便。', gmap: g('Tran Phu Beach Nha Trang') },
-      { name: '芽庄夜市', lat: 12.23965, lng: 109.19579, type: 'food', time: '19:00', desc: '小吃和海鲜，顺便买伴手礼。砍价正常。', xhsKeyword: '芽庄夜市', gmap: g('Nha Trang Night Market') },
-    ]},
-    { title: '占婆塔 · 泥浆浴 · 广场跨年', locations: [
-      { name: '婆那加占婆塔（Tháp Bà Ponagar）', lat: 12.26539, lng: 109.19518, type: 'spot', time: '09:00', desc: '一千多年的占婆古塔，进去要穿过膝的衣服。', xhsKeyword: '芽庄 占婆塔', gmap: g('Po Nagar Cham Towers') },
-      { name: '塔巴温泉泥浆浴', lat: 12.2716, lng: 109.1748, type: 'spot', time: '11:00', desc: '芽庄招牌项目，四个人可以包一个泥浆池。下雨天也能玩。', xhsKeyword: '芽庄 泥浆浴', gmap: g('Thap Ba Hot Spring Center Nha Trang') },
-      { name: '龙山寺（白色大佛）', lat: 12.25131, lng: 109.18064, type: 'spot', time: '15:30', desc: '爬一段台阶到大佛脚下，能俯看市区。', xhsKeyword: '芽庄 龙山寺', gmap: g('Long Son Pagoda Nha Trang') },
-      { name: '4月2日广场（沉香塔）跨年倒数', lat: 12.238, lng: 109.1967, type: 'spot', time: '23:00', desc: '海边主广场，往年跨年有活动，以当年官方公告为准。', xhsKeyword: '芽庄 跨年', gmap: g('Tram Huong Tower Nha Trang') },
-    ]},
-    { title: '新年第一天 · 跳岛或乐园', locations: [
-      { name: '蹈港出发 · 木岛浮潜（Hòn Mun）', lat: 12.2085, lng: 109.2163, type: 'spot', time: '10:00', desc: '12 月是雨季，风浪大会停航，前一天问清楚。', xhsKeyword: '芽庄 跳岛 浮潜', gmap: g('Cau Da Port Nha Trang') },
-      { name: 'VinWonders 珍珠岛乐园', lat: 12.2174, lng: 109.24122, type: 'spot', time: '—', desc: '出不了海时的备选，室内项目多。怎么上岛以官方为准。', xhsKeyword: '芽庄 VinWonders', gmap: g('VinWonders Nha Trang') },
-    ]},
-  ],
-  dn: [
-    { title: '飞岘港 · 美溪海滩和龙桥', locations: [
-      { name: '飞往' + FLY_OUT[0], lat: FLY_OUT[1], lng: FLY_OUT[2], type: 'transport', time: '上午', desc: '胡志明市飞岘港' + FLY_OUT[4] + '。机场在市区，打车到海边约 15 分钟。', gmap: g(FLY_OUT[3]) },
-      { name: '入住：美溪海滩（Mỹ Khê）', lat: 16.07563, lng: 108.24688, type: 'hotel', time: '中午', desc: '城市边上的长沙滩，酒店和餐厅都多。', gmap: g('My Khe Beach Da Nang') },
-      { name: '韩市场（Chợ Hàn）', lat: 16.06835, lng: 108.22428, type: 'food', time: '16:00', desc: '小吃、水果、做衣服。傍晚前去，晚上关门早。', xhsKeyword: '岘港 韩市场', gmap: g('Han Market Da Nang') },
-      { name: '龙桥夜景', lat: 16.06117, lng: 108.2279, type: 'spot', time: '20:00', desc: '喷火表演只在周六、周日 21:00 有，12/30 是周三，只能看灯。', xhsKeyword: '岘港 龙桥', gmap: g('Dragon Bridge Da Nang') },
-    ]},
-    { title: '巴拿山金桥 · 海边跨年', locations: [
-      { name: '巴拿山 · 金桥（Cầu Vàng）', lat: 15.99509, lng: 107.99641, type: 'spot', time: '08:30', desc: '看天气：12 月常有雨雾，山顶可能什么都看不到。出门前看山顶天气，不行就换五行山。', xhsKeyword: '巴拿山 金桥', gmap: g('Golden Bridge Ba Na Hills') },
-      { name: '五行山（Ngũ Hành Sơn）', lat: 16.00402, lng: 108.26277, type: 'spot', time: '—', desc: '巴拿山天气不好时的备选，有山洞和寺庙，离市区近。', xhsKeyword: '岘港 五行山', gmap: g('Marble Mountains Da Nang') },
-      { name: '东海公园跨年倒数', lat: 16.06835, lng: 108.24593, type: 'spot', time: '23:00', desc: '美溪海滩边的公园，往年跨年有活动，以当年官方公告为准。', xhsKeyword: '岘港 跨年', gmap: g('Bien Dong Park Da Nang') },
-    ]},
-    { title: '新年第一天 · 灵应寺和会安古城', locations: [
-      { name: '山茶半岛 · 灵应寺', lat: 16.10033, lng: 108.27786, type: 'spot', time: '10:30', desc: '海边 67 米高的观音像，能俯看整个岘港湾。', xhsKeyword: '岘港 灵应寺', gmap: g('Linh Ung Pagoda Son Tra') },
-      { name: '会安古城', lat: 15.87795, lng: 108.32399, type: 'spot', time: '15:00', desc: '打车约 45 分钟。下午逛街、做衣服，天黑后点灯笼。', xhsKeyword: '会安古城', gmap: g('Hoi An Ancient Town') },
-      { name: '日本桥 · 秋盆河放河灯', lat: 15.87715, lng: 108.326, type: 'spot', time: '18:30', desc: '会安最出片的地方。古城进门要买票，以现场为准。', xhsKeyword: '会安 日本桥 河灯', gmap: g('Japanese Covered Bridge Hoi An') },
-    ]},
-  ],
-};
-
-const HCMC_BACK = { title: '回胡志明市 · 阮惠步行街', locations: [
-  { name: '飞回新山一机场（SGN）', lat: 10.81798, lng: 106.65626, type: 'transport', time: '下午', desc: '从' + DEST[CUR] + '飞回胡志明市，再住一晚，第二天坐国际线不用赶。', gmap: g('Tan Son Nhat International Airport') },
-  { name: '入住：第一郡', lat: 10.77372, lng: 106.70405, type: 'hotel', time: '傍晚', desc: '跟第一晚同一区，可以住同一家。', gmap: g('Nguyen Hue Walking Street') },
-  { name: '阮惠步行街', lat: 10.77372, lng: 106.70405, type: 'spot', time: '20:00', desc: '周六晚上很热闹，两边咖啡楼可以上楼看街景。', xhsKeyword: '胡志明 阮惠步行街', gmap: g('Nguyen Hue Walking Street') },
-  { name: 'Bitexco 金融塔观景台', lat: 10.77186, lng: 106.70446, type: 'spot', time: '—', desc: '想看城市夜景的备选。', xhsKeyword: '胡志明 Bitexco', gmap: g('Saigon Skydeck Bitexco') },
-]};
-
-const HCMC_OUT = { title: '胡志明市半日 · 飞回首尔', locations: [
-  { name: 'Bánh Mì Huỳnh Hoa 法棍', lat: 10.77139, lng: 106.69272, type: 'food', time: '08:30', desc: '胡志明最有名的法棍之一，料很足。', xhsKeyword: '胡志明 Huynh Hoa 法棍', gmap: g('Banh Mi Huynh Hoa') },
-  { name: '西贡中央邮局 · 红教堂', lat: 10.77996, lng: 106.69999, type: 'spot', time: '09:30', desc: '法式老建筑，两个挨在一起。红教堂外立面可能还在修，以现场为准。', xhsKeyword: '西贡中央邮局', gmap: g('Saigon Central Post Office') },
-  { name: '战争遗迹博物馆', lat: 10.77936, lng: 106.69228, type: 'spot', time: '10:30', desc: '内容沉重，约 1.5 小时。', xhsKeyword: '胡志明 战争遗迹博物馆', gmap: g('War Remnants Museum') },
-  { name: '滨城市场（Chợ Bến Thành）', lat: 10.77253, lng: 106.69804, type: 'food', time: '12:00', desc: '午饭加买伴手礼：咖啡、腰果、干果。', xhsKeyword: '胡志明 滨城市场', gmap: g('Ben Thanh Market') },
-  { name: '新山一机场 · 飞首尔', lat: 10.81798, lng: 106.65626, type: 'transport', time: '下午', desc: '国际线提前 3 小时到。第一郡打车 30–60 分钟，周日下午也会堵。航班时间未定，确定后再调整这一天。', gmap: g('Tan Son Nhat International Airport') },
-]};
-
-const COLORS = ['#ff9500', '#0071e3', '#ff2d55', '#34c759', '#af52de', '#5ac8fa'];
-const DATES = ['12/29 周二', '12/30 周三', '12/31 周四 · 跨年夜', '1/1 周五 · 元旦', '1/2 周六', '1/3 周日'];
-const DAYS = [{ id: 0, label: '总览', color: '#0071e3', locations: [] }, HCMC_IN];
-PLAN[CUR].forEach((d, i) => DAYS.push({ id: i + 2, label: `D${i + 2} ${DEST[CUR]}`, date: DATES[i + 1], title: d.title, color: COLORS[i + 1], locations: d.locations }));
-DAYS.push({ id: 5, label: 'D5 回胡志明', date: DATES[4], title: HCMC_BACK.title, color: COLORS[4], locations: HCMC_BACK.locations });
-DAYS.push({ id: 6, label: 'D6 回首尔', date: DATES[5], title: HCMC_OUT.title, color: COLORS[5], locations: HCMC_OUT.locations });
-
-const WEATHER = { pq: '旱季，天气最稳，适合下水。', nt: '雨季尾巴，可能下雨、浪大，出海要看天气。', dn: '雨季，常有雨雾，巴拿山最受影响。' };
+const DAYS = [
+  { id: 0, label: '总览', color: '#0071e3', locations: [] },
+  { id: 1, label: 'D1 胡志明', date: '12/29 周二 · 晚上', title: '我先到 · 入住', color: '#ff9500', locations: [
+    { name: '新山一国际机场（SGN）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '晚上', desc: '从台北飞来。出关后用 Grab 打车去酒店，第一郡约 30–45 分钟。', gmap: g('Tan Son Nhat International Airport') },
+    { name: '入住胡志明酒店（第一郡）', lat: D1[0], lng: D1[1], type: 'hotel', time: '入住', desc: '住到 12/31 早上。前台说一下有两位朋友凌晨会来，提前登记入住人数。', gmap: g('Nguyen Hue Walking Street') },
+    { name: '范五老 · 裴援步行街', lat: 10.76683, lng: 106.69267, type: 'drink', time: '—', desc: '到得早、还有精神的话，酒吧街开到凌晨。', xhsKeyword: '胡志明 裴援街', gmap: g('Bui Vien Walking Street') },
+  ]},
+  { id: 2, label: 'D2 胡志明', date: '12/30 周三 · 三个人', title: '胡志明市区一日游', color: '#34c759', locations: [
+    { name: '两位朋友凌晨抵达', lat: SGN[0], lng: SGN[1], type: 'transport', time: '凌晨', desc: 'Grab 直接打到酒店。上午睡够再出门。', gmap: g('Tan Son Nhat International Airport') },
+    { name: 'Phở Hòa Pasteur 河粉', lat: 10.7868, lng: 106.68905, type: 'food', time: '11:00', desc: '老牌河粉店，当早午饭。', xhsKeyword: '胡志明 Pho Hoa', gmap: g('Pho Hoa Pasteur Ho Chi Minh City') },
+    { name: '西贡中央邮局 · 红教堂', lat: 10.77996, lng: 106.69999, type: 'spot', time: '12:30', desc: '法式老建筑，挨在一起。红教堂外立面可能还在修，以现场为准。', xhsKeyword: '西贡中央邮局', gmap: g('Saigon Central Post Office') },
+    { name: '战争遗迹博物馆', lat: 10.77936, lng: 106.69228, type: 'spot', time: '13:30', desc: '内容沉重，约 1.5 小时。', xhsKeyword: '胡志明 战争遗迹博物馆', gmap: g('War Remnants Museum') },
+    { name: '滨城市场', lat: 10.77253, lng: 106.69804, type: 'food', time: '15:30', desc: '小吃、咖啡、腰果。伴手礼也可以最后一天在芽庄买。', xhsKeyword: '胡志明 滨城市场', gmap: g('Ben Thanh Market') },
+    { name: 'Bánh Mì Huỳnh Hoa 法棍', lat: 10.77139, lng: 106.69272, type: 'food', time: '17:00', desc: '最有名的法棍之一，料很足，可以当晚饭前垫一下。', xhsKeyword: '胡志明 Huynh Hoa 法棍', gmap: g('Banh Mi Huynh Hoa') },
+    { name: '阮惠步行街', lat: 10.77372, lng: 106.70405, type: 'spot', time: '19:00', desc: '晚上很热闹，两边咖啡楼可以上楼看街景。', xhsKeyword: '胡志明 阮惠步行街', gmap: g('Nguyen Hue Walking Street') },
+    { name: 'Chill Skybar（AB Tower 楼顶）', lat: 10.77052, lng: 106.69439, type: 'drink', time: '21:00', desc: '楼顶酒吧看夜景。有着装要求，以官方为准。早点回酒店，明天一早坐车。', xhsKeyword: '胡志明 Chill Skybar', gmap: g('Chill Skybar Ho Chi Minh City') },
+  ]},
+  { id: 3, label: 'D3 去芽庄', date: '12/31 周四 · 跨年夜', title: '四人集合 · 大巴去芽庄 · 市区跨年', color: '#ff2d55', locations: [
+    { name: '第四位朋友凌晨抵达', lat: SGN[0], lng: SGN[1], type: 'transport', time: '凌晨', desc: '直接到酒店或者上车点会合。', gmap: g('Tan Son Nhat International Airport') },
+    { name: '大巴：胡志明 → 芽庄', lat: 10.8796, lng: 106.81596, type: 'transport', time: '早上', desc: '约 430 公里，7–9 小时，选卧铺大巴（如富达 FUTA）。上车点以车票为准：有的从新东部客运站出发，有的在第一郡有上车点或接驳车。跨年当天车票紧张，要提前买。', gmap: g('Ben xe Mien Dong moi') },
+    { name: '入住：芽庄凯悦（Hyatt Regency）', lat: 12.24099, lng: 109.19563, type: 'hotel', time: '下午', desc: '就在陈富路海边。放好行李，休息一下再出门。', gmap: g('Hyatt Regency Nha Trang') },
+    { name: '芽庄夜市 · 晚饭', lat: 12.23965, lng: 109.19579, type: 'food', time: '19:00', desc: '离酒店很近，海鲜先问清价格。跨年夜餐厅人多，最好早点吃。', xhsKeyword: '芽庄夜市', gmap: g('Nha Trang Night Market') },
+    { name: '4月2日广场（沉香塔）跨年倒数', lat: 12.238, lng: 109.1967, type: 'spot', time: '23:00', desc: '从凯悦走过去几分钟。往年跨年有活动，以当年官方公告为准。人很多，结束后走回酒店最方便。', xhsKeyword: '芽庄 跨年', gmap: g('Tram Huong Tower Nha Trang') },
+  ]},
+  { id: 4, label: 'D4 跳岛', date: '1/1 周五 · 元旦', title: '跳岛游 · 傍晚转去金兰湾', color: '#0071e3', locations: [
+    { name: '蹈港出发 · 跳岛游', lat: 12.2085, lng: 109.2163, type: 'spot', time: '08:30', desc: '常见是木岛浮潜等几个岛的一日游，下午 4 点左右回。12 月是雨季，风浪大会停航，前一天跟旅行社确认。行李先寄存在凯悦。', xhsKeyword: '芽庄 跳岛游', gmap: g('Cau Da Port Nha Trang') },
+    { name: '回凯悦取行李', lat: 12.24099, lng: 109.19563, type: 'hotel', time: '16:30', desc: '退房后行李可以先寄存在前台，回来再取。', gmap: g('Hyatt Regency Nha Trang') },
+    { name: '打车去金兰湾 Fusion', lat: 12.05001, lng: 109.20828, type: 'hotel', time: '17:30', desc: '沿海边往南，约 40 分钟。住到 1/3 中午。', gmap: g('Fusion Resort Cam Ranh') },
+    { name: '塔巴温泉泥浆浴', lat: 12.2716, lng: 109.1748, type: 'spot', time: '—', desc: '跳岛停航时的备选，下雨也能玩，四个人可以包一个泥浆池。', xhsKeyword: '芽庄 泥浆浴', gmap: g('Thap Ba Hot Spring Center Nha Trang') },
+    { name: '婆那加占婆塔', lat: 12.26539, lng: 109.19518, type: 'spot', time: '—', desc: '跳岛停航时的备选，一千多年的占婆古塔，要穿过膝的衣服。', xhsKeyword: '芽庄 占婆塔', gmap: g('Po Nagar Cham Towers') },
+  ]},
+  { id: 5, label: 'D5 度假村', date: '1/2 周六', title: 'Fusion 度假村休息日', color: '#af52de', locations: [
+    { name: 'Fusion 金兰湾 · 全天放松', lat: 12.05001, lng: 109.20828, type: 'hotel', time: '全天', desc: '海滩、泳池、水疗。前面几天都在赶路，这天不排行程。', xhsKeyword: '金兰湾 Fusion', gmap: g('Fusion Resort Cam Ranh') },
+    { name: '回芽庄市区吃晚饭', lat: 12.24099, lng: 109.19563, type: 'food', time: '—', desc: '想出门的话，打车约 40 分钟回市区吃海鲜、逛夜市。', xhsKeyword: '芽庄 海鲜', gmap: g('Nha Trang Night Market') },
+  ]},
+  { id: 6, label: 'D6 回程', date: '1/3 周日', title: '回胡志明 · 飞首尔', color: '#5ac8fa', locations: [
+    { name: '中午退房 · 大巴回胡志明', lat: 12.05001, lng: 109.20828, type: 'transport', time: '12:00', desc: '约 7–9 小时，到胡志明大约晚上 7–9 点。⚠️ 如果当晚就飞首尔，时间非常紧，见总览里的回程提醒。', gmap: g('Fusion Resort Cam Ranh') },
+    { name: '金兰国际机场（CXR）', lat: 11.99825, lng: 109.21738, type: 'transport', time: '—', desc: '离 Fusion 只有十几分钟。备选：飞胡志明约 1 小时；也有直飞首尔的航班。', gmap: g('Cam Ranh International Airport') },
+    { name: '新山一机场 · 飞首尔', lat: SGN[0], lng: SGN[1], type: 'transport', time: '晚上', desc: '国际线提前 3 小时到。', gmap: g('Tan Son Nhat International Airport') },
+  ]},
+];
 
 function overviewContent() {
   return `
-<div class="hero"><h1>越南跨年攻略</h1><p class="subtitle">12/29 – 1/3 · 胡志明市进出 + ${DEST[CUR]}</p></div>
-<div class="dest-switch">${Object.entries(DEST).map(([k, v]) => `<a class="tab${k === CUR ? ' active' : ''}" href="?d=${k}">${v}</a>`).join('')}</div>
-<p class="note">目的地还在投票，可以切换看三个方案。<a href="./">← 回投票页</a></p>
+<div class="hero"><h1>越南跨年攻略</h1><p class="subtitle">12/29 – 1/3 · 胡志明 → 芽庄 → 金兰湾</p></div>
+<p class="note"><a href="./">← 回投票页</a></p>
 <div class="info-grid">
-  <div class="info-card"><div class="label">国际航班</div><div class="value">12/29 台北 → 胡志明市<br>1/3 胡志明市 → 首尔</div></div>
-  <div class="info-card"><div class="label">国内线</div><div class="value">12/30 胡志明市 → ${DEST[CUR]}<br>1/2 ${DEST[CUR]} → 胡志明市</div></div>
-  <div class="info-card"><div class="label">住宿</div><div class="value">胡志明第一郡 2 晚<br>${DEST[CUR]} 3 晚</div></div>
-  <div class="info-card"><div class="label">跨年天气</div><div class="value">${WEATHER[CUR]}</div></div>
+  <div class="info-card"><div class="label">到达</div><div class="value">12/29 晚 我<br>12/30 凌晨 两位<br>12/31 凌晨 一位</div></div>
+  <div class="info-card"><div class="label">交通</div><div class="value">12/31 大巴去芽庄<br>1/3 大巴回胡志明</div></div>
+  <div class="info-card"><div class="label">住宿</div><div class="value">胡志明 2 晚<br>芽庄凯悦 1 晚<br>金兰湾 Fusion 2 晚</div></div>
+  <div class="info-card"><div class="label">跨年</div><div class="value">芽庄市区<br>4月2日广场，离凯悦走路几分钟</div></div>
 </div>
+<div class="section-head">⚠️ 回程提醒</div>
+<div class="card warn"><div class="desc">
+1/3 中午从金兰湾坐大巴，到胡志明大约晚上 7–9 点。如果首尔航班也是 1/3 晚上，几乎没有缓冲，大巴晚点或堵车就会误机。<br>
+建议二选一：<br>
+① <b>金兰机场飞胡志明</b>（约 1 小时），机场离 Fusion 只有十几分钟；<br>
+② 首尔航班还没买的话，<b>直接从金兰机场飞首尔</b>。
+</div></div>
 <div class="section-head">行程概览</div>
 <div class="day-list">${DAYS.slice(1).map(d => `<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${d.color}"></span>${d.label} · ${d.title}</div><div class="desc">${d.date}</div></div>`).join('')}</div>
 <div class="section-head">出发前要办</div>
 <div class="card"><div class="desc">
-① <b>尽早订国内线</b>：跨年前后机票涨得快，越捷、越南航空、越竹都有。<br>
-② <b>签证</b>：按各自护照查越南官方要求。韩国护照目前免签，中国护照要提前办电子签。<br>
-③ <b>手机和打车</b>：买越南 eSIM，装好 Grab（打车、送餐都能用）。<br>
-④ <b>钱</b>：越南盾现金备一些，小店和夜市多数只收现金。<br>
-⑤ <b>前一段</b>：12/25–12/29 在台北，这份攻略只排越南部分。
+① <b>12/31 大巴票</b>：跨年当天票紧张，提前买卧铺，确认上车点。<br>
+② <b>1/1 跳岛游</b>：提前订，问清楚停航怎么退。<br>
+③ <b>签证</b>：按各自护照查越南官方要求。韩国护照目前免签，中国护照要提前办电子签。<br>
+④ <b>手机和打车</b>：买越南 eSIM，装好 Grab。<br>
+⑤ <b>钱</b>：越南盾现金备一些，夜市和小店多数只收现金。
 </div></div>
 <div class="section-head">说明</div>
-<div class="card"><div class="desc">这是初版，按航班日期和常见路线排的。餐厅和跨年活动还没用小红书、Google Maps 核实，带「以官方为准」的地方出发前要再查。每个地点都可以点「导航」用 Google Maps 打开。</div></div>
+<div class="card"><div class="desc">餐厅和跨年活动还没用小红书、Google Maps 核实，带「以官方为准」的地方出发前要再查。每个地点都可以点「导航」用 Google Maps 打开。</div></div>
 <div class="section-head">图例</div>
 <div class="legend">
   <div class="legend-item"><div class="legend-dot" style="background:var(--tint-red)"></div>吃饭</div>
