@@ -273,14 +273,14 @@ const SGN = [10.81798, 106.65626], D1 = [10.77372, 106.70405], HCMC_HOTEL = [10.
 
 const DAYS = [
   { id: 0, label: '总览', color: '#0071e3', locations: [] },
-  { id: 1, label: 'D1 胡志明', date: '12/29 周二 · 晚上', title: '杨巧思先到 · 入住', color: '#ff9500', locations: [
+  { id: 1, label: 'D1 胡志明', date: '12/29 周二 · 晚上', title: '成员A先到 · 入住', color: '#ff9500', locations: [
     { name: '新山一国际机场（SGN）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '晚上', desc: '从台北飞来。出关后用 Grab 打车去酒店，第三郡约 20–30 分钟。', gmap: g('Tan Son Nhat International Airport') },
-    { name: '入住：M Village 快捷酒店（南圻起义街）', lat: HCMC_HOTEL[0], lng: HCMC_HOTEL[1], type: 'hotel', time: '入住', desc: '214 Nam Ky Khoi Nghia，第三郡。工作室房，1.6 米大床，有厨房。胡志明只住这一晚。订的时候按实际人数登记，跟前台说陈性情和王大气 12/30 早上会来。到第一郡景点打车约 10 分钟。', gmap: g('Express by M Village Nam Ky Khoi Nghia') },
+    { name: '入住：M Village 快捷酒店（南圻起义街）', lat: HCMC_HOTEL[0], lng: HCMC_HOTEL[1], type: 'hotel', time: '入住', desc: '214 Nam Ky Khoi Nghia，第三郡。工作室房，1.6 米大床，有厨房。胡志明只住这一晚。订的时候按实际人数登记，跟前台说成员C和成员D 12/30 早上会来。到第一郡景点打车约 10 分钟。', gmap: g('Express by M Village Nam Ky Khoi Nghia') },
     { name: '范五老 · 裴援步行街', lat: 10.76683, lng: 106.69267, type: 'drink', time: '—', desc: '到得早、还有精神的话，酒吧街开到凌晨。', xhsKeyword: '胡志明 裴援街', gmap: g('Bui Vien Walking Street') },
   ]},
-  { id: 2, label: 'D2 胡志明', date: '12/30 周三 · 杨巧思、陈性情、王大气', title: '市区一日游 · 酒吧等钟知心', color: '#34c759', locations: [
-    { name: '陈性情抵达（VJ5011，从上海）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '05:40', desc: '浦东 02:15 起飞，到新山一 T2。出关后 Grab 到酒店，跟杨巧思住一间，补觉到中午。', gmap: g('Tan Son Nhat International Airport') },
-    { name: '王大气抵达（越旅行航空，从深圳）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '06:50', desc: '宝安 T3 05:00 起飞，到新山一 T2（待出票）。比陈性情晚一个小时，可以在机场等他一起打车，或各自去酒店。', gmap: g('Tan Son Nhat International Airport') },
+  { id: 2, label: 'D2 胡志明', date: '12/30 周三 · 成员A、成员C、成员D', title: '市区一日游 · 酒吧等成员B', color: '#34c759', locations: [
+    { name: '成员C抵达（从上海）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '05:40', desc: '浦东 02:15 起飞，到新山一 T2。出关后 Grab 到酒店，跟成员A住一间，补觉到中午。', gmap: g('Tan Son Nhat International Airport') },
+    { name: '成员D抵达（从深圳）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '06:50', desc: '宝安 T3 05:00 起飞，到新山一 T2（待出票）。比成员C晚一个小时，可以在机场等他一起打车，或各自去酒店。', gmap: g('Tan Son Nhat International Airport') },
     { name: '中午退房 · 行李寄存前台', lat: HCMC_HOTEL[0], lng: HCMC_HOTEL[1], type: 'hotel', time: '12:00', desc: '今晚不住酒店。退房后把行李寄存在 M Village 前台，半夜去坐车前再取。', gmap: g('Express by M Village Nam Ky Khoi Nghia') },
     { name: 'Phở Hòa Pasteur 河粉', lat: 10.7868, lng: 106.68905, type: 'food', time: '12:30', desc: '老牌河粉店，当午饭。', xhsKeyword: '胡志明 Pho Hoa', gmap: g('Pho Hoa Pasteur Ho Chi Minh City') },
     { name: '西贡中央邮局 · 红教堂', lat: 10.77996, lng: 106.69999, type: 'spot', time: '14:00', desc: '法式老建筑，挨在一起。红教堂外立面可能还在修，以现场为准。', xhsKeyword: '西贡中央邮局', gmap: g('Saigon Central Post Office') },
@@ -289,11 +289,11 @@ const DAYS = [
     { name: 'Bánh Mì Huỳnh Hoa 法棍', lat: 10.77139, lng: 106.69272, type: 'food', time: '18:00', desc: '最有名的法棍之一，料很足，当晚饭。', xhsKeyword: '胡志明 Huynh Hoa 法棍', gmap: g('Banh Mi Huynh Hoa') },
     { name: '阮惠步行街', lat: 10.77372, lng: 106.70405, type: 'spot', time: '19:30', desc: '晚上很热闹，两边咖啡楼可以上楼看街景。', xhsKeyword: '胡志明 阮惠步行街', gmap: g('Nguyen Hue Walking Street') },
     { name: 'Chill Skybar（AB Tower 楼顶）', lat: 10.77052, lng: 106.69439, type: 'drink', time: '21:00', desc: '楼顶酒吧看夜景，有着装要求，以官方为准。之后可以转去裴援街。', xhsKeyword: '胡志明 Chill Skybar', gmap: g('Chill Skybar Ho Chi Minh City') },
-    { name: '裴援步行街 · 等钟知心', lat: 10.76683, lng: 106.69267, type: 'drink', time: '23:00', desc: '酒吧开到凌晨。钟知心 01:20 落地，00:00 左右回酒店取行李（白天先问好前台夜里能不能取），再去机场接他，或直接在大巴上车点会合。', xhsKeyword: '胡志明 裴援街', gmap: g('Bui Vien Walking Street') },
+    { name: '裴援步行街 · 等成员B', lat: 10.76683, lng: 106.69267, type: 'drink', time: '23:00', desc: '酒吧开到凌晨。成员B 01:20 落地，00:00 左右回酒店取行李（白天先问好前台夜里能不能取），再去机场接他，或直接在大巴上车点会合。', xhsKeyword: '胡志明 裴援街', gmap: g('Bui Vien Walking Street') },
   ]},
-  { id: 3, label: 'D3 去芽庄', date: '12/31 周四 · 跨年夜', title: '钟知心到 · 四人大巴去芽庄 · 市区跨年', color: '#ff2d55', locations: [
-    { name: '钟知心抵达（CZ6089，从广州）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '01:20', desc: '白云 12/30 23:30 起飞，到新山一 T2。出关约 1 小时，四个人在机场或大巴上车点会合。', gmap: g('Tan Son Nhat International Airport') },
-    { name: '大巴：胡志明 → 芽庄', lat: 10.8796, lng: 106.81596, type: 'transport', time: '03:30 后', desc: '约 430 公里，7–9 小时，选卧铺大巴（如富达 FUTA），在车上补觉。买钟知心落地 2 小时后最早的一班，中午到下午到芽庄。上车点以车票为准：有的从新东部客运站出发，有的在第一郡有上车点或接驳车。跨年当天车票紧张，要提前买。', gmap: g('Ben xe Mien Dong moi') },
+  { id: 3, label: 'D3 去芽庄', date: '12/31 周四 · 跨年夜', title: '成员B到 · 四人大巴去芽庄 · 市区跨年', color: '#ff2d55', locations: [
+    { name: '成员B抵达（从广州）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '01:20', desc: '白云 12/30 23:30 起飞，到新山一 T2。出关约 1 小时，四个人在机场或大巴上车点会合。', gmap: g('Tan Son Nhat International Airport') },
+    { name: '大巴：胡志明 → 芽庄', lat: 10.8796, lng: 106.81596, type: 'transport', time: '03:30 后', desc: '约 430 公里，7–9 小时，选卧铺大巴（如富达 FUTA），在车上补觉。买成员B落地 2 小时后最早的一班，中午到下午到芽庄。上车点以车票为准：有的从新东部客运站出发，有的在第一郡有上车点或接驳车。跨年当天车票紧张，要提前买。', gmap: g('Ben xe Mien Dong moi') },
     { name: '入住：芽庄凯悦（Hyatt Regency）', lat: 12.24099, lng: 109.19563, type: 'hotel', time: '下午', desc: '就在陈富路海边。放好行李，休息一下再出门。', gmap: g('Hyatt Regency Nha Trang') },
     { name: '芽庄夜市 · 晚饭', lat: 12.23965, lng: 109.19579, type: 'food', time: '19:00', desc: '离酒店很近，海鲜先问清价格。跨年夜餐厅人多，最好早点吃。', xhsKeyword: '芽庄夜市', gmap: g('Nha Trang Night Market') },
     { name: '4月2日广场（沉香塔）跨年倒数', lat: 12.238, lng: 109.1967, type: 'spot', time: '23:00', desc: '从凯悦走过去几分钟。往年跨年有活动，以当年官方公告为准。人很多，结束后走回酒店最方便。', xhsKeyword: '芽庄 跨年', gmap: g('Tram Huong Tower Nha Trang') },
@@ -311,12 +311,12 @@ const DAYS = [
   ]},
   { id: 6, label: 'D6 回程', date: '1/3 周日 → 1/4 凌晨', title: '回胡志明 · 各自飞回家', color: '#5ac8fa', locations: [
     { name: '中午退房 · 去金兰机场', lat: 12.05001, lng: 109.20828, type: 'hotel', time: '12:00', desc: '机场离 Fusion 只有十几分钟。', gmap: g('Fusion Resort Cam Ranh') },
-    { name: '金兰机场 → 胡志明（国内线）', lat: 11.99825, lng: 109.21738, type: 'transport', time: '下午', desc: '约 1 小时。推荐四个人都坐飞机回：陈性情 21:45、王大气 1/4 00:10 就要飞，坐大巴赶不上。选 17:00 前到胡志明的班次，跟国际航班留够 4 小时。国内线和国际线是分开买的，延误不保护转机。', gmap: g('Cam Ranh International Airport') },
-    { name: '陈性情飞上海（9G634）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '21:45', desc: '新山一 T2 起飞，1/4 02:45 到浦东。19:45 前到机场。', gmap: g('Tan Son Nhat International Airport') },
-    { name: '王大气飞深圳（越旅行航空）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '1/4 00:10', desc: '新山一起飞，04:00 到宝安（待出票）。22:10 前到机场。', gmap: g('Tan Son Nhat International Airport') },
-    { name: '钟知心飞广州（CZ6090）', lat: SGN[0], lng: SGN[1], type: 'transport', time: '1/4 02:25', desc: '新山一 T2 起飞，06:20 到白云。00:25 前到机场，晚上还能在市区吃顿饭。', gmap: g('Tan Son Nhat International Airport') },
-    { name: '杨巧思飞首尔', lat: SGN[0], lng: SGN[1], type: 'transport', time: '待补充', desc: '航班确定后补上。', gmap: g('Tan Son Nhat International Airport') },
-    { name: '大巴回胡志明', lat: 12.05001, lng: 109.20828, type: 'transport', time: '—', desc: '中午出发约 7–9 小时，晚上 7–9 点才到。只适合 1/4 02:25 才走的钟知心；陈性情（21:45）和王大气（00:10）都会很赶。', gmap: g('Fusion Resort Cam Ranh') },
+    { name: '金兰机场 → 胡志明（国内线）', lat: 11.99825, lng: 109.21738, type: 'transport', time: '下午', desc: '约 1 小时。推荐四个人都坐飞机回：成员C 21:45、成员D 1/4 00:10 就要飞，坐大巴赶不上。选 17:00 前到胡志明的班次，跟国际航班留够 4 小时。国内线和国际线是分开买的，延误不保护转机。', gmap: g('Cam Ranh International Airport') },
+    { name: '成员C飞上海', lat: SGN[0], lng: SGN[1], type: 'transport', time: '21:45', desc: '新山一 T2 起飞，1/4 02:45 到浦东。19:45 前到机场。', gmap: g('Tan Son Nhat International Airport') },
+    { name: '成员D飞深圳', lat: SGN[0], lng: SGN[1], type: 'transport', time: '1/4 00:10', desc: '新山一起飞，04:00 到宝安（待出票）。22:10 前到机场。', gmap: g('Tan Son Nhat International Airport') },
+    { name: '成员B飞广州', lat: SGN[0], lng: SGN[1], type: 'transport', time: '1/4 02:25', desc: '新山一 T2 起飞，06:20 到白云。00:25 前到机场，晚上还能在市区吃顿饭。', gmap: g('Tan Son Nhat International Airport') },
+    { name: '成员A飞首尔', lat: SGN[0], lng: SGN[1], type: 'transport', time: '待补充', desc: '航班确定后补上。', gmap: g('Tan Son Nhat International Airport') },
+    { name: '大巴回胡志明', lat: 12.05001, lng: 109.20828, type: 'transport', time: '—', desc: '中午出发约 7–9 小时，晚上 7–9 点才到。只适合 1/4 02:25 才走的成员B；成员C（21:45）和成员D（00:10）都会很赶。', gmap: g('Fusion Resort Cam Ranh') },
   ]},
 ];
 
