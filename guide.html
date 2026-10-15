@@ -230,6 +230,31 @@ a:hover { text-decoration: underline; }
 .dest-switch .tab{text-decoration:none}
 .card.warn{border-left:4px solid var(--tint-orange)}
 .note{text-align:center;font-size:13px;color:var(--text-secondary);margin-bottom:16px}
+
+/* ── sync status, distance rows, edit mode ── */
+#syncStatus{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:10px;z-index:1200;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#6e6e73;font-size:12px;font-weight:600;border-radius:980px;padding:4px 10px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+#syncStatus.ok{color:#248a3d}
+.leg{font-size:12px;color:var(--text-secondary);margin:-2px 0 8px 2px;padding-left:2px;font-variant-numeric:tabular-nums}
+.dh-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dh-who{color:var(--text-tertiary)}
+.ed-toggle{flex-shrink:0;border:0;border-radius:980px;padding:6px 14px;font-size:14px;font-weight:600;background:var(--bg-grouped);color:var(--accent);cursor:pointer}
+.edit-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:.5px solid var(--separator)}
+.edit-bar button,.edit-bar select{border:1px solid var(--separator);background:var(--bg-secondary);color:var(--text-primary);border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;max-width:100%}
+.edit-bar .danger{color:var(--tint-red)}
+.edit-bar .armed{background:var(--tint-red);color:#fff;border-color:var(--tint-red)}
+.add-loc{width:100%;margin:6px 0 20px;border:1.5px dashed var(--separator);background:none;border-radius:var(--radius-md);padding:12px;font-size:15px;font-weight:600;color:var(--accent);cursor:pointer}
+.edit-form{display:grid;gap:10px;cursor:default;margin-bottom:10px;border:1.5px solid var(--accent)}
+.edit-form .ef-title{font-weight:700}
+.edit-form label{display:grid;gap:4px;font-size:12.5px;color:var(--text-secondary);min-width:0}
+.edit-form input,.edit-form select,.edit-form textarea{font:inherit;font-size:15px;color:var(--text-primary);background:var(--bg-secondary);border:1px solid var(--separator);border-radius:8px;padding:8px 10px;width:100%;min-width:0;box-sizing:border-box}
+.edit-form .ef-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.ef-coord{font-size:13px;color:var(--text-secondary)}
+.ef-actions{display:flex;justify-content:flex-end;gap:8px}
+.btn-primary,.btn-ghost{border:0;border-radius:980px;padding:8px 18px;font-weight:600;font-size:14px;cursor:pointer}
+.btn-primary{background:var(--accent);color:#fff}.btn-ghost{background:var(--bg-grouped);color:var(--text-primary)}
+.btn-primary:disabled{opacity:.5}
+#gtoast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:#1d1d1f;color:#fff;padding:10px 18px;border-radius:980px;font-weight:600;font-size:14px;transition:opacity .25s,transform .25s;pointer-events:none;z-index:3000;max-width:92vw;text-align:center}
+#gtoast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
@@ -325,7 +350,7 @@ function overviewContent() {
 如果要省钱：钟知心 1/4 02:25 才走，可以坐大巴；陈性情和王大气一定要坐飞机。
 </div></div>
 <div class="section-head">行程概览</div>
-<div class="day-list">${DAYS.slice(1).map(d => `<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${d.color}"></span>${d.label} · ${d.title}</div><div class="desc">${d.date}</div></div>`).join('')}</div>
+<div class="day-list">${DAYS.slice(1).map(d => `<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${okColor(d.color)}"></span>${esc(d.label)} · ${esc(d.title)}</div><div class="desc">${esc(d.date)}</div></div>`).join('')}</div>
 <div class="section-head">出发前要办</div>
 <div class="card"><div class="desc">
 ① <b>12/31 大巴票</b>：跨年当天票紧张，提前买卧铺。钟知心 01:20 落地，买 03:30 以后最早的一班，确认上车点。<br>
@@ -398,34 +423,35 @@ const emojis = { food:'🍽️', spot:'📍', hotel:'🏨', transport:'🚃', dr
 
 function clearMap() { markers.forEach(m=>map.removeLayer(m)); polylines.forEach(p=>map.removeLayer(p)); markers=[]; polylines=[]; }
 
+const okColor = c => /^#[0-9a-f]{3,8}$/i.test(c || '') ? c : '#0071e3';
 function showDay(idx) {
   clearMap();
   if (idx === 0) {
     const pts = [];
-    DAYS.forEach(d => d.locations.forEach(l => { if(l.lat) pts.push([l.lat,l.lng]); }));
-    if(pts.length) map.fitBounds(pts, {padding:[30,30]});
+    DAYS.forEach(d => d.locations.forEach(l => { if (l.lat) pts.push([l.lat, l.lng]); }));
+    if (pts.length) map.fitBounds(pts, { padding: [30, 30] });
     DAYS.slice(1).forEach(d => {
-      d.locations.filter(l=>l.time!=='—').forEach(l => {
-        const m = L.circleMarker([l.lat,l.lng], { radius:4, fillColor:d.color, color:'#fff', weight:1.5, fillOpacity:.9 }).addTo(map).bindPopup(`<b>${l.name}</b><br><span style="color:#86868b">${d.label}</span>`);
+      d.locations.filter(l => l.time !== '—' && l.lat).forEach(l => {
+        const m = L.circleMarker([l.lat, l.lng], { radius: 4, fillColor: okColor(d.color), color: '#fff', weight: 1.5, fillOpacity: .9 }).addTo(map).bindPopup(`<b>${esc(l.name)}</b><br><span style="color:#86868b">${esc(d.label)}</span>`);
         markers.push(m);
       });
     });
     return;
   }
-  const day = DAYS.find(d=>d.id===idx);
-  if(!day) return;
+  const day = DAYS.find(d => d.id === idx);
+  if (!day) return;
   const coords = [];
   day.locations.forEach(l => {
-    if(!l.lat) return;
-    const m = L.marker([l.lat,l.lng], { icon: icon(day.color, emojis[l.type]||'📌') }).addTo(map);
-    const gmapQ = l.gmap||encodeURIComponent(l.name+' Vietnam');
-    m.bindPopup(`<b>${l.name}</b>${l.time!=='—'?'<br><span style="color:#86868b">'+l.time+'</span>':''}<br>${l.desc}${l.budget?'<br><span style="color:#ff9500">'+l.budget+'</span>':''}<br><a href="#" onclick="event.preventDefault();openAS('${l.name.replace(/'/g,"\\'")}',${l.lat},${l.lng},'${gmapQ}')">📍 导航</a>${l.xhs?' · <a href="'+l.xhs+'" target="_blank">📕 小红书</a>':''}`);
+    if (!l.lat) return;
+    const m = L.marker([l.lat, l.lng], { icon: icon(okColor(day.color), emojis[l.type] || '📌') }).addTo(map);
+    m.bindPopup(`<b>${esc(l.name)}</b>${l.time !== '—' ? '<br><span style="color:#86868b">' + esc(l.time) + '</span>' : ''}<br>${esc(l.desc)}${l.budget ? '<br><span style="color:#ff9500">' + esc(l.budget) + '</span>' : ''}<br><a href="#" data-nav="${esc(l.id)}">📍 导航</a>`);
     markers.push(m);
-    if(l.time!=='—') coords.push([l.lat,l.lng]);
+    if (l.time !== '—') coords.push([l.lat, l.lng]);
   });
-  if(coords.length>1) { const pl = L.polyline(coords, { color:day.color, weight:2.5, opacity:.5, dashArray:'6,5' }).addTo(map); polylines.push(pl); }
-  if(coords.length) map.fitBounds(coords, { padding:[40,40], maxZoom:14 });
+  if (coords.length > 1) { const pl = L.polyline(coords, { color: okColor(day.color), weight: 2.5, opacity: .5, dashArray: '6,5' }).addTo(map); polylines.push(pl); }
+  if (coords.length && !form) map.fitBounds(coords, { padding: [40, 40], maxZoom: 14 });
 }
+map.on('popupopen', e => { const a = e.popup.getElement().querySelector('[data-nav]'); if (a) a.addEventListener('click', ev => { ev.preventDefault(); const l = findLoc(a.dataset.nav); if (l) openAS(l.name, l.lat, l.lng, l.gmap); }); });
 
 // ══════════ RENDER ══════════
 function payChips(pay) {
@@ -474,35 +500,72 @@ function openExt(key, kind) {
 function openXhs(key) { return openExt(key, 'xhs'); }
 function openDp(key)  { return openExt(key, 'dp'); }
 
-function locCard(loc, dayIdx) {
-  const dot = loc.type==='food'?'food':loc.type==='spot'?'spot':loc.type==='drink'?'drink':loc.type==='hotel'?'hotel':'transport';
-  const bdg = loc.type==='food'?'<span class="badge food">餐</span>':loc.type==='spot'?'<span class="badge spot">景</span>':loc.type==='drink'?'<span class="badge drink">饮</span>':'';
-  const uid = `d${dayIdx}-${loc.name.replace(/\W/g,'')}`;
-  const locKey = `${dayIdx}::${loc.name}`;
-  const gmapQ = loc.gmap||encodeURIComponent(loc.name+' Vietnam');
-  let lnk = `<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
-  if(loc.xhs||loc.xhsKeyword) {
-    const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
-    const xhsLabel = IN_APP_WEBVIEW ? '📕 小红书' : '📕 小红书 App';
-    lnk += `<a href="${xhsHref}" onclick="return openXhs('${locKey.replace(/'/g,"\\'")}')" class="btn xhs">${xhsLabel}</a>`;
-  }
-  const dpEnabled = false; // 大众点评 has no Vietnam coverage
-  if(dpEnabled) {
-    const dpHref = IN_APP_WEBVIEW ? dpWebUrl(loc) : dpAppUrl(loc);
-    const dpLabel = IN_APP_WEBVIEW ? '🍜 大众点评' : '🍜 大众点评 App';
-    lnk += `<a href="${dpHref}" onclick="return openDp('${locKey.replace(/'/g,"\\'")}')" class="btn dp">${dpLabel}</a>`;
-  }
-  if(loc.reserve) lnk += `<a href="${loc.reserve}" target="_blank" class="btn rsv">📅 预约</a>`;
-  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links'))toggle('${uid}')"><div class="time">${loc.time!=='—'?loc.time:'备选'}</div><div class="name">${bdg} ${loc.name}</div><div class="desc">${loc.desc}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
-}
+// ══════════ SAFE RENDERING (itinerary is now user-editable) ══════════
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : '';
+const rid = () => Math.random().toString(36).slice(2, 8);
+const LOC_FIELDS = ['id', 'name', 'lat', 'lng', 'type', 'time', 'desc', 'gmap', 'xhsKeyword', 'reserve', 'budget'];
+function cleanLoc(l) { const o = {}; LOC_FIELDS.forEach(k => { const v = l[k]; if (v !== undefined && v !== null && v !== '') o[k] = v; }); return o; }
+DAYS.slice(1).forEach(d => d.locations.forEach(l => { if (!l.id) l.id = rid(); }));
+const findLoc = id => { for (const d of DAYS) { const l = (d.locations || []).find(x => x.id === id); if (l) return l; } return null; };
 
+// ══════════ DISTANCE BETWEEN STOPS (straight line × 1.3, no external API) ══════════
+function haversine(a, b) { const R = 6371, r = x => x * Math.PI / 180, dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); }
+function legText(a, b) {
+  if (!a.lat || !b.lat) return '';
+  const d = haversine(a, b) * 1.3;
+  if (d < 0.1) return '';
+  const km = d < 10 ? d.toFixed(1) : Math.round(d);
+  if (d > 100) return `约 ${km} km · 长途，交通方式见说明`;
+  const r5 = m => Math.max(5, Math.round(m / 5) * 5);
+  let t = `约 ${km} km · 打车约 ${r5(d / (d < 15 ? 20 : 60) * 60)} 分钟`;
+  if (d < 2) t += ` · 步行约 ${r5(d / 4.5 * 60)} 分钟`;
+  return t;
+}
+const legRow = (a, b) => { const t = legText(a, b); return t ? `<div class="leg" title="直线距离估算，仅供参考">↓ ${t}</div>` : ''; };
+
+// ══════════ CARDS ══════════
+const TYPES = [['spot', '景点'], ['food', '吃饭'], ['drink', '酒吧'], ['hotel', '住宿'], ['transport', '交通']];
+let editMode = false, form = null, pendingRender = false, armedDel = null;
+function locCard(loc, dayIdx) {
+  if (form && form.id === loc.id) return `<div class="tl-item">${formHtml(loc)}</div>`;
+  const dot = ['food', 'spot', 'drink', 'hotel'].includes(loc.type) ? loc.type : 'transport';
+  const bdg = loc.type === 'food' ? '<span class="badge food">餐</span>' : loc.type === 'spot' ? '<span class="badge spot">景</span>' : loc.type === 'drink' ? '<span class="badge drink">饮</span>' : '';
+  let lnk = `<button class="btn nav" data-nav="${esc(loc.id)}">📍 导航</button>`;
+  if (loc.xhs || loc.xhsKeyword) {
+    const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
+    lnk += `<a href="${esc(xhsHref)}" data-xhs="${esc(loc.id)}" class="btn xhs">${IN_APP_WEBVIEW ? '📕 小红书' : '📕 小红书 App'}</a>`;
+  }
+  if (safeUrl(loc.reserve)) lnk += `<a href="${esc(loc.reserve)}" target="_blank" rel="noopener" class="btn rsv">📅 预约</a>`;
+  const day = DAYS.find(x => x.id === dayIdx);
+  const bar = editMode && !form ? `<div class="edit-bar">
+      <button data-ed="up" data-id="${esc(loc.id)}" aria-label="上移">↑</button><button data-ed="down" data-id="${esc(loc.id)}" aria-label="下移">↓</button>
+      <select data-ed="move" data-id="${esc(loc.id)}" aria-label="移到哪一天"><option value="">移到…</option>${DAYS.slice(1).filter(d => d.id !== dayIdx).map(d => `<option value="${d.id}">${esc(d.label)}</option>`).join('')}</select>
+      <button data-ed="edit" data-id="${esc(loc.id)}">改</button><button data-ed="del" data-id="${esc(loc.id)}" class="danger">删</button></div>` : '';
+  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card"><div class="time">${loc.time !== '—' ? esc(loc.time) : '备选'}</div><div class="name">${bdg} ${esc(loc.name)}</div><div class="desc">${esc(loc.desc)}</div>${loc.budget ? '<div class="budget">' + esc(loc.budget) + '</div>' : ''}<div class="links">${lnk}</div>${bar}</div></div>`;
+}
+function formHtml(loc) {
+  const l = loc || {}, lat = form.lat, lng = form.lng;
+  return `<div class="card edit-form" id="editForm">
+    <div class="ef-title">${loc ? '修改地点' : '添加地点'}</div>
+    <label>名称<input id="ef-name" maxlength="60" value="${esc(l.name)}"></label>
+    <div class="ef-row"><label>时间<input id="ef-time" maxlength="20" value="${esc(l.time === '—' ? '' : l.time)}" placeholder="留空 = 备选"></label>
+      <label>类型<select id="ef-type">${TYPES.map(([k, n]) => `<option value="${k}" ${(l.type || 'spot') === k ? 'selected' : ''}>${n}</option>`).join('')}</select></label></div>
+    <label>说明<textarea id="ef-desc" rows="3" maxlength="300">${esc(l.desc)}</textarea></label>
+    <label>小红书关键词<input id="ef-xhs" maxlength="40" value="${esc(l.xhsKeyword)}"></label>
+    <label>位置<input id="ef-link" placeholder="粘贴谷歌地图链接，或在上方地图点一下"></label>
+    <div class="ef-coord" id="ef-coord">${lat ? `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}` : '还没有位置'}</div>
+    <div class="ef-actions"><button class="btn-ghost" data-ef="cancel">取消</button><button class="btn-primary" data-ef="save">保存</button></div></div>`;
+}
 function renderDay(idx) {
-  const d = DAYS.find(x=>x.id===idx); if(!d) return '';
-  const main = d.locations.filter(l=>l.time!=='—');
-  const alt = d.locations.filter(l=>l.time==='—');
-  let h = `<div class="day-head"><h2>${d.title}</h2><p>${d.date}</p></div>`;
-  if(main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach(l => h += locCard(l, idx)); h += '</div>'; }
-  if(alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach(l => h += locCard(l, idx)); h += '</div>'; }
+  const d = DAYS.find(x => x.id === idx); if (!d) return '';
+  const main = d.locations.filter(l => l.time !== '—'), alt = d.locations.filter(l => l.time === '—');
+  const editBtn = canEdit() ? `<button class="ed-toggle" data-ed="toggle">${editMode ? '完成' : '编辑'}</button>` : '';
+  let h = `<div class="day-head"><div class="dh-row"><h2>${esc(d.title)}</h2>${editBtn}</div><p>${esc(d.date)}${d.who ? ` · <span class="dh-who">最后修改：${esc(memberName(d.who))}</span>` : ''}</p></div>`;
+  if (main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach((l, i) => { if (i) h += legRow(main[i - 1], l); h += locCard(l, idx); }); h += '</div>'; }
+  if (alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach(l => h += locCard(l, idx)); h += '</div>'; }
+  if (editMode) h += form && !form.id ? formHtml(null) : (!form ? `<button class="add-loc" data-ed="add">＋ 添加地点</button>` : '');
   return h;
 }
 
@@ -510,30 +573,188 @@ function renderDay(idx) {
 let cur = 0;
 const tabsEl = document.getElementById('tabs');
 const contentEl = document.getElementById('content');
+function renderTabs() {
+  tabsEl.innerHTML = DAYS.map(d => `<button class="tab${d.id === cur ? ' active' : ''}" data-day="${d.id}">${esc(d.label)}</button>`).join('');
+}
+renderTabs();
+function rerender() { contentEl.innerHTML = cur === 0 ? overviewContent() : renderDay(cur); showDay(cur); }
+function go(idx) {
+  if (form) closeForm(false);
+  if (idx !== cur) editMode = false;
+  cur = idx;
+  tabsEl.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', +t.dataset.day === idx));
+  rerender();
+  window.scrollTo({ top: 0 });
+  const tab = tabsEl.querySelector(`[data-day="${idx}"]`);
+  if (tab) tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+}
+tabsEl.addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) go(+t.dataset.day); });
 
-DAYS.forEach(d => {
-  const btn = document.createElement('button');
-  btn.className = 'tab' + (d.id===0?' active':'');
-  btn.dataset.day = d.id;
-  btn.textContent = d.label;
-  tabsEl.appendChild(btn);
+// card interactions (no inline handlers: names are user-entered)
+contentEl.addEventListener('click', e => {
+  const n = e.target.closest('[data-nav]'); if (n) { const l = findLoc(n.dataset.nav); if (l) openAS(l.name, l.lat, l.lng, l.gmap); return; }
+  const x = e.target.closest('[data-xhs]'); if (x) { const l = findLoc(x.dataset.xhs); if (l) { e.preventDefault(); window.location.href = IN_APP_WEBVIEW ? xhsWebUrl(l) : xhsAppUrl(l); } return; }
 });
 
-function go(idx) {
-  cur = idx;
-  tabsEl.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', +t.dataset.day===idx));
-  contentEl.innerHTML = idx===0 ? overviewContent() : renderDay(idx);
-  showDay(idx);
-  contentEl.scrollTo({top:0});
-  const tab = tabsEl.querySelector(`[data-day="${idx}"]`);
-  if(tab) tab.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+// ══════════ SYNC STATUS + FIREBASE ══════════
+const statusEl = document.createElement('div'); statusEl.id = 'syncStatus'; statusEl.textContent = '正在连接…'; document.body.appendChild(statusEl);
+const setStatus = (t, ok) => { statusEl.textContent = t; statusEl.classList.toggle('ok', !!ok); };
+let db = null, uid = null, synced = false, me = '', members = { m1: '杨巧思', m2: '钟知心', m3: '陈性情', m4: '王大气' };
+try { me = localStorage.getItem('trip-me') || ''; } catch (e) {}
+const memberName = id => members[id] || '';
+const canEdit = () => !!(db && uid && synced);
+let toastTimer = 0;
+function toast(m) { let t = document.getElementById('gtoast'); if (!t) { t = document.createElement('div'); t.id = 'gtoast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = m; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600); }
+
+function applyDays(docs) {
+  docs.forEach(doc => { const n = +doc.id.slice(1); if (!(n >= 1 && n <= 6)) return; const v = doc.data();
+    const i = DAYS.findIndex(d => d.id === n); const day = { id: n, label: v.label, date: v.date, title: v.title, color: v.color, locations: v.locations || [], rev: v.rev, who: v.who || '' };
+    if (i >= 0) DAYS[i] = day; else DAYS.push(day); });
+  DAYS.sort((a, b) => a.id - b.id);
+  if (form) { pendingRender = true; return; }   // never wipe a form someone is typing in
+  renderTabs(); rerender();
 }
+async function seedDays() {
+  // Only called after the server confirmed the collection is incomplete; transactions skip existing docs
+  for (const d of DAYS.slice(1)) {
+    const ref = db.doc('days/d' + d.id);
+    try { await db.runTransaction(async tx => { const s = await tx.get(ref); if (s.exists) return;
+      tx.set(ref, { label: d.label, date: d.date, title: d.title, color: d.color, locations: d.locations.map(cleanLoc), rev: 1, who: '', by: uid, at: Date.now() }); }); } catch (e) {}
+  }
+}
+function loadScript(src) { return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.async = false; el.onload = res; el.onerror = () => rej(new Error(src)); document.head.appendChild(el); }); }
+(async function start() {
+  const OFF = '离线，只能查看';
+  let connected = false, subscribed = false;
+  const fail = () => { if (!synced) setStatus(OFF); };
+  const timer = setTimeout(() => { if (!connected) fail(); }, 10000);
+  const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  try { for (const s of [SDK + 'firebase-app-compat.js', SDK + 'firebase-auth-compat.js', SDK + 'firebase-firestore-compat.js', 'firebase-config.js']) await loadScript(s); }
+  catch (e) { clearTimeout(timer); fail(); return; }
+  try { firebase.initializeApp(window.FIREBASE_CONFIG); } catch (e) { clearTimeout(timer); fail(); return; }
+  firebase.auth().onAuthStateChanged(u => {
+    if (!u || subscribed) return;
+    subscribed = true; uid = u.uid; db = firebase.firestore();
+    db.collection('days').onSnapshot({ includeMetadataChanges: false }, snap => {
+      if (snap.metadata.fromCache) return;
+      if (!connected) { connected = true; clearTimeout(timer); }
+      if (snap.size < 6) { seedDays(); if (snap.empty) return; }
+      synced = true; setStatus('行程已同步', true);
+      applyDays(snap.docs);
+    }, () => { synced = false; setStatus(OFF); if (!form) rerender(); });
+    db.doc('meta/settings').onSnapshot(d => { if (d.exists && d.data().members) { members = { ...members, ...d.data().members }; if (!form && cur) rerender(); } }, () => {});
+  });
+  firebase.auth().signInAnonymously().catch(() => { clearTimeout(timer); fail(); });
+})();
 
-function toggle(id) { const el=document.getElementById(id); if(el) el.classList.toggle('closed'); }
+// ══════════ EDITING ══════════
+const dayDoc = n => db.doc('days/d' + n);
+// Transaction guarded by rev: abort if anyone saved this day since we last saw it
+async function commit(changes) {   // changes: [{ n, rev, locations }]
+  try {
+    await db.runTransaction(async tx => {
+      const snaps = await Promise.all(changes.map(c => tx.get(dayDoc(c.n))));
+      snaps.forEach((s, i) => { if (!s.exists || s.data().rev !== changes[i].rev) throw new Error('conflict'); });
+      changes.forEach((c, i) => tx.update(dayDoc(c.n), { locations: c.locations.map(cleanLoc), rev: snaps[i].data().rev + 1, who: IDS_OK(me), by: uid, at: Date.now() }));
+    });
+    return true;
+  } catch (e) {
+    toast(e && e.message === 'conflict' ? '别人刚改了这一天，已刷新，请重新操作' : '保存失败，请稍后再试');
+    return false;
+  }
+}
+const IDS_OK = m => ['m1', 'm2', 'm3', 'm4'].includes(m) ? m : '';
+const dayOf = n => DAYS.find(d => d.id === n);
+const isAlt = l => l.time === '—';
 
-tabsEl.addEventListener('click', e => { const t=e.target.closest('.tab'); if(t) go(+t.dataset.day); });
+contentEl.addEventListener('click', async e => {
+  const b = e.target.closest('[data-ed]'); if (!b || b.tagName === 'SELECT') return;
+  const act = b.dataset.ed, d = dayOf(cur);
+  if (act === 'toggle') { if (form) closeForm(false); editMode = !editMode; rerender(); return; }
+  if (act === 'add') { openForm(null); return; }
+  const id = b.dataset.id, locs = d.locations.slice(), i = locs.findIndex(l => l.id === id); if (i < 0) return;
+  if (act === 'edit') { openForm(locs[i]); return; }
+  if (act === 'up' || act === 'down') {
+    // swap with the neighbour in the same group (main timeline or 备选)
+    const step = act === 'up' ? -1 : 1; let j = i + step;
+    while (j >= 0 && j < locs.length && isAlt(locs[j]) !== isAlt(locs[i])) j += step;
+    if (j < 0 || j >= locs.length) return;
+    [locs[i], locs[j]] = [locs[j], locs[i]];
+    await commit([{ n: cur, rev: d.rev, locations: locs }]); return;
+  }
+  if (act === 'del') {
+    if (armedDel !== b.dataset.id) { armedDel = b.dataset.id; b.textContent = '确认删除？'; b.classList.add('armed');
+      setTimeout(() => { if (armedDel === id) { armedDel = null; b.textContent = '删'; b.classList.remove('armed'); } }, 3000); return; }
+    armedDel = null; locs.splice(i, 1);
+    if (await commit([{ n: cur, rev: d.rev, locations: locs }])) toast('已删除'); return;
+  }
+});
+contentEl.addEventListener('change', async e => {
+  const s = e.target.closest('select[data-ed="move"]'); if (!s || !s.value) return;
+  const to = +s.value, from = dayOf(cur), dest = dayOf(to), locs = from.locations.slice(), i = locs.findIndex(l => l.id === s.dataset.id); if (i < 0) return;
+  const [moved] = locs.splice(i, 1);
+  if (await commit([{ n: cur, rev: from.rev, locations: locs }, { n: to, rev: dest.rev, locations: [...dest.locations, moved] }])) toast('已移到 ' + dest.label);
+  else s.value = '';
+});
 
-go(0);
+// ── form: inline, survives remote updates; location from map click or a pasted Google Maps link ──
+let tempMarker = null;
+function openForm(loc) {
+  const d = dayOf(cur);
+  form = { id: loc ? loc.id : null, rev: d.rev, lat: loc ? loc.lat : null, lng: loc ? loc.lng : null, origName: loc ? loc.name : '', origGmap: loc ? loc.gmap : '' };
+  rerender();
+  if (form.lat) setTemp(form.lat, form.lng);
+  const f = document.getElementById('editForm'); if (f) { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); document.getElementById('ef-name').focus({ preventScroll: true }); }
+}
+function closeForm(render = true) {
+  form = null; if (tempMarker) { map.removeLayer(tempMarker); tempMarker = null; }
+  if (render) { if (pendingRender) { pendingRender = false; renderTabs(); } rerender(); } else pendingRender = false;
+}
+function setTemp(lat, lng) {
+  if (tempMarker) tempMarker.setLatLng([lat, lng]);
+  else tempMarker = L.marker([lat, lng], { icon: icon('#ff3b30', '📌'), zIndexOffset: 3000 }).addTo(map);
+}
+function setFormLoc(lat, lng) {
+  form.lat = +(+lat).toFixed(6); form.lng = +(+lng).toFixed(6); setTemp(form.lat, form.lng);
+  const c = document.getElementById('ef-coord'); if (c) c.textContent = `📍 ${form.lat.toFixed(5)}, ${form.lng.toFixed(5)}`;
+}
+map.on('click', e => { if (form) setFormLoc(e.latlng.lat, e.latlng.lng); });
+function parseGmaps(u) {
+  if (/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(u)) return 'short';
+  const pats = [/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/, /[?&](?:q|query)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/, /[?&]ll=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/, /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/];
+  for (const p of pats) { const m = decodeURIComponent(u).match(p); if (m && Math.abs(+m[1]) <= 90 && Math.abs(+m[2]) <= 180) return [+m[1], +m[2]]; }
+  return null;
+}
+contentEl.addEventListener('input', e => {
+  if (e.target.id !== 'ef-link' || !form) return;
+  const v = e.target.value.trim(); if (!v) return;
+  const r = parseGmaps(v), c = document.getElementById('ef-coord');
+  if (r === 'short') c.textContent = '这是短链接，网页读不出坐标。请在浏览器打开后，复制地址栏的完整链接。';
+  else if (r) { setFormLoc(r[0], r[1]); map.setView([r[0], r[1]], 15); }
+  else c.textContent = '没识别出坐标，换完整的谷歌地图链接，或者直接在地图上点一下。';
+});
+contentEl.addEventListener('click', async e => {
+  const b = e.target.closest('[data-ef]'); if (!b || !form) return;
+  if (b.dataset.ef === 'cancel') { closeForm(); return; }
+  const name = document.getElementById('ef-name').value.trim();
+  if (!name) return toast('先填名称');
+  if (!form.lat) return toast('先在地图上点一下，或粘贴谷歌地图链接');
+  const time = document.getElementById('ef-time').value.trim() || '—';
+  const d = dayOf(cur), locs = d.locations.slice();
+  const defGmap = n => encodeURIComponent(n + ' Vietnam');
+  const old = form.id ? locs.find(l => l.id === form.id) : null;
+  const gmap = old && old.gmap && old.gmap !== defGmap(form.origName) ? old.gmap : defGmap(name);
+  const loc = { ...(old || {}), id: form.id || rid(), name, time, type: document.getElementById('ef-type').value, desc: document.getElementById('ef-desc').value.trim(),
+    xhsKeyword: document.getElementById('ef-xhs').value.trim(), lat: form.lat, lng: form.lng, gmap };
+  if (old) locs[locs.indexOf(old)] = loc; else locs.push(loc);
+  b.disabled = true;
+  const ok = await commit([{ n: cur, rev: form.rev, locations: locs }]);
+  b.disabled = false;
+  if (ok) { toast(old ? '已保存' : '已添加'); closeForm(); }
+  else { closeForm(); }   // conflict: data already refreshed by the listener
+});
+
 
 /* ── Action Sheet for Navigation ── */
 const asOverlay = document.createElement('div');
@@ -559,21 +780,19 @@ function openAmap(name, lat, lng) {
 }
 
 function openAS(name, lat, lng, gmap) {
-  const q = gmap || encodeURIComponent(name + ' Vietnam');
-  const encName = encodeURIComponent(name);
-  const safeName = name.replace(/'/g,"\\'");
+  const q = gmap || encodeURIComponent(name + ' Vietnam'), encName = encodeURIComponent(name);
   // WebView 内 maps:// 通常被拦截，改用 https Apple Maps URL —— iOS 系统会自动拉起 Apple Maps
-  const appleUrl = IN_APP_WEBVIEW
-    ? `https://maps.apple.com/?q=${lat},${lng}&ll=${lat},${lng}&name=${encName}`
-    : `maps://maps.apple.com/?q=${lat},${lng}&name=${encName}`;
+  const appleUrl = IN_APP_WEBVIEW ? `https://maps.apple.com/?q=${+lat},${+lng}&ll=${+lat},${+lng}&name=${encName}` : `maps://maps.apple.com/?q=${+lat},${+lng}&name=${encName}`;
   const googleUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
-  document.getElementById('as-opts').innerHTML =
-    `<button class="as-item" onclick="window.open('${appleUrl}');closeAS()">🍎 Apple Maps</button>` +
-    `<button class="as-item" onclick="window.open('${googleUrl}');closeAS()">🗺️ Google Maps</button>` +
-    `<button class="as-item" onclick="openAmap('${safeName}',${lat},${lng});closeAS()">🧭 高德地图 App</button>`;
+  const box = document.getElementById('as-opts'); box.innerHTML = '';
+  [['🍎 Apple Maps', () => window.open(appleUrl)], ['🗺️ Google Maps', () => window.open(googleUrl)], ['🧭 高德地图 App', () => openAmap(name, +lat, +lng)]].forEach(([t, f]) => {
+    const b = document.createElement('button'); b.className = 'as-item'; b.textContent = t; b.addEventListener('click', () => { f(); closeAS(); }); box.appendChild(b);
+  });
   asOverlay.classList.add('show');
 }
 function closeAS() { asOverlay.classList.remove('show'); }
+
+go(0);
 </script>
 </body>
 </html>

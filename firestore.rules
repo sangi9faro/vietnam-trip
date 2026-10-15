@@ -159,5 +159,25 @@ service cloud.firestore {
     match /{path=**}/ballots/{mid} {
       allow read: if signedIn();
     }
+
+    // ---------- 攻略页：可编辑行程（d1–d6，不能删除文档）----------
+    match /days/{dayId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && dayId in ['d1', 'd2', 'd3', 'd4', 'd5', 'd6']
+        && request.resource.data.keys().hasOnly(['label', 'date', 'title', 'color', 'locations', 'rev', 'who', 'by', 'at'])
+        && request.resource.data.label is string && request.resource.data.label.size() <= 20
+        && request.resource.data.date is string && request.resource.data.date.size() <= 60
+        && request.resource.data.title is string && request.resource.data.title.size() <= 80
+        && request.resource.data.color is string && request.resource.data.color.size() <= 10
+        && request.resource.data.locations is list
+        && request.resource.data.locations.size() <= 30
+        && request.resource.data.rev is int
+        && (resource == null || request.resource.data.rev == resource.data.rev + 1)
+        && (request.resource.data.who == '' || request.resource.data.who in memberIds())
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at is int;
+      allow delete: if false;
+    }
   }
 }
