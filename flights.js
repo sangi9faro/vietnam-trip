@@ -19,7 +19,11 @@
     const lateHM = late ? (() => { const off = /([+-]\d{2}):(\d{2})$/.exec(f.dep); const mins = off ? (+off[1]) * 60 + Math.sign(+off[1]) * (+off[2]) : 0;
       const x = new Date(late.getTime() + mins * 60000); return `${String(x.getUTCHours()).padStart(2, '0')}:${String(x.getUTCMinutes()).padStart(2, '0')}`; })() : null;
     const depT = loc(f.dep), arrT = loc(f.arr);
-    return `<article class="fl card${!f.dep && !f.arr ? ' tbd' : ''}" id="fl-${f.dir}-${f.who}" style="--p:var(--${f.who})" data-idx="${idx}">
+    // no times at all: one compact dashed row (avatar · name · 航班还没定 · 待补充)
+    if (!f.dep && !f.arr) return `<article class="fl tbd" id="fl-${f.dir}-${f.who}" style="--p:var(--${f.who})" data-idx="${idx}">
+      <span class="fl-who"><span class="av sm" style="--p:var(--${f.who})">${esc(ini(f.who, name))}</span><b>${esc(name(f.who))}</b></span>
+      <span class="fl-tbd">航班还没定${f.approxLabel ? ' · ' + esc(f.approxLabel) : ''}</span><span class="fl-st ${f.status}">${ST[f.status] || '待补充'}</span></article>`;
+    return `<article class="fl" id="fl-${f.dir}-${f.who}" style="--p:var(--${f.who})" data-idx="${idx}">
       <div class="fl-top"><span class="fl-who"><span class="av sm" style="--p:var(--${f.who})">${esc(ini(f.who, name))}</span><b>${esc(name(f.who))}</b></span>
         <span class="fl-st ${f.status}">${ST[f.status] || '待补充'}</span></div>
       <div class="fl-in">
@@ -27,8 +31,7 @@
         <div class="fl-mid"><span class="dur">${d || '—'}</span><span class="ln"><i data-lucide="plane" class="i18"></i></span><span>${f.airline ? esc(f.airline) : '—'} ${f.no ? esc(f.no) : ''}</span></div>
         <div class="fl-end arr"><div class="tm">${arrT ? arrT.hm : NA}${p > 0 ? `<sup>+${p}</sup>` : ''}</div><div class="ap">${ap(f.to)}</div><div class="ct">${esc(f.to ? f.to.city : '')}${arrT ? ' · ' + md(f.arr) : (f.approxLabel && f.dir === 'in' ? ' · ' + esc(f.approxLabel) : '')}</div></div>
       </div>
-      ${!f.dep && !f.arr ? '<p class="fl-tbd">航班还没定</p>' : ''}
-      ${f.dir === 'out' ? `<div class="fl-late"><i data-lucide="clock" class="i18"></i><span>${lateHM ? `最晚 <b>${lateHM}</b> 到机场（国际航班提前 2 小时）` : '起飞时间待补充'}</span></div>` : ''}
+      ${f.dir === 'out' && lateHM ? `<div class="fl-late"><i data-lucide="clock" class="i18"></i><span>最晚 <b>${lateHM}</b> 到机场（国际航班提前 2 小时）</span></div>` : ''}
     </article>`;
   }
   function axis(list, name) {
@@ -48,8 +51,8 @@
     const all = window.TRIP_FLIGHTS || [];
     const col = dir => { const list = all.filter(f => f.dir === dir).sort((a, b) => key(a) - key(b));
       return `<section class="fl-col" data-dir="${dir}"${dir === 'out' && el.dataset.dir !== 'out' ? ' hidden' : ''}${dir === 'in' && el.dataset.dir === 'out' ? ' hidden' : ''}>
-        <h3><i data-lucide="${dir === 'in' ? 'plane-landing' : 'plane-takeoff'}" class="i18"></i>${dir === 'in' ? '去程（按到达时间）' : '回程（按起飞时间）'}</h3>
-        ${axis(list, name)}<div class="fl-list">${list.map((f, i) => card(f, name, i)).join('')}</div></section>`; };
+        <div class="fl-head"><h3><i data-lucide="${dir === 'in' ? 'plane-landing' : 'plane-takeoff'}" class="i18"></i>${dir === 'in' ? '去程' : '回程'} · ${new Set(list.map(f => f.who)).size} 人<small>${dir === 'in' ? '按到达时间' : '按起飞时间'}</small></h3>
+        ${axis(list, name)}</div><div class="fl-list">${list.map((f, i) => card(f, name, i)).join('')}</div></section>`; };
     const cur = el.dataset.dir || 'in';
     el.innerHTML = `<div class="fl-wrap"><div class="seg fl-switch chips" role="tablist" aria-label="去程或回程">
         <button class="chip${cur === 'in' ? ' on' : ''}" role="tab" aria-selected="${cur === 'in'}" data-dir="in">去程</button>

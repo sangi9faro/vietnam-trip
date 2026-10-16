@@ -53,6 +53,7 @@ input[type=text],input[type=number],select,textarea{min-height:44px;background:v
 textarea{padding:10px 12px}
 #cnyIn,#vndIn{font-family:var(--font-num)}
 #vndOut,#cnyOut{font:800 20px var(--font-num)}
+.c-flights{--fl-notch:var(--surface)}   /* flight cards sit on a white card here: tear-line notches use that colour */
 .flight{display:grid;gap:2px;padding:12px 0;border-top:1px solid var(--line);font-size:14px}
 .flight:first-of-type{border-top:0;padding-top:0}
 .flight b{font-size:15px}
@@ -149,10 +150,10 @@ main.wrap.aa-mode{padding-bottom:calc(100px + var(--tabbar-h))}
 .aa-sheet.open{transform:none}
 .aa-sheet .card{box-shadow:none;border-radius:0}
 #aaBackdrop{position:fixed;inset:0;z-index:1400;background:rgba(10,20,25,.45)}
-#aaRepay{position:fixed;inset:0;z-index:2100;background:rgba(10,20,25,.45);display:grid;align-items:end;justify-items:center}
-#aaRepay[hidden]{display:none}
+#aaRepay,#namesDlg{position:fixed;inset:0;z-index:2100;background:rgba(10,20,25,.45);display:grid;align-items:end;justify-items:center}
+#aaRepay[hidden],#namesDlg[hidden]{display:none}
 .aa-rp{width:100%;max-width:520px;border-radius:var(--r-l) var(--r-l) 0 0;padding-bottom:calc(16px + var(--safe-b))}
-@media (min-width:768px){ #aaRepay{align-items:center} .aa-rp{border-radius:var(--r-l)} }
+@media (min-width:768px){ #aaRepay,#namesDlg{align-items:center} .aa-rp{border-radius:var(--r-l)} }
 /* desktop bills layout lives in the ≥1200px block above; here only what the sheet needs */
 @media (min-width:1200px){
   #aaFab,#aaBackdrop{display:none!important}
@@ -183,7 +184,7 @@ main.wrap.aa-mode{padding-bottom:calc(100px + var(--tabbar-h))}
 }
 /* ---------- desktop (≥1200px): one capsule tab at a time, aligned rows, larger type ---------- */
 /* desktop-only pieces stay hidden on phones and tablets */
-.c-progress,.c-aaov,.aa-ptabs,.f-cur,.f-rate,.f-payer,.rp-av,.pk-toc,.aa-st-more,#aaSearch,.aa-gh,.aa-none,.fl-tbd,.lk-empty svg,.lk-empty .sub,.grid .h .av,.chip .av{display:none}
+.c-progress,.c-aaov,.aa-ptabs,.f-cur,.f-rate,.f-payer,.rp-av,.pk-toc,.aa-st-more,#aaSearch,.aa-gh,.aa-none,.lk-empty svg,.lk-empty .sub,.grid .h .av,.chip .av{display:none}
 .gr{display:contents}
 .ph{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 12px;border:0;background:none;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
 .ph b{font-weight:700} .ph i{grid-column:1;display:block;font-style:normal;font-weight:600;font-size:13px;color:var(--accent);font-family:var(--font-num)}
@@ -211,7 +212,6 @@ main.wrap.aa-mode{padding-bottom:calc(100px + var(--tabbar-h))}
   .cd{grid-area:cd;grid-template-columns:repeat(4,92px)} .cd div{background:var(--surface);padding:12px 0 8px}
   .cd b{font-size:40px;color:var(--accent)} .cd div:first-child b{color:var(--coral)} .cd span{color:var(--ink-2);opacity:1}
   .cd.msg{grid-template-columns:auto} .cd.msg b{font-size:24px}
-  .fl.tbd .fl-in{display:none} .fl-tbd{display:block;margin:4px 0 0;color:var(--ink-2);font-size:14px}
   .prg{display:grid;gap:12px}
   .pr{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center}
   .pr .av{grid-row:span 3} .pr .nm{font-weight:700;font-size:14px}
@@ -676,6 +676,7 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
 <script src="trip-data.js"></script>
 <script src="flights.js"></script>
 <script src="packing.js"></script>
+<script src="money.js"></script>
 <script src="bills.js"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -685,21 +686,13 @@ const DEFAULT_SETTINGS = { members: { m1: "成员A", m2: "成员B", m3: "成员C
 const SYM = { CNY: "¥", VND: "₫", KRW: "₩", USD: "$" };
 
 // Static trip facts (no real names or booking codes on this public page); flights live in trip-data.js
-const HOTELS = [
-  { when: "12/29（1 晚）", name: "M Village 快捷酒店 南圻起义街（Express by M Village Nam Ky Khoi Nghia）", q: "Express by M Village Nam Ky Khoi Nghia", addr: "214 Nam Ky Khoi Nghia, Vo Thi Sau, 第三郡", note: "工作室房，1.6 米大床，有厨房。注意：还没订（只收藏了）；页面上是 2 人，{m3}、{m4} 12/30 早上也会来，订的时候按实际人数登记。北京时间 12/24 15:00 前可免费取消。" },
-  { when: "12/31（1 晚）", name: "芽庄凯悦 Hyatt Regency Nha Trang", q: "Hyatt Regency Nha Trang" },
-  { when: "1/1 – 1/3（2 晚）", name: "金兰湾 Fusion Resort Cam Ranh", q: "Fusion Resort Cam Ranh" },
-];
+// hotels and group tasks are shared with guide.html (trip-data.js)
+const HOTELS = window.TRIP_HOTELS, GROUP = window.TRIP_GROUP;
 const PERSONAL = [
   ["passport", "护照有效期 6 个月以上"], ["visa", "越南电子签 / 确认免签（看攻略收藏 · 签证）"], ["ticket", "机票已出票"],
   ["esim", "越南 eSIM / 流量"], ["grab", "装好 Grab"], ["cash", "换一些越南盾"],
   ["insurance", "旅行保险"],
 ];  // things to bring (adapter, swimsuit, meds…) moved to the 行李 tab
-const GROUP = [
-  ["bus1231", "12/31 胡志明 → 芽庄大巴票（03:30 后）"], ["cxr0103", "1/3 金兰 → 胡志明机票（17:00 前到）"],
-  ["island", "1/1 跳岛游预订（问清停航怎么退）"], ["hcmc", "12/29 胡志明 M Village：预订（按 3 人登记）、问夜里取行李"],
-  ["hyatt", "芽庄凯悦：房间怎么分"], ["fusion", "Fusion：房间怎么分"],
-];
 
 let db = null, uid = null, settings = DEFAULT_SETTINGS, checks = {}, checksLoaded = false, me = "";
 try { me = localStorage.getItem("trip-me") || ""; } catch (e) {}

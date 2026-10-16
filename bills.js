@@ -14,7 +14,7 @@ let fmode = 'equal', fvals = {}, fcat = 'food', editId = null, armedKey = '', ar
 
 /* ---------- money ---------- */
 const round2 = n => Math.round(n * 100) / 100;
-const cnyOf = x => x.cny > 0 ? x.cny : x.amount / rate(x.currency);
+const cnyOf = x => TripMoney.cnyOf(x, rate);   // money math lives in money.js (shared with the guide)
 const yuan = n => '¥' + n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const money = (n, c) => (SYM[c] || '') + fmt(n, c);
 const dayLabel = d => { const [, m, dd] = d.split('-'); return `${+m}/${+dd}`; };
@@ -28,27 +28,10 @@ function dayOf(x) {
   const d = x.day || new Date((x.at || 0) + 7 * 3600e3).toISOString().slice(0, 10);
   return d < TRIP_DAYS[0] ? 'pre' : d > TRIP_DAYS[5] ? TRIP_DAYS[5] : d;
 }
-// each participant's share of one expense, in CNY
-function sharesOf(x) {
-  const parts = (x.split || []).filter(id => IDS.includes(id)), c = cnyOf(x), out = {};
-  if (!parts.length) return out;
-  const w = x.mode === 'shares' || x.mode === 'amounts' ? parts.map(id => Math.max(0, +(x.shares || {})[id] || 0)) : parts.map(() => 1);
-  const sum = w.reduce((a, b) => a + b, 0);
-  parts.forEach((id, i) => { out[id] = sum > 0 ? c * w[i] / sum : c / parts.length; });
-  return out;
-}
+const sharesOf = x => TripMoney.sharesOf(x, IDS, rate);
 // balance = paid − owed + repaid out − repaid in; settled entries count for totals only
 function settle() {
-  const z = () => Object.fromEntries(IDS.map(id => [id, 0]));
-  const bal = z(), paid = z(), share = z(), spend = z(); let total = 0;
-  for (const x of expenses) {
-    const c = cnyOf(x), sh = sharesOf(x); total += c;
-    for (const id in sh) spend[id] += sh[id];
-    if (x.settled || !IDS.includes(x.payer) || !Object.keys(sh).length) continue;
-    paid[x.payer] += c; bal[x.payer] += c;
-    for (const id in sh) { share[id] += sh[id]; bal[id] -= sh[id]; }
-  }
-  for (const s of settlements) { if (!IDS.includes(s.from) || !IDS.includes(s.to)) continue; bal[s.from] += s.cny; bal[s.to] -= s.cny; }
+  const { total, bal, paid, share, spend } = TripMoney.balances(expenses, settlements, IDS, rate);
   const cred = IDS.filter(id => bal[id] > EPS).map(id => [id, bal[id]]).sort((a, b) => b[1] - a[1]);
   const debt = IDS.filter(id => bal[id] < -EPS).map(id => [id, -bal[id]]).sort((a, b) => b[1] - a[1]);
   const xfers = []; let i = 0, j = 0;

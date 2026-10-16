@@ -30,3 +30,23 @@ window.TRIP_FLIGHTS = [
     from: { code: "SGN", city: "胡志明", term: null }, to: { code: "ICN", city: "首尔", term: null },
     dep: null, arr: null, approx: "2027-01-03T20:00+07:00", approxLabel: "1/3", status: "tbd" },
 ];
+
+// Hotels. `task` = the group checklist item that books it (booked once that task is ticked); no task = already booked.
+// `day` = trip day of check-in (D1 = 12/29). {m3} etc. are replaced with member names on screen.
+window.TRIP_HOTELS = [
+  { when: "12/29（1 晚）", day: 1, name: "M Village 快捷酒店 南圻起义街（Express by M Village Nam Ky Khoi Nghia）", q: "Express by M Village Nam Ky Khoi Nghia", addr: "214 Nam Ky Khoi Nghia, Vo Thi Sau, 第三郡", task: "hcmc",
+    note: "工作室房，1.6 米大床，有厨房。注意：还没订（只收藏了）；页面上是 2 人，{m3}、{m4} 12/30 早上也会来，订的时候按实际人数登记。北京时间 12/24 15:00 前可免费取消。" },
+  { when: "12/31（1 晚）", day: 3, name: "芽庄凯悦 Hyatt Regency Nha Trang", q: "Hyatt Regency Nha Trang" },
+  { when: "1/1 – 1/3（2 晚）", day: 4, name: "金兰湾 Fusion Resort Cam Ranh", q: "Fusion Resort Cam Ranh" },
+];
+// 集体要办的 (toolbox checklist/group). Order = priority for the guide's 下一步 card.
+window.TRIP_GROUP = [
+  ["bus1231", "12/31 胡志明 → 芽庄大巴票（03:30 后）"], ["cxr0103", "1/3 金兰 → 胡志明机票（17:00 前到）"],
+  ["island", "1/1 跳岛游预订（问清停航怎么退）"], ["hcmc", "12/29 胡志明 M Village：预订（按 3 人登记）、问夜里取行李"],
+  ["hyatt", "芽庄凯悦：房间怎么分"], ["fusion", "Fusion：房间怎么分"],
+];
+// Transport between cities; `task` = the group item that books it.
+window.TRIP_TRANSPORT = [
+  { task: "bus1231", icon: "bus", title: "胡志明 → 芽庄 卧铺大巴", when: "12/31 03:30 以后最早的一班", day: 3, note: "跨年当天票紧张，提前买；确认上车点。" },
+  { task: "cxr0103", icon: "plane", title: "金兰 → 胡志明 国内航班", when: "1/3 17:00 前到达", day: 6, note: "Fusion 到金兰机场十几分钟，中午退房后出发。" },
+];
