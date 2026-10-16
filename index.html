@@ -907,7 +907,7 @@ document.addEventListener("change", async e => {
 
 /* ---------- 攻略收藏: shared link list; paste a 小红书 share text and the URL + title are extracted ---------- */
 const LINK_TAGS = ["签证", "交通", "住宿", "吃喝", "玩乐", "其他"];
-let links = [], lkTag = "其他";
+let links = [], lkTag = "其他", lkArmed = "", lkArmedTimer = 0;
 function parseShare(text) {
   const m = text.match(/https?:\/\/[^\s，。、]+/);
   if (!m) return null;
@@ -921,7 +921,7 @@ function renderLinks() {
   $("#lkList").innerHTML = LINK_TAGS.filter(t => links.some(l => l.tag === t)).map(t => `<div class="card"><h2>${t}</h2>${
     links.filter(l => l.tag === t).sort((a, b) => (b.at || 0) - (a.at || 0)).map(l => `<div class="lk">
       <a class="t" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.title)}</a>
-      ${l.by === uid ? `<button class="del" data-lkdel="${esc(l.id)}" style="border:0;background:none;color:var(--red);font-size:12.5px;cursor:pointer">删除</button>` : "<span></span>"}
+      ${l.by === uid ? `<button class="del${lkArmed === l.id ? " armed" : ""}" data-lkdel="${esc(l.id)}" style="border:0;background:none;color:var(--bad);font-size:12.5px;cursor:pointer">${lkArmed === l.id ? "确认删除？" : "删除"}</button>` : "<span></span>"}
       <span class="meta">${l.who ? esc(nm(l.who)) + " 收藏 · " : ""}${new Date(l.at).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })} · ${esc(new URL(l.url).hostname.replace(/^www\./, ""))}</span></div>`).join("")}</div>`).join("");
 }
 $("#lkTags").addEventListener("click", e => { const b = e.target.closest("[data-lktag]"); if (b) { lkTag = b.dataset.lktag; renderLinks(); } });
@@ -940,7 +940,11 @@ $("#lkForm").addEventListener("submit", async e => {
   $("#lkAdd").disabled = !ready();
 });
 $("#lkList").addEventListener("click", async e => {
-  const b = e.target.closest("[data-lkdel]"); if (!b || !confirm("删除这条收藏？")) return;
+  const b = e.target.closest("[data-lkdel]"); if (!b) return;
+  // tap twice to delete (confirmed on the page, no native dialog); kept by id so live updates don't reset it
+  const id = b.dataset.lkdel; clearTimeout(lkArmedTimer);
+  if (lkArmed !== id) { lkArmed = id; renderLinks(); lkArmedTimer = setTimeout(() => { lkArmed = ""; renderLinks(); }, 3500); return; }
+  lkArmed = "";
   try { await db.doc("links/" + b.dataset.lkdel).delete(); toast("已删除"); } catch (err) { toast("删除失败"); }
 });
 
@@ -961,7 +965,7 @@ function loadScript(src) { return new Promise((res, rej) => { const el = documen
   const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
   try { for (const s of [SDK + "firebase-app-compat.js", SDK + "firebase-auth-compat.js", SDK + "firebase-firestore-compat.js", "firebase-config.js"]) await loadScript(s); }
   catch (e) { clearTimeout(timer); fail(); return; }
-  try { firebase.initializeApp(window.FIREBASE_CONFIG); } catch (e) { clearTimeout(timer); fail(); return; }
+  try { firebase.initializeApp(window.FIREBASE_CONFIG); if (window.connectTripEmulator) connectTripEmulator(); } catch (e) { clearTimeout(timer); fail(); return; }
   firebase.auth().onAuthStateChanged(u => {
     if (!u || subscribed) return;
     subscribed = true; uid = u.uid; db = firebase.firestore();

@@ -767,7 +767,7 @@ function loadScript(src) { return new Promise((res, rej) => { const el = documen
   const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
   try { for (const s of [SDK + 'firebase-app-compat.js', SDK + 'firebase-auth-compat.js', SDK + 'firebase-firestore-compat.js', 'firebase-config.js']) await loadScript(s); }
   catch (e) { clearTimeout(timer); fail(); return; }
-  try { firebase.initializeApp(window.FIREBASE_CONFIG); } catch (e) { clearTimeout(timer); fail(); return; }
+  try { firebase.initializeApp(window.FIREBASE_CONFIG); if (window.connectTripEmulator) connectTripEmulator(); } catch (e) { clearTimeout(timer); fail(); return; }
   firebase.auth().onAuthStateChanged(u => {
     if (!u || subscribed) return;
     subscribed = true; uid = u.uid; db = firebase.firestore();

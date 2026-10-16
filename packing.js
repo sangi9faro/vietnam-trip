@@ -22,6 +22,7 @@
   const STAYS = [['hyatt', '1/1 芽庄凯悦退房'], ['fusion', '1/3 金兰湾 Fusion 退房']];
   const WHERE = { carry: '随身', check: '托运' };
 
+  let pkArmed = '', pkArmedTimer = 0;   // custom item waiting for its second tap (delete)
   let ctx = null, data = {}, exists = new Set(), loaded = false, view = '', open = {}, check = null;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const doc = id => data[id] || { items: {}, custom: [], checkout: { hyatt: {}, fusion: {} } };
@@ -76,7 +77,7 @@
         <div class="pk-items">${items.map(it => { const s = stateOf(id, it.k); return `<div class="pk-it ${s}">
           <button class="pk-box" data-pkset="done" data-id="${id}" data-k="${esc(it.k)}" ${dis} aria-pressed="${s === 'done'}" aria-label="已带：${esc(it.label)}"><i data-lucide="check"></i></button>
           <span class="t"><span class="l">${esc(it.label)}</span>${tag(it)}${sub(it)}</span>
-          ${it.custom ? `<button class="pk-x" data-pkdel="${esc(it.k)}" data-id="${id}" ${dis} aria-label="删除 ${esc(it.label)}"><i data-lucide="trash-2"></i></button>` : ''}
+          ${it.custom ? `<button class="pk-x${pkArmed === id + ':' + it.k ? ' armed' : ''}" data-pkdel="${esc(it.k)}" data-id="${id}" ${dis} aria-label="${pkArmed === id + ':' + it.k ? '再点一次删除' : '删除'} ${esc(it.label)}">${pkArmed === id + ':' + it.k ? '确认删除？' : '<i data-lucide="trash-2"></i>'}</button>` : ''}
           <button class="pk-skip" data-pkset="skip" data-id="${id}" data-k="${esc(it.k)}" ${dis} aria-pressed="${s === 'skip'}">${s === 'skip' ? '不需要' : '不带'}</button></div>`; }).join('')}
           ${id === ctx.me() ? `<form class="pk-add" data-pkadd="${cat.id}"><input type="text" maxlength="30" placeholder="加一项自己的" aria-label="在${cat.label}里加一项"><button class="btn btn-sm ghost" ${dis}>添加</button></form>` : ''}
         </div></section>`;
@@ -112,7 +113,12 @@
     if (!ctx) return;
     const id = who(), root = ctx.root;
     root.querySelector('#pkRings').innerHTML = ctx.IDS.map(ring).join('');
+    // live updates rebuild the list: keep whatever is being typed into 「加一项自己的」 (and its focus)
+    const typed = {}, act = document.activeElement, focused = act && act.closest && act.closest('[data-pkadd]') ? act.closest('[data-pkadd]').dataset.pkadd : null;
+    root.querySelectorAll('[data-pkadd] input').forEach(i => { if (i.value) typed[i.closest('[data-pkadd]').dataset.pkadd] = i.value; });
     root.querySelector('#pkList').innerHTML = phoneList(id);
+    root.querySelectorAll('[data-pkadd]').forEach(f => { const i = f.querySelector('input'), k = f.dataset.pkadd;
+      if (typed[k]) i.value = typed[k]; if (k === focused) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
     root.querySelector('#pkTable').innerHTML = table();
     const t = root.querySelector('#pkToc'); if (t) t.innerHTML = toc();
     root.querySelector('#pkCoWho').innerHTML = `<span class="av sm" style="--p:var(--${id})">${esc(av(id))}</span>${esc(ctx.nm(id))} 的退房检查`;
@@ -166,7 +172,11 @@
       else if (t.dataset.pkdcat) { const c = CATS.find(x => x.id === t.dataset.pkdcat); deskOpen[c.id] = !(deskOpen[c.id] ?? !catDone(c)); render(); }
       else if (t.dataset.pkdel) {
         const id = t.dataset.id, c = (doc(id).custom || []).find(x => x.k === t.dataset.pkdel);
-        if (c && confirm(`删除「${c.label}」？`)) write(id, { custom: FV().arrayRemove(c), items: { [c.k]: FV().delete() } });
+        if (!c) return;
+        // tap twice (the second tap confirms on the page; no native dialog)
+        const key = id + ':' + c.k; clearTimeout(pkArmedTimer);
+        if (pkArmed !== key) { pkArmed = key; render(); pkArmedTimer = setTimeout(() => { pkArmed = ''; render(); }, 3500); return; }
+        pkArmed = ''; write(id, { custom: FV().arrayRemove(c), items: { [c.k]: FV().delete() } });
       } else if (t.id === 'pkStart') startCheck();
     });
     root.addEventListener('click', e => {

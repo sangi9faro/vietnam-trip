@@ -116,7 +116,8 @@
     sheet.addEventListener('click', e => { if (e.target === sheet || e.target.closest('[data-gshclose]')) closeSheet(); const d = e.target.closest('[data-ovday]'); if (d) { closeSheet(); go(+d.dataset.ovday); } });
     // swipe down on the header to close (phones)
     const h = sheet.querySelector('.gsh-h'); let y0 = null;
-    h.addEventListener('pointerdown', e => { y0 = e.clientY; h.setPointerCapture(e.pointerId); });
+    h.addEventListener('pointerdown', e => { if (e.target.closest('button')) return;   // let the × button get its click
+      y0 = e.clientY; h.setPointerCapture(e.pointerId); });
     h.addEventListener('pointermove', e => { if (y0 === null) return; const dy = Math.max(0, e.clientY - y0); sheet.querySelector('.gsh').style.transform = innerWidth < 768 ? `translateY(${dy}px)` : ''; });
     h.addEventListener('pointerup', e => { if (y0 === null) return; const dy = e.clientY - y0; y0 = null; sheet.querySelector('.gsh').style.transform = ''; if (dy > 80 && innerWidth < 768) closeSheet(); });
     addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
