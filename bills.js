@@ -1,0 +1,322 @@
+// AA 账单 for index.html: expenses (equal / shares / amounts, locked CNY at entry), repayments
+// (settlements), settled-on-the-spot entries, stats, filters and a copyable settlement text.
+// Uses globals from index.html: $, esc, IDS, nm, settings, rate, fmt, toast, ready, db, uid, me, SYM, lucideIcons.
+const AA_CATS = [['food', '餐饮', 'utensils'], ['transport', '交通', 'car'], ['stay', '住宿', 'bed-double'], ['fun', '门票玩乐', 'ticket'], ['shop', '购物', 'shopping-bag'], ['other', '其他', 'ellipsis']];
+const AA_CAT = Object.fromEntries(AA_CATS.map(([k, n, i]) => [k, { n, i }]));
+const METHODS = { wechat: '微信', alipay: '支付宝', cash: '现金', bank: '银行转账', other: '其他' };
+const TRIP_DAYS = ['2026-12-29', '2026-12-30', '2026-12-31', '2027-01-01', '2027-01-02', '2027-01-03'];
+const EPS = 0.01;   // ¥0.01: below this a balance counts as settled
+
+let expenses = [], settlements = [];
+let aaFilter = { cat: '', who: '' };
+let split = new Set();                    // participants (all modes); filled in resetForm (IDS is defined after this file loads)
+let fmode = 'equal', fvals = {}, fcat = 'food', editId = null, armedKey = '', armedTimer = 0;
+
+/* ---------- money ---------- */
+const round2 = n => Math.round(n * 100) / 100;
+const cnyOf = x => x.cny > 0 ? x.cny : x.amount / rate(x.currency);
+const yuan = n => '¥' + n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (n, c) => (SYM[c] || '') + fmt(n, c);
+const dayLabel = d => { const [, m, dd] = d.split('-'); return `${+m}/${+dd}`; };
+// trip day of an expense: its own `day`, else the Vietnam date it was recorded on; before the trip = 'pre'
+function dayOf(x) {
+  const d = x.day || new Date((x.at || 0) + 7 * 3600e3).toISOString().slice(0, 10);
+  return d < TRIP_DAYS[0] ? 'pre' : d > TRIP_DAYS[5] ? TRIP_DAYS[5] : d;
+}
+// each participant's share of one expense, in CNY
+function sharesOf(x) {
+  const parts = (x.split || []).filter(id => IDS.includes(id)), c = cnyOf(x), out = {};
+  if (!parts.length) return out;
+  const w = x.mode === 'shares' || x.mode === 'amounts' ? parts.map(id => Math.max(0, +(x.shares || {})[id] || 0)) : parts.map(() => 1);
+  const sum = w.reduce((a, b) => a + b, 0);
+  parts.forEach((id, i) => { out[id] = sum > 0 ? c * w[i] / sum : c / parts.length; });
+  return out;
+}
+// balance = paid − owed + repaid out − repaid in; settled entries count for totals only
+function settle() {
+  const z = () => Object.fromEntries(IDS.map(id => [id, 0]));
+  const bal = z(), paid = z(), share = z(), spend = z(); let total = 0;
+  for (const x of expenses) {
+    const c = cnyOf(x), sh = sharesOf(x); total += c;
+    for (const id in sh) spend[id] += sh[id];
+    if (x.settled || !IDS.includes(x.payer) || !Object.keys(sh).length) continue;
+    paid[x.payer] += c; bal[x.payer] += c;
+    for (const id in sh) { share[id] += sh[id]; bal[id] -= sh[id]; }
+  }
+  for (const s of settlements) { if (!IDS.includes(s.from) || !IDS.includes(s.to)) continue; bal[s.from] += s.cny; bal[s.to] -= s.cny; }
+  const cred = IDS.filter(id => bal[id] > EPS).map(id => [id, bal[id]]).sort((a, b) => b[1] - a[1]);
+  const debt = IDS.filter(id => bal[id] < -EPS).map(id => [id, -bal[id]]).sort((a, b) => b[1] - a[1]);
+  const xfers = []; let i = 0, j = 0;
+  while (i < debt.length && j < cred.length) {
+    const m = Math.min(debt[i][1], cred[j][1]); if (m > EPS) xfers.push([debt[i][0], cred[j][0], m]);
+    debt[i][1] -= m; cred[j][1] -= m; if (debt[i][1] < EPS) i++; if (cred[j][1] < EPS) j++;
+  }
+  const clear = IDS.every(id => Math.abs(bal[id]) < EPS);
+  return { total, paid, share, bal, xfers, spend, clear };
+}
+
+/* ---------- top: 我的账 + 建议转账 + 余额 ---------- */
+const repayBtn = (a, b, m, label = '标记已还') => `<button class="btn ghost small" data-repay="${a}|${b}|${round2(m)}"><i data-lucide="check-check" class="i18"></i>${label}</button>`;
+function renderMe(s) {
+  const el = $('#aaMe');
+  if (!me) { el.innerHTML = `<h2><i data-lucide="user-round"></i>我的账</h2><p class="sub">先选一下你是谁，这里会告诉你要给谁钱。</p>
+    <select id="aaMeSel" aria-label="我是谁"><option value="">— 选一下 —</option>${IDS.map(id => `<option value="${id}">${esc(nm(id))}</option>`).join('')}</select>`; return; }
+  const out = s.xfers.filter(x => x[0] === me), inc = s.xfers.filter(x => x[1] === me);
+  let h = `<h2><i data-lucide="user-round"></i>我的账 · ${esc(nm(me))}</h2>`;
+  if (out.length) h += out.map(([, b, m]) => `<div class="aa-me owe"><span>你还要给 <b>${esc(nm(b))}</b> <b class="num">${yuan(m)}</b></span>${repayBtn(me, b, m)}</div>`).join('');
+  else if (inc.length) h += `<div class="aa-me get"><span><b>${inc.map(x => esc(nm(x[0]))).join('、')}</b> 还要给你 <b class="num">${yuan(inc.reduce((a, x) => a + x[2], 0))}</b></span></div>`;
+  else h += `<div class="aa-me ok"><i data-lucide="circle-check"></i><span>你已经结清了</span></div>`;
+  h += `<p class="sub">我的花费（我应摊的，含已结清的账）：<b class="num">${yuan(s.spend[me])}</b></p>`;
+  el.innerHTML = h;
+}
+function renderSettle(s) {
+  const nExp = expenses.length, nSettled = expenses.filter(x => x.settled).length;
+  $('#aaTotal').innerHTML = nExp ? `共 ${nExp} 笔${nSettled ? `（${nSettled} 笔当场已结清）` : ''}，合计 <b class="num">${yuan(s.total)}</b>` : '记了账以后，这里会算出谁该转给谁。';
+  $('#transfers').innerHTML = s.clear && (nExp || settlements.length)
+    ? `<div class="aa-clear"><i data-lucide="circle-check-big"></i>已经全部结清</div>`
+    : s.xfers.map(([a, b, m]) => `<div class="xfer"><span>${esc(nm(a))} → ${esc(nm(b))}：<b class="num">${yuan(m)}</b></span>${repayBtn(a, b, m)}</div>`).join('');
+  $('#aaCopy').disabled = !nExp;
+  $('#balances').innerHTML = `<span class="muted">成员</span><span class="muted r">已付 / 应摊</span><span class="muted r">余额</span>` +
+    IDS.map(id => `<span>${esc(nm(id))}${id === me ? '（我）' : ''}</span><span class="r">${yuan(s.paid[id])} / ${yuan(s.share[id])}</span><span class="${s.bal[id] >= -EPS ? 'pos' : 'neg'}">${s.bal[id] >= 0 ? '+' : '−'}${yuan(Math.abs(s.bal[id]))}</span>`).join('');
+}
+
+/* ---------- stats ---------- */
+function renderStats(s) {
+  const byCat = Object.fromEntries(AA_CATS.map(([k]) => [k, 0])), byDay = Object.fromEntries(['pre', ...TRIP_DAYS].map(d => [d, 0]));
+  for (const x of expenses) { const c = cnyOf(x); byCat[AA_CAT[x.cat] ? x.cat : 'other'] += c; byDay[dayOf(x)] += c; }
+  if (!expenses.length) { $('#aaStats').innerHTML = `<p class="empty">还没有记账。</p>`; return; }
+  const maxD = Math.max(...Object.values(byDay), 1);
+  $('#aaStats').innerHTML = `
+    <div class="aa-bars">${AA_CATS.filter(([k]) => byCat[k] > 0).sort((a, b) => byCat[b[0]] - byCat[a[0]]).map(([k, n, i]) => `
+      <div class="aa-bar"><span class="l"><i data-lucide="${i}" class="i18"></i>${n}</span><span class="track"><b style="width:${(byCat[k] / s.total * 100).toFixed(1)}%"></b></span>
+      <span class="v num">${yuan(byCat[k])} · ${Math.round(byCat[k] / s.total * 100)}%</span></div>`).join('')}</div>
+    <div class="aa-days" role="img" aria-label="按天花费">${Object.entries(byDay).map(([d, v]) => `
+      <div class="aa-day" title="${d === 'pre' ? '行前' : dayLabel(d)}：${yuan(v)}"><span class="v num">${v ? Math.round(v) : ''}</span><span class="col"><b style="height:${(v / maxD * 100).toFixed(1)}%"></b></span><span class="d">${d === 'pre' ? '行前' : dayLabel(d)}</span></div>`).join('')}</div>
+    <p class="sub">${me ? `我的花费：<b class="num">${yuan(s.spend[me])}</b>` : '选了「我是谁」后，这里显示你自己的花费。'}</p>`;
+}
+
+/* ---------- ledger ---------- */
+function splitText(x) {
+  const ids = (x.split || []).filter(id => IDS.includes(id));
+  if (x.mode === 'shares') return '按份数 ' + ids.map(id => `${esc(nm(id))} ${+(x.shares || {})[id] || 0}`).join(' / ');
+  if (x.mode === 'amounts') return '按金额 ' + ids.map(id => `${esc(nm(id))} ${money(+(x.shares || {})[id] || 0, x.currency)}`).join(' / ');
+  return ids.length === 4 ? '四人平分' : ids.map(nm).map(esc).join('、') + ' 平分';
+}
+// the pending “确认删除？” state is kept by key so a live update from another phone doesn't reset it
+const delBtn = (kind, id) => { const on = armedKey === kind + ':' + id; return `<button class="del${on ? ' armed' : ''}" data-${kind}="${esc(id)}">${on ? '确认删除？' : '删除'}</button>`; };
+function rowExpense(x) {
+  const mine = x.by === uid, c = cnyOf(x), cat = AA_CAT[x.cat] || AA_CAT.other;
+  const conv = x.currency === 'CNY' ? (x.cny > 0 ? '' : '') : x.cny > 0
+    ? `≈ ${yuan(c)}（按 1¥ = ${fmt(x.rate || x.amount / x.cny, x.currency)}${SYM[x.currency]}）`
+    : `≈ ${yuan(c)} · <span class="aa-cur">按当前汇率</span>`;
+  return `<div class="exp${x.settled ? ' done' : ''}">
+    <span class="ico"><i data-lucide="${cat.i}"></i></span>
+    <span class="t">${esc(x.title)}</span>
+    <span class="amt">${money(x.amount, x.currency)}${x.settled ? '<span class="aa-tag">已结清</span>' : ''}</span>
+    <span class="meta">${esc(nm(x.payer))} 付 · ${splitText(x)} · ${dayOf(x) === 'pre' ? '行前' : dayLabel(dayOf(x))}${x.note ? ' · ' + esc(x.note) : ''}</span>
+    <span class="meta r">${conv}</span>
+    ${mine ? `<span class="acts"><button class="del edit" data-edit="${esc(x.id)}">修改</button>${delBtn('del', x.id)}</span>` : ''}</div>`;
+}
+function rowPay(s) {
+  return `<div class="exp pay">
+    <span class="ico"><i data-lucide="arrow-right-left"></i></span>
+    <span class="t">${esc(nm(s.from))} 还给 ${esc(nm(s.to))}</span>
+    <span class="amt">${s.currency === 'CNY' ? yuan(s.cny) : money(s.amount, s.currency)}</span>
+    <span class="meta">${METHODS[s.method] || '其他'}${s.note ? ' · ' + esc(s.note) : ''} · ${new Date(s.at).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })}</span>
+    <span class="meta r">${s.currency === 'CNY' ? '' : '≈ ' + yuan(s.cny)}</span>
+    ${s.by === uid ? `<span class="acts">${delBtn('pdel', s.id)}</span>` : ''}</div>`;
+}
+function renderLedger() {
+  $('#aaFilters').innerHTML = `<div class="chips">${[['', '全部', 'list'], ...AA_CATS].map(([k, n, i]) => `<button type="button" class="chip ${aaFilter.cat === k ? 'on' : ''}" data-fcat="${k}" aria-pressed="${aaFilter.cat === k}"><i data-lucide="${i}" class="i18"></i>${n}</button>`).join('')}</div>
+    <select id="aaWho" aria-label="按人筛选"><option value="">所有人</option>${IDS.map(id => `<option value="${id}" ${aaFilter.who === id ? 'selected' : ''}>${esc(nm(id))}</option>`).join('')}</select>`;
+  const w = aaFilter.who;
+  const ex = expenses.filter(x => (!aaFilter.cat || (AA_CAT[x.cat] ? x.cat : 'other') === aaFilter.cat) && (!w || x.payer === w || (x.split || []).includes(w)));
+  const ps = aaFilter.cat ? [] : settlements.filter(s => !w || s.from === w || s.to === w);
+  const rows = [...ex.map(x => ({ k: x.at || 0, h: rowExpense(x) })), ...ps.map(s => ({ k: s.at || 0, h: rowPay(s) }))].sort((a, b) => b.k - a.k);
+  $('#expList').innerHTML = rows.length ? rows.map(r => r.h).join('') : `<p class="empty">${expenses.length ? '没有符合筛选的记录。' : '还没有记账。'}</p>`;
+  const unlocked = expenses.filter(x => x.by === uid && !(x.cny > 0));
+  $('#aaLock').hidden = !unlocked.length;
+  $('#aaLock').textContent = `把我的 ${unlocked.length} 笔旧账按当前汇率锁定`;
+}
+
+/* ---------- form ---------- */
+function renderForm() {
+  const payer = $('#expPayer').value || me || 'm1';
+  $('#expPayer').innerHTML = IDS.map(id => `<option value="${id}" ${id === payer ? 'selected' : ''}>${esc(nm(id))}</option>`).join('');
+  $('#aaCats').innerHTML = AA_CATS.map(([k, n, i]) => `<button type="button" class="aa-cat ${fcat === k ? 'on' : ''}" data-cat="${k}" aria-pressed="${fcat === k}" title="${n}"><i data-lucide="${i}"></i><span>${n}</span></button>`).join('');
+  const dsel = $('#expDay'), dv = dsel.value;
+  dsel.innerHTML = `<option value="">行前</option>` + TRIP_DAYS.map(d => `<option value="${d}">${dayLabel(d)}</option>`).join('');
+  dsel.value = dv;
+  document.querySelectorAll('#aaMode [data-mode]').forEach(b => { b.classList.toggle('on', b.dataset.mode === fmode); b.setAttribute('aria-pressed', b.dataset.mode === fmode); });
+  const cur = $('#expCur').value;
+  $('#expSplit').innerHTML = fmode === 'equal'
+    ? `<div class="chips">${IDS.map(id => `<button type="button" class="chip ${split.has(id) ? 'on' : ''}" data-split="${id}" aria-pressed="${split.has(id)}">${esc(nm(id))}</button>`).join('')}</div>`
+    : IDS.map(id => `<label class="aa-sv"><span>${esc(nm(id))}</span><input type="number" inputmode="decimal" step="any" min="0" data-sv="${id}" value="${fvals[id] ?? (fmode === 'shares' ? 1 : '')}" placeholder="${fmode === 'shares' ? '份数' : '金额'}"><em>${fmode === 'shares' ? '份' : SYM[cur]}</em></label>`).join('');
+  splitHint();
+  $('#expAdd').disabled = !ready();
+}
+function readVals() { const o = {}; document.querySelectorAll('[data-sv]').forEach(i => { const v = parseFloat(i.value); o[i.dataset.sv] = isFinite(v) && v > 0 ? v : 0; }); return o; }
+function amountsOff() {   // amounts mode: difference between total and the sum of the parts, in the entry currency
+  const amt = parseFloat($('#expAmt').value), v = readVals(), sum = Object.values(v).reduce((a, b) => a + b, 0);
+  return isFinite(amt) ? amt - sum : NaN;
+}
+function splitHint() {
+  const h = $('#aaSplitHint'), cur = $('#expCur').value;
+  if (fmode !== 'amounts') { h.textContent = fmode === 'shares' ? '填 0 表示这个人不参与。' : ''; h.className = 'sub'; $('#expAdd').disabled = !ready(); return; }
+  const d = amountsOff(), tol = cur === 'VND' || cur === 'KRW' ? 0.5 : 0.005;
+  const ok = isFinite(d) && Math.abs(d) < tol;
+  h.className = 'sub ' + (ok ? 'ok' : 'bad');
+  h.textContent = !isFinite(d) ? '先填总金额' : ok ? '金额对上了' : d > 0 ? `还差 ${money(d, cur)}` : `多了 ${money(-d, cur)}`;
+  $('#expAdd').disabled = !ready() || !ok;
+}
+function resetForm() {
+  editId = null; fmode = 'equal'; fvals = {}; fcat = 'food'; split = new Set(IDS);
+  $('#expForm').reset(); $('#expDay').value = TRIP_DAYS.includes(todayVN()) ? todayVN() : '';
+  $('#aaFormTitle').textContent = '记一笔'; $('#expAdd').innerHTML = '<i data-lucide="plus" class="i18"></i>记一笔'; $('#aaCancelEdit').hidden = true;
+  renderForm(); lucideIcons();
+}
+const todayVN = () => new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
+function startEdit(id) {
+  const x = expenses.find(e => e.id === id); if (!x || x.by !== uid) return;
+  editId = id; fmode = x.mode || 'equal'; fcat = AA_CAT[x.cat] ? x.cat : 'other';
+  split = new Set((x.split || []).filter(i => IDS.includes(i)));
+  fvals = fmode === 'equal' ? {} : Object.fromEntries(IDS.map(i => [i, split.has(i) ? +(x.shares || {})[i] || 0 : 0]));
+  $('#expTitle').value = x.title; $('#expAmt').value = x.amount; $('#expCur').value = x.currency;
+  $('#expPayer').value = x.payer; $('#expDay').value = x.day || ''; $('#expSettled').checked = !!x.settled; $('#expNote').value = x.note || '';
+  $('#aaFormTitle').textContent = '修改这笔账'; $('#expAdd').innerHTML = '<i data-lucide="save" class="i18"></i>保存修改'; $('#aaCancelEdit').hidden = false;
+  renderForm(); lucideIcons(); openSheet();
+}
+async function saveExpense(e) {
+  e.preventDefault();
+  const title = $('#expTitle').value.trim(), amount = parseFloat($('#expAmt').value), currency = $('#expCur').value;
+  if (!title) return toast('先写花在什么上');
+  if (!(amount > 0)) return toast('金额要大于 0');
+  let parts, shares;
+  if (fmode === 'equal') parts = IDS.filter(id => split.has(id));
+  else { const v = readVals(); parts = IDS.filter(id => v[id] > 0); shares = Object.fromEntries(parts.map(id => [id, v[id]])); }
+  if (!parts.length) return toast('至少选一个人来分');
+  if (fmode === 'amounts') { const tol = currency === 'VND' || currency === 'KRW' ? 0.5 : 0.005; if (!(Math.abs(amountsOff()) < tol)) return toast('每人金额加起来要等于总金额'); }
+  const old = editId ? expenses.find(x => x.id === editId) : null;
+  // lock the rate: keep the original one when editing in the same currency, otherwise today's
+  const r = currency === 'CNY' ? 1 : old && old.currency === currency && old.rate > 0 ? old.rate : rate(currency);
+  const doc = { title: title.slice(0, 60), amount, currency, payer: $('#expPayer').value, split: parts, mode: fmode, cny: amount / r, rate: r, cat: fcat,
+    at: old ? old.at : Date.now(), by: uid };
+  if (shares) doc.shares = shares;
+  const day = $('#expDay').value; if (day) doc.day = day;
+  if ($('#expSettled').checked) doc.settled = true;
+  const note = $('#expNote').value.trim().slice(0, 120); if (note) doc.note = note;
+  $('#expAdd').disabled = true;
+  try {
+    if (old) await db.doc('expenses/' + old.id).set(doc); else await db.collection('expenses').add(doc);
+    toast(old ? '已保存修改' : '已记账'); resetForm(); closeSheet();
+  } catch (err) { toast('保存失败，请稍后再试'); }
+  $('#expAdd').disabled = !ready();
+}
+
+/* ---------- repayment dialog ---------- */
+function openRepay(from = me || 'm1', to = '', amount = '') {
+  if (!ready()) return toast('还没连上数据库');
+  const opts = sel => IDS.map(id => `<option value="${id}" ${id === sel ? 'selected' : ''}>${esc(nm(id))}</option>`).join('');
+  if (!to) to = IDS.find(id => id !== from);
+  $('#rpFrom').innerHTML = opts(from); $('#rpTo').innerHTML = opts(to);
+  $('#rpAmt').value = amount; $('#rpCur').value = 'CNY'; $('#rpNote').value = '';
+  $('#rpMethods').innerHTML = Object.entries(METHODS).map(([k, n], i) => `<button type="button" class="chip ${i ? '' : 'on'}" data-method="${k}" aria-pressed="${!i}">${n}</button>`).join('');
+  $('#aaRepay').hidden = false; $('#rpAmt').focus(); document.documentElement.style.overflow = 'hidden';
+}
+const closeRepay = () => { $('#aaRepay').hidden = true; document.documentElement.style.overflow = ''; };
+async function saveRepay(e) {
+  e.preventDefault();
+  const from = $('#rpFrom').value, to = $('#rpTo').value, amount = parseFloat($('#rpAmt').value), currency = $('#rpCur').value;
+  if (from === to) return toast('还款的两个人不能是同一个');
+  if (!(amount > 0)) return toast('金额要大于 0');
+  const method = (document.querySelector('#rpMethods .chip.on') || {}).dataset?.method || 'wechat';
+  $('#rpSave').disabled = true;
+  try {
+    await db.collection('settlements').add({ from, to, amount, currency, cny: amount / (currency === 'CNY' ? 1 : rate(currency)), method, note: $('#rpNote').value.trim().slice(0, 60), at: Date.now(), by: uid });
+    toast('已记下还款'); closeRepay();
+  } catch (err) { toast('保存失败，请稍后再试'); }
+  $('#rpSave').disabled = false;
+}
+
+/* ---------- copy ---------- */
+function settlementText() {
+  const s = settle(), t = new Date(Date.now() + 7 * 3600e3);
+  const when = `${t.getUTCMonth() + 1}/${t.getUTCDate()} ${String(t.getUTCHours()).padStart(2, '0')}:${String(t.getUTCMinutes()).padStart(2, '0')}`;
+  const lines = [`【越南跨年 · 结算单】截至 ${when}`, `总花费 ¥${fmt(s.total, 'CNY')}，共 ${expenses.length} 笔`];
+  if (s.clear) lines.push('已经全部结清');
+  s.xfers.forEach(([a, b, m]) => lines.push(`${nm(a)} → ${nm(b)}：${yuan(m)}`));
+  [...settlements].sort((a, b) => a.at - b.at).forEach(p => lines.push(`已还：${nm(p.from)} → ${nm(p.to)} ¥${fmt(p.cny, 'CNY')}（${METHODS[p.method] || '其他'}）`));
+  return lines.join('\n');
+}
+function copySettlement() {
+  const text = settlementText(), box = $('#aaCopyFallback');
+  const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); try { box.setSelectionRange(0, text.length); } catch (e) {} toast('已选中，请手动复制'); };
+  try { navigator.clipboard.writeText(text).then(() => { box.hidden = true; toast('结算单已复制，可以发到群里'); }, fallback); } catch (e) { fallback(); }
+}
+
+/* ---------- sheet (phone) ---------- */
+const wideAA = () => matchMedia('(min-width:1200px)').matches;
+function openSheet() {
+  if (wideAA()) { $('#aaFormBox').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('#expTitle').focus(); return; }
+  $('#aaFormBox').classList.add('open'); $('#aaBackdrop').hidden = false; document.documentElement.style.overflow = 'hidden';
+}
+function closeSheet() { $('#aaFormBox').classList.remove('open'); $('#aaBackdrop').hidden = true; document.documentElement.style.overflow = ''; }
+
+/* ---------- render all ---------- */
+function renderAA() {
+  const s = settle();
+  renderMe(s); renderSettle(s); renderStats(s); renderLedger();
+  lucideIcons();
+}
+
+/* ---------- events ---------- */
+// two-step delete on the page itself (no native dialog)
+function armDelete(key, run) {
+  clearTimeout(armedTimer);
+  if (armedKey === key) { armedKey = ''; run(); return; }
+  armedKey = key; renderLedger(); lucideIcons();
+  armedTimer = setTimeout(() => { armedKey = ''; renderLedger(); lucideIcons(); }, 3500);
+}
+function bindAA() {
+  const panel = document.querySelector('[data-panel="aa"]');
+  panel.addEventListener('click', async e => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.repay) { const [a, b, m] = t.dataset.repay.split('|'); openRepay(a, b, m); }
+    else if (t.id === 'aaRepayBtn') openRepay();
+    else if (t.id === 'aaCopy') copySettlement();
+    else if (t.id === 'aaFab') { if (editId) resetForm(); openSheet(); }
+    else if (t.dataset.aaclose !== undefined) closeSheet();
+    else if (t.id === 'aaCancelEdit') { resetForm(); closeSheet(); }
+    else if (t.dataset.split) { const id = t.dataset.split; split.has(id) ? split.delete(id) : split.add(id); renderForm(); }
+    else if (t.dataset.mode) { fvals = readVals(); fmode = t.dataset.mode; if (fmode === 'amounts') fvals = {}; if (fmode === 'shares') fvals = Object.fromEntries(IDS.map(id => [id, split.has(id) ? 1 : 0])); renderForm(); }
+    else if (t.dataset.cat) { fcat = t.dataset.cat; renderForm(); lucideIcons(); }
+    else if (t.dataset.fcat !== undefined) { aaFilter.cat = t.dataset.fcat; renderLedger(); lucideIcons(); }
+    else if (t.dataset.edit) startEdit(t.dataset.edit);
+    else if (t.dataset.del) armDelete('del:' + t.dataset.del, async () => { try { await db.doc('expenses/' + t.dataset.del).delete(); toast('已删除'); } catch (err) { toast('删除失败'); } });
+    else if (t.dataset.pdel) armDelete('pdel:' + t.dataset.pdel, async () => { try { await db.doc('settlements/' + t.dataset.pdel).delete(); toast('已删除还款记录'); } catch (err) { toast('删除失败'); } });
+    else if (t.id === 'aaLock') {
+      const mine = expenses.filter(x => x.by === uid && !(x.cny > 0)); if (!mine.length) return;
+      try { const b = db.batch(); mine.forEach(x => { const r = x.currency === 'CNY' ? 1 : rate(x.currency); b.update(db.doc('expenses/' + x.id), { cny: x.amount / r, rate: r }); }); await b.commit(); toast(`已锁定 ${mine.length} 笔`); }
+      catch (err) { toast('锁定失败，请稍后再试'); }
+    }
+  });
+  panel.addEventListener('change', e => {
+    if (e.target.id === 'aaWho') { aaFilter.who = e.target.value; renderLedger(); lucideIcons(); }
+    else if (e.target.id === 'aaMeSel' && e.target.value) { me = e.target.value; try { localStorage.setItem('trip-me', me); } catch (er) {} renderAll(); }
+    else if (e.target.id === 'expCur') { renderForm(); }
+  });
+  panel.addEventListener('input', e => { if (e.target.dataset.sv || e.target.id === 'expAmt') { if (e.target.dataset.sv) fvals = readVals(); splitHint(); } });
+  $('#expForm').addEventListener('submit', saveExpense);
+  $('#aaBackdrop').addEventListener('click', closeSheet);
+  $('#rpForm').addEventListener('submit', saveRepay);
+  $('#aaRepay').addEventListener('click', e => {
+    if (e.target === $('#aaRepay') || e.target.closest('[data-rpclose]')) closeRepay();
+    const m = e.target.closest('[data-method]'); if (m) document.querySelectorAll('#rpMethods .chip').forEach(c => { c.classList.toggle('on', c === m); c.setAttribute('aria-pressed', c === m); });
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') { closeSheet(); closeRepay(); } });
+  resetForm();
+}
+function subscribeAA(db) {
+  db.collection('expenses').onSnapshot(s => { expenses = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAA(); }, () => {});
+  db.collection('settlements').onSnapshot(s => { settlements = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAA(); }, () => {});
+}

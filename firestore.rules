@@ -74,20 +74,49 @@ service cloud.firestore {
     // ---------- 工具箱：AA 记账，只能改/删自己记的 ----------
     function validExpense() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['title', 'amount', 'currency', 'payer', 'split', 'at', 'by'])
+      return d.keys().hasOnly(['title', 'amount', 'currency', 'payer', 'split', 'at', 'by',
+                               'mode', 'shares', 'cny', 'rate', 'settled', 'cat', 'day', 'note'])
         && d.title is string && d.title.size() > 0 && d.title.size() <= 60
         && d.amount is number && d.amount > 0 && d.amount < 10000000000
         && d.currency in ['CNY', 'VND', 'KRW', 'USD']
         && d.payer in memberIds()
         && d.split is list && d.split.size() >= 1 && d.split.size() <= 4
         && d.split.hasOnly(memberIds())
-        && d.at is int;
+        && d.at is int
+        && (!('mode' in d) || d.mode in ['equal', 'shares', 'amounts'])
+        && (!('shares' in d) || (d.shares is map && d.shares.keys().hasOnly(memberIds())))
+        && (!('cny' in d) || (d.cny is number && d.cny > 0))
+        && (!('rate' in d) || (d.rate is number && d.rate > 0))
+        && (!('settled' in d) || d.settled is bool)
+        && (!('cat' in d) || d.cat in ['food', 'transport', 'stay', 'fun', 'shop', 'other'])
+        && (!('day' in d) || (d.day is string && d.day.size() == 10))
+        && (!('note' in d) || (d.note is string && d.note.size() <= 120));
     }
     match /expenses/{id} {
       allow read: if signedIn();
       allow create: if signedIn() && validExpense() && request.resource.data.by == request.auth.uid;
       allow update: if signedIn() && resource.data.by == request.auth.uid
         && validExpense() && request.resource.data.by == request.auth.uid;
+      allow delete: if signedIn() && resource.data.by == request.auth.uid;
+    }
+
+    // ---------- 工具箱：还款记录，只能删自己记的，不能修改 ----------
+    match /settlements/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['from', 'to', 'amount', 'currency', 'cny', 'method', 'note', 'at', 'by'])
+        && request.resource.data.from in memberIds()
+        && request.resource.data.to in memberIds()
+        && request.resource.data.from != request.resource.data.to
+        && request.resource.data.amount is number && request.resource.data.amount > 0
+        && request.resource.data.amount < 10000000000
+        && request.resource.data.currency in ['CNY', 'VND', 'KRW', 'USD']
+        && request.resource.data.cny is number && request.resource.data.cny > 0
+        && request.resource.data.method in ['wechat', 'alipay', 'cash', 'bank', 'other']
+        && request.resource.data.note is string && request.resource.data.note.size() <= 60
+        && request.resource.data.at is int
+        && request.resource.data.by == request.auth.uid;
+      allow update: if false;
       allow delete: if signedIn() && resource.data.by == request.auth.uid;
     }
 

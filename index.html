@@ -84,7 +84,85 @@ textarea{padding:10px 12px}
 .exp .del{border:0;background:none;color:var(--bad);font-size:13px;padding:0;cursor:pointer;justify-self:end;min-height:32px}
 .bal{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px 12px;font-size:14px;font-family:var(--font-num)}
 .bal .pos{color:var(--good);font-weight:800;text-align:right} .bal .neg{color:var(--bad);font-weight:800;text-align:right}
-.xfer{background:color-mix(in srgb,var(--good) 14%,var(--surface));border-radius:12px;padding:12px 14px;font-weight:700;font-family:var(--font-num)}
+.xfer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:color-mix(in srgb,var(--good) 14%,var(--surface));border-radius:12px;padding:10px 12px 10px 14px;font-weight:700}
+.bal .r{text-align:right}
+/* ---------- AA 账单 ---------- */
+.aa-col{display:contents}
+.c-aame{order:1} .c-settle{order:2} .c-stats{order:3} .c-bal{order:4} .c-ledger{order:5}
+.num{font-family:var(--font-num)}
+.aa-xfers{display:grid;gap:8px}
+.xfer,.aa-me{flex-wrap:nowrap;font-size:15px} .xfer>span,.aa-me>span{min-width:0}
+.xfer .btn,.aa-me .btn{flex-shrink:0;min-height:34px;padding:0 10px;font-size:13px;gap:4px}
+.aa-me{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:12px 14px;border-radius:12px;font-size:16px}
+.aa-me.owe{background:color-mix(in srgb,var(--warn) 14%,var(--surface))} .aa-me.get{background:var(--accent-soft)}
+.aa-me.ok,.aa-clear{background:color-mix(in srgb,var(--good) 14%,var(--surface));color:var(--good);font-weight:700;justify-content:flex-start}
+.aa-clear{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:12px}
+.c-stats summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none}
+.c-stats summary::-webkit-details-marker{display:none}
+.c-stats .chev{color:var(--ink-2);transition:transform .2s} .c-stats[open] .chev{transform:rotate(180deg)}
+.aa-bars{display:grid;gap:8px}
+.aa-bar{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px}
+.aa-bar .l{display:flex;align-items:center;gap:6px;font-weight:600} .aa-bar .l svg{color:var(--accent)}
+.aa-bar .track{height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden} .aa-bar .track b{display:block;height:100%;background:var(--accent);border-radius:5px}
+.aa-bar .v{color:var(--ink-2);font-size:12px;white-space:nowrap}
+.aa-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:130px;margin-top:6px}
+.aa-day{display:grid;grid-template-rows:auto 1fr auto;justify-items:center;height:100%;gap:3px;font-size:11px}
+.aa-day .col{width:70%;max-width:28px;display:flex;align-items:flex-end;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.aa-day .col b{display:block;width:100%;background:var(--coral);border-radius:6px 6px 0 0}
+.aa-day .d{color:var(--ink-2);font-family:var(--font-num)} .aa-day .v{color:var(--ink-2)}
+.aa-filters{display:grid;gap:8px} .aa-filters .chips{display:flex;gap:6px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+.aa-filters .chip{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;min-height:36px;font-size:13px}
+.exp{grid-template-columns:auto minmax(0,1fr) auto}
+.exp .ico{grid-row:span 2;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--surface-2);color:var(--accent)}
+.exp .ico svg{width:18px;height:18px}
+.exp .meta.r{grid-column:2/-1;text-align:right}
+.exp .meta.r:empty{display:none}
+.exp .t{font-weight:600}
+.exp .acts{grid-column:2/-1;display:flex;justify-content:flex-end;gap:14px}
+.exp .del.edit{color:var(--accent)} .exp .del.armed{color:#fff;background:var(--bad);border-radius:8px;padding:0 10px}
+.exp.pay .ico{color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))} .exp.pay .amt{color:var(--good)}
+.exp.done .amt{color:var(--ink-2)}
+.aa-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:6px;background:var(--surface-2);color:var(--ink-2);font:700 11px var(--font)}
+.aa-cur{color:var(--warn);font-weight:700}
+.aa-cats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.aa-cat{display:grid;justify-items:center;gap:2px;padding:8px 0;min-height:56px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink-2);font-size:11px;font-weight:700;cursor:pointer}
+.aa-cat svg{width:20px;height:20px}
+.aa-cat.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.aa-lbl{display:grid;gap:4px;font-size:13px;color:var(--ink-2);font-weight:600}
+.seg{display:inline-grid;grid-auto-flow:column;gap:2px;padding:3px;margin:6px 0 8px;border-radius:12px;background:var(--surface-2)}
+.seg button{border:0;background:none;min-height:36px;padding:0 14px;border-radius:9px;font-size:14px;font-weight:700;color:var(--ink-2);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.aa-sv{display:grid;grid-template-columns:72px minmax(0,1fr) 24px;gap:8px;align-items:center;margin-bottom:6px;font-size:14px;font-weight:600}
+.aa-sv input{font-family:var(--font-num)} .aa-sv em{font-style:normal;color:var(--ink-2)}
+#aaSplitHint.ok{color:var(--good);font-weight:700} #aaSplitHint.bad{color:var(--bad);font-weight:700}
+.aa-switch{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer} .aa-switch input{width:22px;height:22px;accent-color:var(--good);flex-shrink:0}
+.aa-sheet-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.aa-sheet-h h2{display:flex;align-items:center;gap:8px}
+.aa-x{width:40px;height:40px;border:0;border-radius:12px;background:var(--surface-2);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+#aaCopyFallback{width:100%;font:14px/1.5 var(--font-num);background:var(--surface-2);border-radius:12px;padding:10px}
+/* phone + tablet: the form is a bottom sheet opened by the floating button */
+#aaFab{position:fixed;right:16px;bottom:calc(var(--tabbar-h) + 16px);z-index:40;min-height:52px;padding:0 20px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+main.wrap:not(.aa-mode) #aaFab{display:none}
+main.wrap.aa-mode{padding-bottom:calc(100px + var(--tabbar-h))}
+.aa-sheet{position:fixed;left:0;right:0;bottom:0;z-index:1500;max-height:90dvh;overflow-y:auto;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);padding-bottom:var(--safe-b);background:var(--surface);border-radius:var(--r-l) var(--r-l) 0 0;box-shadow:var(--shadow-2)}
+.aa-sheet.open{transform:none}
+.aa-sheet .card{box-shadow:none;border-radius:0}
+#aaBackdrop{position:fixed;inset:0;z-index:1400;background:rgba(10,20,25,.45)}
+#aaRepay{position:fixed;inset:0;z-index:2100;background:rgba(10,20,25,.45);display:grid;align-items:end;justify-items:center}
+#aaRepay[hidden]{display:none}
+.aa-rp{width:100%;max-width:520px;border-radius:var(--r-l) var(--r-l) 0 0;padding-bottom:calc(16px + var(--safe-b))}
+@media (min-width:768px){ #aaRepay{align-items:center} .aa-rp{border-radius:var(--r-l)} }
+/* desktop: three columns — me/transfers/balances · ledger · stats/form */
+@media (min-width:1200px){
+  main.wrap.aa-mode>section[data-panel="aa"]>.aa-col{display:grid;gap:16px;align-content:start;grid-column:span 4}
+  .aa-col .card{order:0}
+  #aaFab,#aaBackdrop{display:none!important}
+  .aa-sheet{position:static;transform:none;max-height:none;overflow:visible;background:none;box-shadow:none;border-radius:0;padding:0}
+  .aa-sheet .card{box-shadow:var(--shadow-1);border-radius:var(--r-l)}
+  .aa-x{display:none}
+  main.wrap.aa-mode{padding-bottom:40px}
+}
+@media (min-width:768px) and (max-width:1199px){ main.wrap.aa-mode>section[data-panel="aa"] .card{grid-column:span 12} }
 .empty{padding:12px 0}
 .lk{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:12px 0;border-top:1px solid var(--line)}
 .lk:first-of-type{border-top:0}
@@ -101,15 +179,14 @@ textarea{padding:10px 12px}
   main.wrap>section[data-panel="packing"][hidden],main.wrap.pk-mode>section[data-panel]:not([data-panel="packing"]),main.wrap.pk-mode>.c-hero,
   main.wrap>section[data-panel="aa"][hidden],main.wrap.aa-mode>section[data-panel]:not([data-panel="aa"]),main.wrap.aa-mode>.c-hero{display:none!important}
   main.wrap>*,section.wrap>*{grid-column:span 6}
-  main.wrap>.c-hero,main.wrap>#who,section.wrap>.c-personal,section.wrap>.c-ledger,section.wrap>.c-flights{grid-column:span 12}
+  main.wrap>.c-hero,main.wrap>#who,section.wrap>.c-personal,section.wrap>.c-flights{grid-column:span 12}
   #toast{bottom:24px}
 }
 /* desktop: 12-column dashboard */
 @media (min-width:1200px){
   main.wrap .c-hero,section.wrap>.c-hero{grid-column:span 6;order:1} main.wrap .c-money,section.wrap>.c-money{grid-column:span 3;order:2} main.wrap .c-me,section.wrap>.c-me{grid-column:span 3;order:3}
   main.wrap>#who{grid-column:span 12;order:0}
-  main.wrap .c-personal,section.wrap>.c-personal{grid-column:span 8;order:4} main.wrap .c-settle,section.wrap>.c-settle{grid-column:span 4;order:5}
-  main.wrap .c-ledger,section.wrap>.c-ledger{grid-column:span 8;order:6} main.wrap .c-add,section.wrap>.c-add{grid-column:span 4;order:7}
+  main.wrap .c-personal,section.wrap>.c-personal{grid-column:span 8;order:4}
   main.wrap .c-group,section.wrap>.c-group{grid-column:span 6;order:8} main.wrap .c-lkadd,section.wrap>.c-lkadd{grid-column:span 3;order:9} main.wrap .c-lklist,section.wrap>.c-lklist{grid-column:span 3;order:10}
   main.wrap .c-flights,section.wrap>.c-flights{grid-column:span 12;order:11} main.wrap .c-hotels,section.wrap>.c-hotels{grid-column:span 8;order:12}
   main.wrap .c-phr,section.wrap>.c-phr{grid-column:span 4;order:13} main.wrap .c-tips,section.wrap>.c-tips{grid-column:span 4;order:14} main.wrap .c-sos,section.wrap>.c-sos{grid-column:span 4;order:15}
@@ -365,33 +442,63 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
     </div>
   </section>
 
-  <!-- ================= AA 记账 ================= -->
+  <!-- ================= AA 账单（逻辑在 bills.js） ================= -->
   <section data-panel="aa" class="wrap" style="padding:0" hidden>
-    <div class="card c-settle">
-      <h2><i data-lucide="scale"></i>结算</h2>
-      <p class="sub" id="aaTotal">—</p>
-      <div id="transfers"></div>
-      <div class="bal" id="balances"></div>
+    <div class="aa-col aa-l">
+      <div class="card c-aame" id="aaMe" aria-live="polite"></div>
+      <div class="card c-settle">
+        <h2><i data-lucide="scale"></i>建议转账</h2>
+        <p class="sub" id="aaTotal">—</p>
+        <div id="transfers" class="aa-xfers"></div>
+        <div class="row"><button class="btn ghost small" id="aaCopy"><i data-lucide="clipboard-copy" class="i18"></i>复制结算单</button>
+          <button class="btn ghost small" id="aaRepayBtn"><i data-lucide="arrow-right-left" class="i18"></i>记一笔还款</button></div>
+        <textarea id="aaCopyFallback" rows="6" readonly hidden aria-label="结算单文字"></textarea>
+      </div>
+      <div class="card c-bal">
+        <h2><i data-lucide="users"></i>四个人的余额</h2>
+        <p class="sub">余额 = 垫付的 − 应摊的 + 还出去的 − 收到的还款。正数是别人欠你。</p>
+        <div class="bal" id="balances"></div>
+      </div>
     </div>
-    <div class="card c-add">
-      <h2><i data-lucide="circle-plus"></i>记一笔</h2>
-      <form class="form" id="expForm">
-        <input type="text" id="expTitle" maxlength="60" placeholder="花在什么上，例如：芽庄凯悦房费" aria-label="用途">
-        <div class="two">
-          <input type="number" id="expAmt" inputmode="decimal" step="any" min="0" placeholder="金额" aria-label="金额">
-          <select id="expCur" aria-label="币种"><option value="VND">₫ 越南盾</option><option value="CNY">¥ 人民币</option><option value="KRW">₩ 韩元</option><option value="USD">$ 美元</option></select>
+    <div class="aa-col aa-m">
+      <div class="card c-ledger">
+        <h2><i data-lucide="receipt"></i>账本</h2>
+        <div class="aa-filters" id="aaFilters"></div>
+        <div id="expList"><p class="empty">还没有记账。</p></div>
+        <p class="sub">只有记账的那台手机能修改和删除。新记的账会锁定当时的汇率，以后更新汇率不影响。</p>
+        <button class="btn ghost small" id="aaLock" hidden></button>
+        <div class="row"><span class="sub" id="rateLine2">—</span><button class="btn ghost small" id="refreshRates"><i data-lucide="refresh-cw" class="i18"></i>更新成最新汇率</button></div>
+      </div>
+    </div>
+    <div class="aa-col aa-r">
+      <details class="card c-stats" open>
+        <summary><h2><i data-lucide="chart-column"></i>统计</h2><i data-lucide="chevron-down" class="chev"></i></summary>
+        <div id="aaStats"></div>
+      </details>
+      <div class="aa-sheet" id="aaFormBox" role="dialog" aria-labelledby="aaFormTitle">
+        <div class="card c-add">
+          <div class="aa-sheet-h"><h2 id="aaFormTitle">记一笔</h2><button type="button" class="aa-x" data-aaclose aria-label="关闭"><i data-lucide="x"></i></button></div>
+          <form class="form" id="expForm">
+            <input type="text" id="expTitle" maxlength="60" placeholder="花在什么上，例如：芽庄凯悦房费" aria-label="用途">
+            <div class="two">
+              <input type="number" id="expAmt" inputmode="decimal" step="any" min="0" placeholder="金额" aria-label="金额">
+              <select id="expCur" aria-label="币种"><option value="VND">₫ 越南盾</option><option value="CNY">¥ 人民币</option><option value="KRW">₩ 韩元</option><option value="USD">$ 美元</option></select>
+            </div>
+            <div class="aa-cats" id="aaCats" role="group" aria-label="分类"></div>
+            <div class="two"><label class="aa-lbl">日期<select id="expDay"></select></label><label class="aa-lbl">谁付的<select id="expPayer"></select></label></div>
+            <div><span class="muted">谁来分</span>
+              <div class="seg" id="aaMode" role="group" aria-label="分摊方式"><button type="button" data-mode="equal">平分</button><button type="button" data-mode="shares">按份数</button><button type="button" data-mode="amounts">按金额</button></div>
+              <div id="expSplit"></div><p class="sub" id="aaSplitHint"></p></div>
+            <input type="text" id="expNote" maxlength="120" placeholder="备注（可不填）" aria-label="备注">
+            <label class="aa-switch"><input type="checkbox" id="expSettled"><span>当场已经各付各的（只记录，不参与结算）</span></label>
+            <div class="row"><button class="btn" id="expAdd" type="submit"><i data-lucide="plus" class="i18"></i>记一笔</button>
+              <button class="btn ghost small" type="button" id="aaCancelEdit" hidden>取消修改</button></div>
+          </form>
         </div>
-        <div class="row"><span class="muted">谁付的</span><select id="expPayer" aria-label="谁付的"></select></div>
-        <div><span class="muted">谁来分</span><div class="chips" id="expSplit"></div></div>
-        <button class="btn" id="expAdd" type="submit"><i data-lucide="plus" class="i18"></i>记一笔</button>
-      </form>
+      </div>
     </div>
-    <div class="card c-ledger">
-      <h2><i data-lucide="receipt"></i>账本</h2>
-      <p class="sub">只有记账的那台手机能删。都按人民币结算，汇率四个人共用一份。</p>
-      <div id="expList"><p class="empty">还没有记账。</p></div>
-      <div class="row"><span class="sub" id="rateLine2">—</span><button class="btn ghost small" id="refreshRates"><i data-lucide="refresh-cw" class="i18"></i>更新成最新汇率</button></div>
-    </div>
+    <button class="btn btn-primary" id="aaFab" type="button"><i data-lucide="plus" class="i18"></i>记一笔</button>
+    <div id="aaBackdrop" hidden></div>
   </section>
 
   <!-- ================= 攻略收藏 ================= -->
@@ -428,11 +535,21 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
     </div>
   </section>
 </main>
+<div id="aaRepay" role="dialog" aria-modal="true" aria-labelledby="rpTitle" hidden><form class="card aa-rp" id="rpForm">
+  <div class="aa-sheet-h"><h2 id="rpTitle"><i data-lucide="arrow-right-left"></i>记一笔还款</h2><button type="button" class="aa-x" data-rpclose aria-label="关闭"><i data-lucide="x"></i></button></div>
+  <div class="two"><label class="aa-lbl">谁还<select id="rpFrom"></select></label><label class="aa-lbl">还给谁<select id="rpTo"></select></label></div>
+  <div class="two"><input type="number" id="rpAmt" inputmode="decimal" step="any" min="0" placeholder="金额（可以先还一部分）" aria-label="金额">
+    <select id="rpCur" aria-label="币种"><option value="CNY">¥ 人民币</option><option value="VND">₫ 越南盾</option><option value="KRW">₩ 韩元</option><option value="USD">$ 美元</option></select></div>
+  <div class="chips" id="rpMethods" role="group" aria-label="方式"></div>
+  <input type="text" id="rpNote" maxlength="60" placeholder="备注（可不填）" aria-label="备注">
+  <button class="btn" id="rpSave" type="submit"><i data-lucide="check" class="i18"></i>记下还款</button>
+</form></div>
 <div id="pkCheck" role="dialog" aria-modal="true" aria-label="出发前检查" hidden><div class="pk-check-in"><button class="btn ghost btn-sm pk-check-x" data-pkclose><i data-lucide="x" class="i18"></i>退出</button><div id="pkCheckIn" class="pk-check-in" style="max-width:none"></div></div></div>
 
 <script src="trip-data.js"></script>
 <script src="flights.js"></script>
 <script src="packing.js"></script>
+<script src="bills.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -457,7 +574,7 @@ const GROUP = [
   ["hyatt", "芽庄凯悦：房间怎么分"], ["fusion", "Fusion：房间怎么分"],
 ];
 
-let db = null, uid = null, settings = DEFAULT_SETTINGS, expenses = [], checks = {}, checksLoaded = false, me = "";
+let db = null, uid = null, settings = DEFAULT_SETTINGS, checks = {}, checksLoaded = false, me = "";
 try { me = localStorage.getItem("trip-me") || ""; } catch (e) {}
 let toastTimer = null;
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2000); }
@@ -636,63 +753,7 @@ document.addEventListener("change", async e => {
   } catch (err) { if (t.dataset.p || t.dataset.g || t.dataset.owner) { toast("保存失败，请稍后再试"); renderChecklist(); } }
 });
 
-/* ---------- AA ---------- */
-let split = new Set(IDS);
-function renderForm() {
-  const payer = $("#expPayer").value || me || "m1";
-  $("#expPayer").innerHTML = IDS.map(id => `<option value="${id}" ${id === payer ? "selected" : ""}>${esc(nm(id))}</option>`).join("");
-  $("#expSplit").innerHTML = IDS.map(id => `<button type="button" class="chip ${split.has(id) ? "on" : ""}" data-split="${id}" aria-pressed="${split.has(id)}">${esc(nm(id))}</button>`).join("");
-  $("#expAdd").disabled = !ready();
-}
-$("#expSplit").addEventListener("click", e => { const b = e.target.closest("[data-split]"); if (!b) return; const id = b.dataset.split; split.has(id) ? split.delete(id) : split.add(id); renderForm(); });
-$("#expForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const title = $("#expTitle").value.trim(), amount = parseFloat($("#expAmt").value), currency = $("#expCur").value;
-  if (!title) return toast("先写花在什么上");
-  if (!(amount > 0)) return toast("金额要大于 0");
-  if (!split.size) return toast("至少选一个人来分");
-  $("#expAdd").disabled = true;
-  try {
-    await db.collection("expenses").add({ title: title.slice(0, 60), amount, currency, payer: $("#expPayer").value, split: IDS.filter(id => split.has(id)), at: Date.now(), by: uid });
-    $("#expTitle").value = ""; $("#expAmt").value = ""; toast("已记账");
-  } catch (err) { toast("保存失败，请稍后再试"); }
-  $("#expAdd").disabled = !ready();
-});
-$("#expList").addEventListener("click", async e => {
-  const b = e.target.closest("[data-del]"); if (!b) return;
-  if (!confirm("删除这笔账？")) return;
-  try { await db.doc("expenses/" + b.dataset.del).delete(); toast("已删除"); } catch (err) { toast("删除失败"); }
-});
-// Net balance per member in CNY, then greedily match debtors to creditors.
-function settle() {
-  const bal = Object.fromEntries(IDS.map(id => [id, 0])), paid = { ...bal }, share = { ...bal }; let total = 0;
-  for (const x of expenses) {
-    const cny = toCNY(x.amount, x.currency), parts = (x.split || []).filter(id => IDS.includes(id)); if (!parts.length) continue;
-    total += cny; paid[x.payer] += cny; bal[x.payer] += cny;
-    for (const id of parts) { share[id] += cny / parts.length; bal[id] -= cny / parts.length; }
-  }
-  const cred = IDS.filter(id => bal[id] > 0.005).map(id => [id, bal[id]]).sort((a, b) => b[1] - a[1]);
-  const debt = IDS.filter(id => bal[id] < -0.005).map(id => [id, -bal[id]]).sort((a, b) => b[1] - a[1]);
-  const xfers = []; let i = 0, j = 0;
-  while (i < debt.length && j < cred.length) {
-    const m = Math.min(debt[i][1], cred[j][1]); if (m > 0.005) xfers.push([debt[i][0], cred[j][0], m]);
-    debt[i][1] -= m; cred[j][1] -= m; if (debt[i][1] < 0.005) i++; if (cred[j][1] < 0.005) j++;
-  }
-  return { total, paid, share, bal, xfers };
-}
-function renderAA() {
-  const s = settle();
-  $("#aaTotal").textContent = expenses.length ? `共 ${expenses.length} 笔，合计 ¥${fmt(s.total, "CNY")}，人均 ¥${fmt(s.total / 4, "CNY")}（按实际参与的人分）` : "记了账以后，这里会算出谁该转给谁。";
-  $("#transfers").innerHTML = s.xfers.length ? s.xfers.map(([a, b, m]) => `<div class="xfer">${esc(nm(a))} → ${esc(nm(b))}：¥${fmt(m, "CNY")}</div>`).join("") : (expenses.length ? `<p class="empty">已经平账了。</p>` : "");
-  $("#balances").innerHTML = expenses.length ? `<span class="muted">成员</span><span class="muted" style="text-align:right">已付 / 应摊</span><span class="muted" style="text-align:right">差额</span>` +
-    IDS.map(id => `<span>${esc(nm(id))}${id === me ? "（我）" : ""}</span><span style="text-align:right">¥${fmt(s.paid[id], "CNY")} / ¥${fmt(s.share[id], "CNY")}</span><span class="${s.bal[id] >= 0 ? "pos" : "neg"}">${s.bal[id] >= 0 ? "+" : "−"}¥${fmt(Math.abs(s.bal[id]), "CNY")}</span>`).join("") : "";
-  const list = [...expenses].sort((a, b) => (b.at || 0) - (a.at || 0));
-  $("#expList").innerHTML = list.length ? list.map(x => `<div class="exp">
-    <span>${esc(x.title)}</span><span class="amt">${SYM[x.currency] || ""}${fmt(x.amount, x.currency)}</span>
-    <span class="meta">${esc(nm(x.payer))} 付 · ${(x.split || []).length === 4 ? "四人平分" : (x.split || []).map(nm).map(esc).join("、") + " 分"} · ${new Date(x.at).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })}</span>
-    <span class="meta" style="text-align:right">${x.currency === "CNY" ? "" : "≈ ¥" + fmt(toCNY(x.amount, x.currency), "CNY")}</span>
-    ${x.by === uid ? `<span></span><button class="del" data-del="${esc(x.id)}">删除</button>` : ""}</div>`).join("") : `<p class="empty">还没有记账。</p>`;
-}
+/* ---------- AA 账单: see bills.js (renderAA, renderForm, settle, subscribeAA) ---------- */
 
 
 /* ---------- 攻略收藏: shared link list; paste a 小红书 share text and the URL + title are extracted ---------- */
@@ -736,6 +797,7 @@ $("#lkList").addEventListener("click", async e => {
 
 const lucideIcons = () => { try { if (window.lucide) lucide.createIcons({ attrs: { "stroke-width": 1.75 } }); } catch (e) {} };
 function renderAll() { renderInfo(); renderChecklist(); renderForm(); renderAA(); renderLinks(); Packing.render(); lucideIcons(); }
+bindAA();
 Packing.init({ root: document.querySelector('[data-panel="packing"]'), IDS, nm, me: () => me, ready, db: () => db, toast, icons: lucideIcons,
   setMe: id => { me = id; try { localStorage.setItem("trip-me", me); } catch (e) {} renderAll(); } });
 renderCountdown(); setInterval(renderCountdown, 1000); renderAll();
@@ -765,7 +827,7 @@ function loadScript(src) { return new Promise((res, rej) => { const el = documen
       }).catch(() => {});
       renderAll();
     }, fail);
-    db.collection("expenses").onSnapshot(s => { expenses = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAA(); }, fail);
+    subscribeAA(db);
     db.collection("links").onSnapshot(s => { links = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(l => /^https?:\/\//.test(l.url || "")); renderLinks(); }, fail);
     Packing.subscribe(db);
     db.collection("checklist").onSnapshot(s => { checksLoaded = true; checks = {}; s.docs.forEach(d => { checks[d.id] = d.data().items || {}; }); renderChecklist(); }, fail);
