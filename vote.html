@@ -13,11 +13,7 @@
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <style>
 /* vote.html — page-only styles; tokens and shared components live in ui.css */
-.top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
-.top-in{max-width:1600px;margin:0 auto;padding:calc(10px + var(--safe-t)) 16px 10px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;color:var(--ink-2)}
-.top-in b{color:var(--ink);font-size:17px;display:flex;align-items:center;gap:6px;white-space:nowrap}
-.top-in span{display:flex;gap:4px 10px;flex-wrap:wrap;justify-content:flex-end;font-weight:600}
-.vw{max-width:760px;margin:0 auto;padding:16px 16px calc(48px + var(--safe-b));display:grid;gap:14px}
+.vw{max-width:760px;margin:0 auto;padding:16px 16px calc(32px + var(--tabbar-h));display:grid;gap:14px}
 .v-side,.v-main{display:grid;gap:14px;align-content:start;min-width:0}
 .card{padding:16px;display:grid;gap:12px}
 .card h2{font-size:17px;line-height:1.35;display:flex;align-items:center;gap:8px}
@@ -60,7 +56,7 @@ input[type=text],select{min-height:44px;background:var(--surface-2);border:1px s
 .banner span{font-size:13px;opacity:.85}
 .banner .btn{background:#fff!important;color:#0B7A8C!important}
 #polls{display:grid;gap:14px;align-items:start}
-#toast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b));transform:translate(-50%,16px);opacity:0;z-index:3000;background:#13202B;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;max-width:92vw;text-align:center;pointer-events:none;transition:opacity .25s,transform .25s}
+#toast{position:fixed;left:50%;bottom:calc(20px + var(--tabbar-h));transform:translate(-50%,16px);opacity:0;z-index:3000;background:#13202B;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;max-width:92vw;text-align:center;pointer-events:none;transition:opacity .25s,transform .25s}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 /* tablet/desktop: identity + new-poll column on the left, polls in two columns */
 @media (min-width:768px){
@@ -74,7 +70,7 @@ input[type=text],select{min-height:44px;background:var(--surface-2);border:1px s
 </style>
 </head>
 <body>
-<header class="top"><div class="top-in"><b><i data-lucide="vote"></i>投票合集</b><span><a href="https://sangi9faro.github.io/">← 我的旅行</a> · <a href="./">工具箱</a> · <a href="guide.html">攻略</a></span></div></header>
+<script src="trip-nav.js" data-title="投票合集"></script>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <main class="vw">
@@ -111,7 +107,7 @@ input[type=text],select{min-height:44px;background:var(--surface-2);border:1px s
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const IDS = ["m1", "m2", "m3", "m4"];
-let members = { m1: "杨巧思", m2: "钟知心", m3: "陈性情", m4: "王大气" };
+let members = { m1: "成员A", m2: "成员B", m3: "成员C", m4: "成员D" };
 let db = null, uid = null, me = "", polls = [], ballots = {}, show = "open", multi = false;
 // The first poll (where to go) lives in the old votes/people collections; shown read-only as a closed poll
 let legacyVotes = [], legacyPeople = {};

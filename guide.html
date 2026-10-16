@@ -16,6 +16,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap">
 <link rel="stylesheet" href="ui.css">
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="trip-data.js"></script>
+<script src="flights.js"></script>
 <style>
 /* guide.html — layout and page-only pieces; tokens and shared components live in ui.css */
 html,body{height:100%}
@@ -34,15 +36,17 @@ body.g{overflow:hidden}
 #syncStatus.ok,#statusDesk.ok{color:var(--good)}
 /* phone: draggable bottom sheet with three heights */
 /* the sheet's real height changes (not a translate), so its scroll area always ends at the screen edge */
-.g-panel{position:fixed;left:0;right:0;bottom:0;z-index:800;height:var(--peek,150px);max-height:calc(100dvh - 60px);background:var(--bg);border-radius:var(--r-l) var(--r-l) 0 0;
+.g-panel{position:fixed;left:0;right:0;bottom:var(--tabbar-h);z-index:800;height:var(--peek,120px);max-height:calc(100dvh - 60px - var(--tabbar-h));background:var(--bg);border-radius:var(--r-l) var(--r-l) 0 0;
   box-shadow:var(--shadow-2);display:flex;flex-direction:column;transition:height .32s cubic-bezier(.2,.8,.2,1)}
 .g-panel.drag{transition:none}
 .g-handle{flex-shrink:0;height:30px;border:0;background:none;display:grid;place-items:center;cursor:grab;touch-action:none;border-radius:var(--r-l) var(--r-l) 0 0}
 .g-handle span{width:44px;height:5px;border-radius:3px;background:var(--line)}
-#content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 16px calc(28px + var(--safe-b))}
+#content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 16px 28px}
 .g-days{display:none}
 /* tablet: tabs on top + two columns */
 @media (min-width:768px){
+  .g-back{display:none}
+  .g-panel{bottom:0}
   body.g{display:grid;grid-template-columns:minmax(360px,420px) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:100dvh}
   #map{position:relative;inset:auto;grid-column:2;grid-row:1/3;height:100dvh}
   .g-top{position:static;grid-column:1;grid-row:1;pointer-events:auto;background:var(--bg);padding:14px 16px 6px;border-right:1px solid var(--line)}
@@ -147,11 +151,12 @@ body.g{overflow:hidden}
 .as-cancel{font-weight:700}
 .locate-btn{width:40px;height:40px;border-radius:12px;border:0;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-2);display:grid;place-items:center;cursor:pointer}
 .locate-btn.active{color:var(--accent)}
-#gtoast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b));transform:translate(-50%,16px);opacity:0;z-index:3000;background:#13202B;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;max-width:92vw;text-align:center;pointer-events:none;transition:opacity .25s,transform .25s}
+#gtoast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b) + var(--tabbar-h));transform:translate(-50%,16px);opacity:0;z-index:3000;background:#13202B;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;max-width:92vw;text-align:center;pointer-events:none;transition:opacity .25s,transform .25s}
 #gtoast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body class="g">
+<script src="trip-nav.js" data-top="0"></script>
 
 <div id="map" role="region" aria-label="行程地图"></div>
 <header class="g-top">
@@ -160,7 +165,7 @@ body.g{overflow:hidden}
   <div class="tabs chips" id="tabs" role="tablist" aria-label="分天"></div>
 </header>
 <aside class="g-days" aria-label="分天">
-  <div class="gd-head"><a href="https://sangi9faro.github.io/"><i data-lucide="chevron-left" class="i18"></i>我的旅行</a><h1>越南跨年</h1><span id="statusDesk">正在连接…</span></div>
+  <div class="gd-head"><h1>越南跨年</h1><span id="statusDesk">正在连接…</span></div>
   <div id="dayList"></div>
 </aside>
 <section class="g-panel" id="panel" aria-label="行程">
@@ -225,40 +230,35 @@ const DAYS = [
   ]},
 ];
 
+// names come from meta/settings (memberName); offline they stay 成员A–D
+const n = id => esc(memberName(id) || id);
+function arrivals() {
+  return (window.TRIP_FLIGHTS || []).filter(f => f.dir === 'in').sort((a, b) => Date.parse(a.arr || a.approx) - Date.parse(b.arr || b.approx))
+    .map(f => { const m = /^\d{4}-(\d{2})-(\d{2})T(\d{2}:\d{2})/.exec(f.arr || ''); return m ? `${+m[1]}/${+m[2]} ${m[3]} ${n(f.who)}` : `${esc(f.approxLabel || '待定')} ${n(f.who)}`; }).join('<br>');
+}
+function mountOverview() { const el = document.getElementById('ovFlights'); if (el && window.renderFlights) renderFlights(el, { name: memberName }); }
 function overviewContent() {
   return `
 <div class="hero"><h1>越南跨年攻略</h1><p class="subtitle">12/29 – 1/3 · 胡志明 → 芽庄 → 金兰湾</p></div>
-<p class="note"><a href="https://sangi9faro.github.io/">← 我的旅行</a> · <a href="./">工具箱（基础信息 / 准备清单 / AA 记账）</a> · <a href="vote.html">投票</a></p>
 <div class="info-grid">
-  <div class="info-card"><div class="label">到达</div><div class="value">12/29 晚 杨巧思<br>12/30 05:40 陈性情<br>12/30 06:50 王大气<br>12/31 01:20 钟知心</div></div>
+  <div class="info-card"><div class="label">到达</div><div class="value">${arrivals()}</div></div>
   <div class="info-card"><div class="label">交通</div><div class="value">12/31 凌晨大巴去芽庄<br>1/3 飞机回胡志明（推荐）</div></div>
   <div class="info-card"><div class="label">住宿</div><div class="value">胡志明 M Village 1 晚（12/29）<br>芽庄凯悦 1 晚<br>金兰湾 Fusion 2 晚</div></div>
   <div class="info-card"><div class="label">跨年</div><div class="value">芽庄市区<br>4月2日广场，离凯悦走路几分钟</div></div>
 </div>
 <div class="section-head">航班</div>
-<div class="card"><div class="desc">
-<b>去程</b><br>
-杨巧思：12/29 晚 台北 → 胡志明（待补充航班号）<br>
-陈性情：12/30 VJ5011 上海浦东 T2 02:15 → 新山一 T2 05:40<br>
-王大气：12/30 越旅行航空 深圳宝安 T3 05:00 → 新山一 T2 06:50（待出票）<br>
-钟知心：12/30 CZ6089 广州白云 T2 23:30 → 新山一 T2 12/31 01:20<br><br>
-<b>回程</b><br>
-陈性情：1/3 9G634 新山一 T2 21:45 → 浦东 1/4 02:45<br>
-王大气：1/4 越旅行航空 新山一 00:10 → 宝安 04:00（待出票）<br>
-钟知心：1/4 CZ6090 新山一 T2 02:25 → 白云 06:20<br>
-杨巧思：1/3 胡志明 → 首尔（待补充）
-</div></div>
+<div id="ovFlights"></div>
 <div class="section-head"><i data-lucide="triangle-alert" class="i18"></i>回程提醒</div>
 <div class="card warn"><div class="desc">
-陈性情 1/3 <b>21:45</b>、王大气 1/4 <b>00:10</b> 从胡志明起飞，分别要 19:45、22:10 前到机场。中午从金兰湾坐大巴，晚上 7–9 点才到，基本赶不上。<br>
+${n('m3')} 1/3 <b>21:45</b>、${n('m4')} 1/4 <b>00:10</b> 从胡志明起飞，分别要 19:45、22:10 前到机场。中午从金兰湾坐大巴，晚上 7–9 点才到，基本赶不上。<br>
 建议：1/3 中午退房后，四个人一起从<b>金兰机场飞胡志明</b>（约 1 小时，机场离 Fusion 十几分钟），选 17:00 前到的班次。<br>
-如果要省钱：钟知心 1/4 02:25 才走，可以坐大巴；陈性情和王大气一定要坐飞机。
+如果要省钱：${n('m2')} 1/4 02:25 才走，可以坐大巴；${n('m3')} 和 ${n('m4')} 一定要坐飞机。
 </div></div>
 <div class="section-head">行程概览</div>
 <div class="day-list">${DAYS.slice(1).map(d => `<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${dayHex(d.id)}"></span>${esc(d.label)} · ${esc(d.title)}</div><div class="desc">${esc(d.date)}</div></div>`).join('')}</div>
 <div class="section-head">出发前要办</div>
 <div class="card"><div class="desc">
-① <b>12/31 大巴票</b>：跨年当天票紧张，提前买卧铺。钟知心 01:20 落地，买 03:30 以后最早的一班，确认上车点。<br>
+① <b>12/31 大巴票</b>：跨年当天票紧张，提前买卧铺。${n('m2')} 01:20 落地，买 03:30 以后最早的一班，确认上车点。<br>
 ② <b>1/3 国内线</b>：金兰 → 胡志明，17:00 前到达的班次，尽早订。<br>
 ③ <b>12/30 晚上没有酒店</b>：退房后行李寄存前台，先问好前台夜里能不能取；酒吧到凌晨，留出取行李和去上车点的时间。<br>
 ④ <b>1/1 跳岛游</b>：提前订，问清楚停航怎么退。<br>
@@ -513,7 +513,8 @@ function renderTabs() {
     : `<button class="gd${d.id === cur ? ' on' : ''}" data-day="${d.id}"><i class="dot" style="--c:${dayHex(d.id)}"></i><span class="l">${esc(d.label.split(' ')[0])}<small>${esc((d.date || '').split(' ')[0])}</small></span><span class="t">${esc(d.title)}</span><span class="n">${d.locations.length} 个地点</span></button>`).join('');
 }
 renderTabs();
-function rerender() { contentEl.innerHTML = cur === 0 ? overviewContent() : renderDay(cur); icons(contentEl); showDay(cur); }
+function rerender() { contentEl.innerHTML = cur === 0 ? overviewContent() : renderDay(cur); if (cur === 0) mountOverview(); icons(contentEl); showDay(cur);
+  if (typeof sheetState !== 'undefined' && sheetState === 'min' && innerWidth < 768) setSheet('min'); } // header height may change (edit button, names)
 function go(idx) {
   if (form) closeForm(false);
   if (idx !== cur) editMode = false;
@@ -542,7 +543,7 @@ contentEl.addEventListener('click', e => {
 // ══════════ SYNC STATUS + FIREBASE ══════════
 const statusEl = document.createElement('span'); statusEl.id = 'syncStatus'; statusEl.textContent = '正在连接…'; document.getElementById('statusSlot').appendChild(statusEl);
 const setStatus = (t, ok) => [statusEl, document.getElementById('statusDesk')].forEach(el => { if (el) { el.textContent = t; el.classList.toggle('ok', !!ok); } });
-let db = null, uid = null, synced = false, me = '', members = { m1: '杨巧思', m2: '钟知心', m3: '陈性情', m4: '王大气' };
+let db = null, uid = null, synced = false, me = '', members = { m1: '成员A', m2: '成员B', m3: '成员C', m4: '成员D' };
 try { me = localStorage.getItem('trip-me') || ''; } catch (e) {}
 const memberName = id => members[id] || '';
 const canEdit = () => !!(db && uid && synced);
@@ -586,7 +587,8 @@ function loadScript(src) { return new Promise((res, rej) => { const el = documen
       synced = true; setStatus('行程已同步', true);
       applyDays(snap.docs);
     }, () => { synced = false; setStatus(OFF); if (!form) rerender(); });
-    db.doc('meta/settings').onSnapshot(d => { if (d.exists && d.data().members) { members = { ...members, ...d.data().members }; if (!form && cur) rerender(); } }, () => {});
+    db.doc('meta/settings').onSnapshot(d => { if (d.exists && d.data().members) { members = { ...members, ...d.data().members }; if (form) return;
+      if (cur) rerender(); else { contentEl.innerHTML = overviewContent(); mountOverview(); icons(contentEl); } } }, () => {});
   });
   firebase.auth().signInAnonymously().catch(() => { clearTimeout(timer); fail(); });
 })();
@@ -741,7 +743,13 @@ const panel = document.getElementById('panel'), handle = document.getElementById
 let sheetState = 'min';
 // full stops just under the floating top bar so the day tabs stay usable
 const topBarH = () => (document.querySelector('.g-top') || {}).offsetHeight || 80;
-const SHEET = { min: () => 150, half: () => Math.round(innerHeight * .5), full: () => innerHeight - topBarH() - 6 };
+// the sheet now sits on the trip tab bar, so subtract its height from the available space
+const tabBarH = () => (document.querySelector('.tn-tabs') || {}).offsetHeight || 0;
+// collapsed: tall enough to read the page title and its date line (about 120px; more when a long day title wraps)
+const peekMin = () => { const el = contentEl.querySelector('.day-head .num, .hero .subtitle'); if (!el) return 120;
+  const h = el.getBoundingClientRect().bottom - contentEl.getBoundingClientRect().top + contentEl.scrollTop + handle.offsetHeight + 8;
+  return Math.round(Math.min(180, Math.max(120, h))); };
+const SHEET = { min: peekMin, half: () => Math.round((innerHeight - tabBarH()) * .5), full: () => innerHeight - tabBarH() - topBarH() - 6 };
 const sheetPeek = () => SHEET[sheetState]();
 function setSheet(st) { sheetState = st; panel.style.setProperty('--peek', SHEET[st]() + 'px'); handle.setAttribute('aria-label', st === 'full' ? '收起行程' : '展开行程'); }
 handle.addEventListener('click', () => { if (dragMoved) return; setSheet(sheetState === 'min' ? 'half' : sheetState === 'half' ? 'full' : 'min'); });

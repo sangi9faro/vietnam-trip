@@ -210,5 +210,20 @@ service cloud.firestore {
       allow create, update: if isOwner() && validFavorite();
       allow delete: if isOwner();
     }
+
+    // ---------- 工具箱：行李检查（每人一份）----------
+    match /packing/{docId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && docId in memberIds()
+        && request.resource.data.keys().hasOnly(['items', 'custom', 'checkout', 'at'])
+        && request.resource.data.items is map
+        && request.resource.data.items.size() <= 150
+        && request.resource.data.custom is list
+        && request.resource.data.custom.size() <= 30
+        && request.resource.data.checkout is map
+        && request.resource.data.checkout.keys().hasOnly(['hyatt', 'fusion'])
+        && request.resource.data.at is int;
+    }
   }
 }
