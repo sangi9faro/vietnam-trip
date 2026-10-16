@@ -7,96 +7,115 @@
 <title>越南跨年工具箱</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
 <link rel="preload" as="image" href="img/splash-1.jpg">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <style>
-/* Same fresh light theme as the poll and guide pages */
-:root{
-  --bg:#f5f5f7; --surface:#ffffff; --ink:#1d1d1f; --muted:#6e6e73; --line:rgba(60,60,67,.12);
-  --sea:#0071e3; --sea-soft:#e8f2fd; --orange:#ff9500; --orange-soft:#fff3e0; --green:#248a3d; --green-soft:#e6f5ea; --red:#d70015;
-  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#000; --surface:#1c1c1e; --ink:#f5f5f7; --muted:#98989d; --line:rgba(84,84,88,.55);
-  --sea:#0a84ff; --sea-soft:#0d2a4a; --orange:#ff9f0a; --orange-soft:#3a2a10; --green:#30d158; --green-soft:#10301a; --red:#ff453a; --shadow:none; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#000; --surface:#1c1c1e; --ink:#f5f5f7; --muted:#98989d; --line:rgba(84,84,88,.55);
-  --sea:#0a84ff; --sea-soft:#0d2a4a; --orange:#ff9f0a; --orange-soft:#3a2a10; --green:#30d158; --green-soft:#10301a; --red:#ff453a; --shadow:none; color-scheme:dark}
-*{box-sizing:border-box}
-[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--font);letter-spacing:-0.01em;-webkit-font-smoothing:antialiased}
-a{color:var(--sea);text-decoration:none}
-button,input,select{font:inherit;color:inherit}
-.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--line)}
-.top-in{max-width:760px;margin:0 auto;padding:10px 16px;display:grid;gap:8px}
-.links{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
-.links b{color:var(--ink);font-size:15px}
-.tabs{display:flex;gap:6px}
-.tab{flex:1;border:0;border-radius:980px;padding:7px 6px;font-weight:600;font-size:13.5px;white-space:nowrap;background:var(--surface);color:var(--muted);box-shadow:var(--shadow);cursor:pointer}
-.tab.on{background:var(--sea);color:#fff}
-.wrap{max-width:760px;margin:0 auto;padding:16px 16px 64px;display:grid;gap:14px}
-.card{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:16px;display:grid;gap:10px}
-.card h2{margin:0;font-size:18px}
-.sub{margin:0;color:var(--muted);font-size:13px}
-.status{font-size:13px;color:var(--muted);text-align:center}
-.hero{background:linear-gradient(135deg,var(--sea),#34aadc);color:#fff;border-radius:22px;padding:18px 16px;display:grid;gap:10px;text-align:center;box-shadow:var(--shadow)}
-.hero-k,.hero-sub{margin:0;font-size:13px;opacity:.9}
+/* index.html (toolbox) — page-only styles; tokens and shared components live in ui.css */
+/* no backdrop-filter here: it would turn the fixed bottom tab bar (a child) into a header-relative box */
+.top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-in{max-width:1600px;margin:0 auto;padding:calc(10px + var(--safe-t)) 16px 10px}
+.links{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;color:var(--ink-2)}
+.links b{color:var(--ink);font-size:17px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.links span{display:flex;gap:4px 10px;flex-wrap:wrap;justify-content:flex-end;font-weight:600}
+/* phone: four tabs in a fixed bottom bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(4,1fr);background:color-mix(in srgb,var(--surface) 92%,transparent);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:6px 6px calc(6px + var(--safe-b))}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:50px;border:0;background:none;border-radius:12px;color:var(--ink-2);font-size:12px;font-weight:700;cursor:pointer}
+.tab.on{color:var(--accent)}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px calc(96px + var(--safe-b));display:grid;gap:14px}
+section.wrap{padding:0}
+.card{padding:16px;display:grid;gap:10px;align-content:start}
+.card h2{font-size:17px;display:flex;align-items:center;gap:8px}
+.card h2 svg.lucide{color:var(--accent)}
+.sub{margin:0;color:var(--ink-2);font-size:13px}
+.status{font-size:13px;color:var(--ink-2);text-align:center}
+/* countdown: big numbers */
+.hero{background:#0B7A8C;color:#fff;border-radius:var(--r-l);padding:18px 16px;display:grid;gap:12px}
+.hero-k,.hero-sub{margin:0;font-size:14px;opacity:.9}
 .cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.cd div{background:rgba(255,255,255,.18);border-radius:14px;padding:10px 0 6px;display:grid;gap:2px}
-.cd b{font-size:34px;line-height:1;font-weight:700;letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
+.cd div{background:rgba(255,255,255,.14);border-radius:14px;padding:12px 0 8px;display:grid;justify-items:center;gap:4px}
+.cd b{font:800 40px/1 var(--font-num);font-variant-numeric:tabular-nums}
+.cd div:first-child b{color:#FFD9CC}
 .cd span{font-size:12px;opacity:.85}
 .cd.msg{grid-template-columns:1fr}
-.cd.msg div{padding:14px 0}
+.cd.msg div{padding:16px 0}
+.cd.msg b{font-size:24px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px}
-.kv dt{color:var(--muted)} .kv dd{margin:0}
-.pill{display:inline-block;border-radius:980px;padding:3px 10px;font-size:12.5px;font-weight:600;background:var(--sea-soft);color:var(--sea)}
-.btn{border:0;border-radius:980px;padding:8px 16px;font-weight:600;background:var(--sea);color:#fff;cursor:pointer}
-.btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
-.btn.small{padding:5px 12px;font-size:13px}
-.btn:disabled{opacity:.45;cursor:default}
-input[type=text],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
-input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
-.flight{display:grid;gap:2px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:14px}
+.kv dt{color:var(--ink-2)} .kv dd{margin:0}
+.pill{display:inline-block;justify-self:start;border-radius:999px;padding:2px 10px;font:700 12px var(--font-num);background:var(--accent-soft);color:var(--accent)}
+/* page buttons map onto ui.css: .btn = primary, .btn.ghost = secondary */
+.btn:not(.ghost){background:var(--accent);color:#fff}
+.btn.small{min-height:36px;padding:0 12px;font-size:14px;border-radius:10px;justify-self:start}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+input[type=text],input[type=number],select,textarea{min-height:44px;background:var(--surface-2);border:1px solid transparent;border-radius:12px;padding:0 12px;min-width:0;font-size:16px}
+textarea{padding:10px 12px}
+#cnyIn,#vndIn{font-family:var(--font-num)}
+#vndOut,#cnyOut{font:800 20px var(--font-num)}
+.flight{display:grid;gap:2px;padding:12px 0;border-top:1px solid var(--line);font-size:14px}
 .flight:first-of-type{border-top:0;padding-top:0}
 .flight b{font-size:15px}
-.muted{color:var(--muted)}
-.phr{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
-.phr span:nth-child(odd){font-weight:600}
-.phr i{display:block;font-style:normal;font-weight:400;font-size:12.5px;color:var(--sea)}
-.phr span:nth-child(even){align-self:center}
-/* checklist grid: item + one checkbox per member */
-.grid{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,44px);align-items:center;gap:6px 4px;font-size:14px}
-.grid .h{font-size:12px;font-weight:700;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.grid .h.me{color:var(--sea)}
-.grid label{display:flex;justify-content:center}
-.grid input{width:22px;height:22px;accent-color:var(--green)}
-.prog{font-size:12px;text-align:center;color:var(--muted)}
-.task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.flight a{display:inline-flex;align-items:center;gap:4px;font-weight:600}
+.phr{display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:14px}
+.phr span:nth-child(odd){font-weight:700}
+.phr i{display:block;font-style:normal;font-weight:600;font-size:13px;color:var(--accent);font-family:var(--font-num)}
+.phr span:nth-child(even){align-self:center;color:var(--ink-2)}
+/* checklist: one column per member */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,48px);align-items:center;gap:8px 4px;font-size:14px}
+.grid .h{font-size:12px;font-weight:700;color:var(--ink-2);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid .h.me{color:var(--accent)}
+.grid label{display:flex;justify-content:center;min-height:36px;align-items:center}
+.grid input{width:22px;height:22px;accent-color:var(--good)}
+.prog{font:700 12px var(--font-num);text-align:center;color:var(--ink-2)}
+.task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
 .task:first-child{border-top:0}
-.task input[type=checkbox]{width:22px;height:22px;accent-color:var(--green)}
-.task.done .t{text-decoration:line-through;color:var(--muted)}
-.task select{font-size:13px;padding:5px 8px}
+.task input[type=checkbox]{width:22px;height:22px;accent-color:var(--good)}
+.task.done .t{text-decoration:line-through;color:var(--ink-2)}
+.task select{font-size:14px;min-height:36px}
 /* expenses */
-.form{display:grid;gap:8px}
-.form .two{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:8px}
-.chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{border:1px solid var(--line);background:var(--bg);border-radius:980px;padding:5px 12px;font-size:13.5px;cursor:pointer}
-.chip.on{background:var(--sea);border-color:var(--sea);color:#fff}
-.exp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.form{display:grid;gap:10px}
+.form .two{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:8px}
+.chips{flex-wrap:wrap;overflow:visible}
+.exp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:12px 0;border-top:1px solid var(--line);font-size:14px}
 .exp:first-child{border-top:0}
-.exp .amt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
-.exp .meta{font-size:12.5px;color:var(--muted)}
-.exp .del{border:0;background:none;color:var(--red);font-size:12.5px;padding:0;cursor:pointer;justify-self:end}
-.bal{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 12px;font-size:14px;font-variant-numeric:tabular-nums}
-.bal .pos{color:var(--green);font-weight:700;text-align:right} .bal .neg{color:var(--red);font-weight:700;text-align:right}
-.xfer{background:var(--green-soft);border-radius:12px;padding:10px 12px;font-weight:600}
-.empty{color:var(--muted);font-size:14px}
-.lk{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.exp .amt{text-align:right;font:800 15px var(--font-num)}
+.exp .meta{font-size:13px;color:var(--ink-2)}
+.exp .del{border:0;background:none;color:var(--bad);font-size:13px;padding:0;cursor:pointer;justify-self:end;min-height:32px}
+.bal{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px 12px;font-size:14px;font-family:var(--font-num)}
+.bal .pos{color:var(--good);font-weight:800;text-align:right} .bal .neg{color:var(--bad);font-weight:800;text-align:right}
+.xfer{background:color-mix(in srgb,var(--good) 14%,var(--surface));border-radius:12px;padding:12px 14px;font-weight:700;font-family:var(--font-num)}
+.empty{padding:12px 0}
+.lk{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:12px 0;border-top:1px solid var(--line)}
 .lk:first-of-type{border-top:0}
-.lk a.t{font-weight:600;font-size:15px;word-break:break-word}
-.lk .meta{font-size:12.5px;color:var(--muted)}
-#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--surface);padding:10px 18px;border-radius:980px;font-weight:600;font-size:14px;transition:opacity .25s,transform .25s;pointer-events:none;z-index:30;white-space:nowrap}
+.lk a.t{font-weight:700;font-size:15px;word-break:break-word}
+.lk .meta{font-size:13px;color:var(--ink-2)}
+#lkList{display:grid;gap:14px;align-content:start}
+#toast{position:fixed;left:50%;bottom:calc(84px + var(--safe-b));transform:translate(-50%,16px);opacity:0;z-index:3000;background:#13202B;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;max-width:92vw;text-align:center;pointer-events:none;transition:opacity .25s,transform .25s}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+/* tablet: two-column dashboard, every section visible */
+@media (min-width:768px){
+  .tabs{display:none}
+  .wrap{max-width:1600px;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;padding:20px 24px 40px;align-items:start}
+  section.wrap,section.wrap[hidden]{display:contents!important}
+  main.wrap>*,section.wrap>*{grid-column:span 6}
+  main.wrap>.c-hero,main.wrap>#who,section.wrap>.c-personal,section.wrap>.c-ledger{grid-column:span 12}
+  #toast{bottom:24px}
+}
+/* desktop: 12-column dashboard */
+@media (min-width:1200px){
+  main.wrap .c-hero,section.wrap>.c-hero{grid-column:span 6;order:1} main.wrap .c-money,section.wrap>.c-money{grid-column:span 3;order:2} main.wrap .c-me,section.wrap>.c-me{grid-column:span 3;order:3}
+  main.wrap>#who{grid-column:span 12;order:0}
+  main.wrap .c-personal,section.wrap>.c-personal{grid-column:span 8;order:4} main.wrap .c-settle,section.wrap>.c-settle{grid-column:span 4;order:5}
+  main.wrap .c-ledger,section.wrap>.c-ledger{grid-column:span 8;order:6} main.wrap .c-add,section.wrap>.c-add{grid-column:span 4;order:7}
+  main.wrap .c-group,section.wrap>.c-group{grid-column:span 6;order:8} main.wrap .c-lkadd,section.wrap>.c-lkadd{grid-column:span 3;order:9} main.wrap .c-lklist,section.wrap>.c-lklist{grid-column:span 3;order:10}
+  main.wrap .c-flights,section.wrap>.c-flights{grid-column:span 6;order:11} main.wrap .c-hotels,section.wrap>.c-hotels{grid-column:span 6;order:12}
+  main.wrap .c-phr,section.wrap>.c-phr{grid-column:span 4;order:13} main.wrap .c-tips,section.wrap>.c-tips{grid-column:span 4;order:14} main.wrap .c-sos,section.wrap>.c-sos{grid-column:span 4;order:15}
+  main.wrap .c-names,section.wrap>.c-names{grid-column:span 4;order:16}
+  .cd b{font-size:48px}
+}
 /* ---------- Splash: cinematic Nha Trang photo loop, tap to enter ---------- */
 #splash{position:fixed;inset:0;z-index:100;overflow:hidden;color:#fff;background:#0a0f1c;cursor:pointer;transition:opacity .7s ease,transform .7s ease;-webkit-tap-highlight-color:transparent}
 #splash:focus{outline:none}
@@ -150,18 +169,18 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
   <div class="sp-credit">照片：Minh Duc Ly（公有领域）· bvi4092（<a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a>）· Petertan（公有领域）· cloud.shepherd（<a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a>），来自 <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a>，已裁剪</div>
 </div>
 <header class="top"><div class="top-in">
-  <div class="links"><b>🌴 越南跨年工具箱</b><span><a href="https://sangi9faro.github.io/">← 我的旅行</a> · <a href="guide.html">攻略</a> · <a href="vote.html">投票</a></span></div>
+  <div class="links"><b><i data-lucide="palmtree"></i>越南跨年工具箱</b><span><a href="https://sangi9faro.github.io/">← 我的旅行</a> · <a href="guide.html">攻略</a> · <a href="vote.html">投票</a></span></div>
   <div class="tabs" role="tablist">
-    <button class="tab on" data-tab="info" role="tab">基础信息</button>
-    <button class="tab" data-tab="check" role="tab">准备清单</button>
-    <button class="tab" data-tab="aa" role="tab">AA 记账</button>
-    <button class="tab" data-tab="links" role="tab">攻略收藏</button>
+    <button class="tab on" data-tab="info" role="tab"><i data-lucide="info"></i>基础信息</button>
+    <button class="tab" data-tab="check" role="tab"><i data-lucide="list-checks"></i>准备清单</button>
+    <button class="tab" data-tab="aa" role="tab"><i data-lucide="wallet"></i>AA 记账</button>
+    <button class="tab" data-tab="links" role="tab"><i data-lucide="bookmark"></i>攻略收藏</button>
   </div>
 </div></header>
-<div id="toast" role="status" aria-live="polite"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <main class="wrap">
-  <section class="hero" aria-label="出发倒计时">
+  <section class="hero c-hero" aria-label="出发倒计时">
     <p class="hero-k" id="cdLabel">距离 12/29 胡志明集合（越南时间）</p>
     <div class="cd" id="countdown" role="timer" aria-live="off">
       <div><b id="cdD">—</b><span>天</span></div>
@@ -175,8 +194,8 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
 
   <!-- ================= 基础信息 ================= -->
   <section data-panel="info" class="wrap" style="padding:0">
-    <div class="card">
-      <h2>钱和汇率</h2>
+    <div class="card c-money">
+      <h2><i data-lucide="banknote"></i>钱和汇率</h2>
       <p class="sub" id="rateLine">—</p>
       <div class="row">
         <input type="number" id="cnyIn" inputmode="decimal" placeholder="人民币" style="width:120px" aria-label="人民币金额">
@@ -189,19 +208,19 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
       <p class="sub">越南盾面额大、0 很多，付钱前看清楚。夜市和小店多数只收现金；大酒店、Grab 可以刷卡。不用给小费。</p>
     </div>
 
-    <div class="card">
-      <h2>我是谁</h2>
+    <div class="card c-me">
+      <h2><i data-lucide="user-round"></i>我是谁</h2>
       <p class="sub">选一下，记账时默认是你付的，清单里你那一列会高亮。只存在这台手机上。</p>
       <select id="meSel" aria-label="我是谁"></select>
     </div>
 
-    <div class="card">
-      <h2>成员和航班</h2>
+    <div class="card c-flights">
+      <h2><i data-lucide="plane"></i>成员和航班</h2>
       <div id="flights"></div>
     </div>
 
-    <div class="card">
-      <h2>住宿</h2>
+    <div class="card c-hotels">
+      <h2><i data-lucide="bed-double"></i>住宿</h2>
       <div id="hotels"></div>
     </div>
 
@@ -209,8 +228,8 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
 
 
 
-    <div class="card">
-      <h2>常用越南语</h2>
+    <div class="card c-phr">
+      <h2><i data-lucide="languages"></i>常用越南语</h2>
       <p class="sub">拼音是近似读音（按南部口音），说慢一点、配合手势基本能懂。</p>
       <div class="phr">
         <span>Cảm ơn<i>gǎm ēn</i></span><span>谢谢</span>
@@ -226,8 +245,8 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
         <span>Không, cảm ơn<i>kōng, gǎm ēn</i></span><span>不用了，谢谢（拒绝拉客）</span>
       </div>
     </div>
-    <div class="card">
-      <h2>小知识</h2>
+    <div class="card c-tips">
+      <h2><i data-lucide="lightbulb"></i>小知识</h2>
       <dl class="kv">
         <dt>时差</dt><dd>比北京晚 1 小时，比首尔晚 2 小时</dd>
         <dt>天气</dt><dd>胡志明 12 月是旱季，白天 30°C 左右；芽庄 12 月底可能下雨，22–28°C</dd>
@@ -235,8 +254,8 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
         <dt>喝水</dt><dd>不要喝自来水，买瓶装水</dd>
       </dl>
     </div>
-    <div class="card">
-      <h2>紧急电话（越南）</h2>
+    <div class="card c-sos">
+      <h2><i data-lucide="phone"></i>紧急电话（越南）</h2>
       <dl class="kv">
         <dt>报警</dt><dd><a href="tel:113">113</a></dd>
         <dt>火警</dt><dd><a href="tel:114">114</a></dd>
@@ -245,8 +264,8 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
       </dl>
       <p class="sub">打车时把酒店名字给司机看最方便。Grab 打车、送餐都能用。</p>
     </div>
-    <div class="card">
-      <h2>成员名字</h2>
+    <div class="card c-names">
+      <h2><i data-lucide="users"></i>成员名字</h2>
       <p class="sub">名字改了以后，清单和账本会跟着变，以前的账不受影响。</p>
       <div id="nameEdit" class="form"></div>
       <button class="btn small" id="saveNames">保存名字</button>
@@ -255,13 +274,13 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
 
   <!-- ================= 准备清单 ================= -->
   <section data-panel="check" class="wrap" style="padding:0" hidden>
-    <div class="card">
-      <h2>每个人自己准备</h2>
+    <div class="card c-personal">
+      <h2><i data-lucide="list-checks"></i>每个人自己准备</h2>
       <p class="sub">办好了就在自己那一列打勾，四个人都能看到进度。</p>
       <div class="grid" id="personal"></div>
     </div>
-    <div class="card">
-      <h2>集体要办的</h2>
+    <div class="card c-group">
+      <h2><i data-lucide="clipboard-list"></i>集体要办的</h2>
       <p class="sub">选一下谁负责，办好了打勾。</p>
       <div id="group"></div>
     </div>
@@ -269,14 +288,14 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
 
   <!-- ================= AA 记账 ================= -->
   <section data-panel="aa" class="wrap" style="padding:0" hidden>
-    <div class="card">
-      <h2>结算</h2>
+    <div class="card c-settle">
+      <h2><i data-lucide="scale"></i>结算</h2>
       <p class="sub" id="aaTotal">—</p>
       <div id="transfers"></div>
       <div class="bal" id="balances"></div>
     </div>
-    <div class="card">
-      <h2>记一笔</h2>
+    <div class="card c-add">
+      <h2><i data-lucide="circle-plus"></i>记一笔</h2>
       <form class="form" id="expForm">
         <input type="text" id="expTitle" maxlength="60" placeholder="花在什么上，例如：芽庄凯悦房费" aria-label="用途">
         <div class="two">
@@ -285,21 +304,21 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
         </div>
         <div class="row"><span class="muted">谁付的</span><select id="expPayer" aria-label="谁付的"></select></div>
         <div><span class="muted">谁来分</span><div class="chips" id="expSplit"></div></div>
-        <button class="btn" id="expAdd" type="submit">记一笔</button>
+        <button class="btn" id="expAdd" type="submit"><i data-lucide="plus" class="i18"></i>记一笔</button>
       </form>
     </div>
-    <div class="card">
-      <h2>账本</h2>
+    <div class="card c-ledger">
+      <h2><i data-lucide="receipt"></i>账本</h2>
       <p class="sub">只有记账的那台手机能删。都按人民币结算，汇率四个人共用一份。</p>
       <div id="expList"><p class="empty">还没有记账。</p></div>
-      <div class="row"><span class="sub" id="rateLine2">—</span><button class="btn ghost small" id="refreshRates">更新成最新汇率</button></div>
+      <div class="row"><span class="sub" id="rateLine2">—</span><button class="btn ghost small" id="refreshRates"><i data-lucide="refresh-cw" class="i18"></i>更新成最新汇率</button></div>
     </div>
   </section>
 
   <!-- ================= 攻略收藏 ================= -->
   <section data-panel="links" class="wrap" style="padding:0" hidden>
-    <div class="card">
-      <h2>加一条攻略</h2>
+    <div class="card c-lkadd">
+      <h2><i data-lucide="bookmark-plus"></i>加一条攻略</h2>
       <p class="sub">把小红书的分享内容整段粘贴进来就行，会自动识别链接和标题。其他网站的链接也可以。</p>
       <form class="form" id="lkForm">
         <textarea id="lkText" rows="3" placeholder="例如：越南电子签证指南｜小白友好… https://xhslink.cn/… 打开【小红书】…" aria-label="分享内容或链接" style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;color:inherit;resize:vertical"></textarea>
@@ -308,7 +327,7 @@ input:focus-visible,select:focus-visible,.btn:focus-visible,.tab:focus-visible{o
         <button class="btn" id="lkAdd" type="submit">收藏</button>
       </form>
     </div>
-    <div id="lkList"><div class="card"><p class="empty">还没有收藏。</p></div></div>
+    <div id="lkList" class="c-lklist"><div class="card"><p class="empty">还没有收藏。</p></div></div>
   </section>
 </main>
 
@@ -327,7 +346,7 @@ const FLIGHTS = [
   { who: "m2", inb: "12/30 CZ6089 白云 T2 23:30 → 新山一 T2 12/31 01:20", out: "1/4 CZ6090 新山一 T2 02:25 → 白云 06:20" },
 ];
 const HOTELS = [
-  { when: "12/29（1 晚）", name: "M Village 快捷酒店 南圻起义街（Express by M Village Nam Ky Khoi Nghia）", q: "Express by M Village Nam Ky Khoi Nghia", addr: "214 Nam Ky Khoi Nghia, Vo Thi Sau, 第三郡", note: "工作室房，1.6 米大床，有厨房。⚠️ 还没订（只收藏了）；页面上是 2 人，陈性情、王大气 12/30 早上也会来，订的时候按实际人数登记。北京时间 12/24 15:00 前可免费取消。" },
+  { when: "12/29（1 晚）", name: "M Village 快捷酒店 南圻起义街（Express by M Village Nam Ky Khoi Nghia）", q: "Express by M Village Nam Ky Khoi Nghia", addr: "214 Nam Ky Khoi Nghia, Vo Thi Sau, 第三郡", note: "工作室房，1.6 米大床，有厨房。注意：还没订（只收藏了）；页面上是 2 人，陈性情、王大气 12/30 早上也会来，订的时候按实际人数登记。北京时间 12/24 15:00 前可免费取消。" },
   { when: "12/31（1 晚）", name: "芽庄凯悦 Hyatt Regency Nha Trang", q: "Hyatt Regency Nha Trang" },
   { when: "1/1 – 1/3（2 晚）", name: "金兰湾 Fusion Resort Cam Ranh", q: "Fusion Resort Cam Ranh" },
 ];
@@ -442,7 +461,7 @@ function renderCountdown() {
 function renderInfo() {
   $("#meSel").innerHTML = `<option value="">— 选一下 —</option>` + IDS.map(id => `<option value="${id}" ${id === me ? "selected" : ""}>${esc(nm(id))}</option>`).join("");
   $("#flights").innerHTML = FLIGHTS.map(f => `<div class="flight"><b>${esc(nm(f.who))}</b><span>去：${f.inb}</span><span class="muted">回：${f.out}</span></div>`).join("");
-  $("#hotels").innerHTML = HOTELS.map(h => `<div class="flight"><span class="pill">${h.when}</span><b>${h.name}</b>${h.addr ? `<span class="muted">${h.addr}</span>` : ""}${h.note ? `<span>${h.note}</span>` : ""}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.q)}" target="_blank" rel="noopener">📍 Google Maps 导航</a></div>`).join("");
+  $("#hotels").innerHTML = HOTELS.map(h => `<div class="flight"><span class="pill">${h.when}</span><b>${h.name}</b>${h.addr ? `<span class="muted">${h.addr}</span>` : ""}${h.note ? `<span>${h.note}</span>` : ""}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.q)}" target="_blank" rel="noopener"><i data-lucide="navigation" class="i18"></i>Google Maps 导航</a></div>`).join("");
   const r = settings.rates, when = settings.ratesAt ? new Date(settings.ratesAt).toLocaleDateString("zh-CN") : "默认估算";
   const line = `1 元人民币 ≈ ${fmt(r.VND, "VND")} 越南盾 ≈ ${fmt(r.KRW, "KRW")} 韩元（${when}）`;
   $("#rateLine").textContent = line; $("#rateLine2").textContent = line;
@@ -554,7 +573,7 @@ function settle() {
 function renderAA() {
   const s = settle();
   $("#aaTotal").textContent = expenses.length ? `共 ${expenses.length} 笔，合计 ¥${fmt(s.total, "CNY")}，人均 ¥${fmt(s.total / 4, "CNY")}（按实际参与的人分）` : "记了账以后，这里会算出谁该转给谁。";
-  $("#transfers").innerHTML = s.xfers.length ? s.xfers.map(([a, b, m]) => `<div class="xfer">${esc(nm(a))} → ${esc(nm(b))}：¥${fmt(m, "CNY")}</div>`).join("") : (expenses.length ? `<p class="empty">已经平账了 🎉</p>` : "");
+  $("#transfers").innerHTML = s.xfers.length ? s.xfers.map(([a, b, m]) => `<div class="xfer">${esc(nm(a))} → ${esc(nm(b))}：¥${fmt(m, "CNY")}</div>`).join("") : (expenses.length ? `<p class="empty">已经平账了。</p>` : "");
   $("#balances").innerHTML = expenses.length ? `<span class="muted">成员</span><span class="muted" style="text-align:right">已付 / 应摊</span><span class="muted" style="text-align:right">差额</span>` +
     IDS.map(id => `<span>${esc(nm(id))}${id === me ? "（我）" : ""}</span><span style="text-align:right">¥${fmt(s.paid[id], "CNY")} / ¥${fmt(s.share[id], "CNY")}</span><span class="${s.bal[id] >= 0 ? "pos" : "neg"}">${s.bal[id] >= 0 ? "+" : "−"}¥${fmt(Math.abs(s.bal[id]), "CNY")}</span>`).join("") : "";
   const list = [...expenses].sort((a, b) => (b.at || 0) - (a.at || 0));
@@ -605,7 +624,8 @@ $("#lkList").addEventListener("click", async e => {
   try { await db.doc("links/" + b.dataset.lkdel).delete(); toast("已删除"); } catch (err) { toast("删除失败"); }
 });
 
-function renderAll() { renderInfo(); renderChecklist(); renderForm(); renderAA(); renderLinks(); }
+const lucideIcons = () => { try { if (window.lucide) lucide.createIcons({ attrs: { "stroke-width": 1.75 } }); } catch (e) {} };
+function renderAll() { renderInfo(); renderChecklist(); renderForm(); renderAA(); renderLinks(); lucideIcons(); }
 renderCountdown(); setInterval(renderCountdown, 1000); renderAll();
 
 /* ---------- Firebase: load in background, anonymous sign-in, live data ---------- */
