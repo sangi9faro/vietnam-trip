@@ -13,19 +13,21 @@
   const md = iso => { const l = loc(iso); return l ? `${l.mo}/${l.d}` : ''; };
   const ap = e => e ? `${esc(e.code || '—')}${e.term ? ' · ' + esc(e.term) : ''}` : NA;
 
+  const ini = (id, name) => window.tripInitial ? tripInitial(id, Object.fromEntries(['m1', 'm2', 'm3', 'm4'].map(m => [m, name(m)]))) : String(name(id)).slice(0, 1);
   function card(f, name, idx) {
     const d = dur(f), p = plusDays(f), late = f.dir === 'out' && f.dep ? new Date(t(f.dep) - 2 * 3600e3) : null;
     const lateHM = late ? (() => { const off = /([+-]\d{2}):(\d{2})$/.exec(f.dep); const mins = off ? (+off[1]) * 60 + Math.sign(+off[1]) * (+off[2]) : 0;
       const x = new Date(late.getTime() + mins * 60000); return `${String(x.getUTCHours()).padStart(2, '0')}:${String(x.getUTCMinutes()).padStart(2, '0')}`; })() : null;
     const depT = loc(f.dep), arrT = loc(f.arr);
-    return `<article class="fl card" id="fl-${f.dir}-${f.who}" style="--p:var(--${f.who})" data-idx="${idx}">
-      <div class="fl-top"><span class="fl-who"><span class="av sm" style="--p:var(--${f.who})">${esc(name(f.who).slice(0, 1))}</span><b>${esc(name(f.who))}</b></span>
+    return `<article class="fl card${!f.dep && !f.arr ? ' tbd' : ''}" id="fl-${f.dir}-${f.who}" style="--p:var(--${f.who})" data-idx="${idx}">
+      <div class="fl-top"><span class="fl-who"><span class="av sm" style="--p:var(--${f.who})">${esc(ini(f.who, name))}</span><b>${esc(name(f.who))}</b></span>
         <span class="fl-st ${f.status}">${ST[f.status] || '待补充'}</span></div>
       <div class="fl-in">
         <div class="fl-end dep"><div class="tm">${depT ? depT.hm : NA}</div><div class="ap">${ap(f.from)}</div><div class="ct">${esc(f.from ? f.from.city : '')}${depT ? ' · ' + md(f.dep) : (f.approxLabel && f.dir === 'out' ? ' · ' + esc(f.approxLabel) : '')}</div></div>
         <div class="fl-mid"><span class="dur">${d || '—'}</span><span class="ln"><i data-lucide="plane" class="i18"></i></span><span>${f.airline ? esc(f.airline) : '—'} ${f.no ? esc(f.no) : ''}</span></div>
         <div class="fl-end arr"><div class="tm">${arrT ? arrT.hm : NA}${p > 0 ? `<sup>+${p}</sup>` : ''}</div><div class="ap">${ap(f.to)}</div><div class="ct">${esc(f.to ? f.to.city : '')}${arrT ? ' · ' + md(f.arr) : (f.approxLabel && f.dir === 'in' ? ' · ' + esc(f.approxLabel) : '')}</div></div>
       </div>
+      ${!f.dep && !f.arr ? '<p class="fl-tbd">航班还没定</p>' : ''}
       ${f.dir === 'out' ? `<div class="fl-late"><i data-lucide="clock" class="i18"></i><span>${lateHM ? `最晚 <b>${lateHM}</b> 到机场（国际航班提前 2 小时）` : '起飞时间待补充'}</span></div>` : ''}
     </article>`;
   }

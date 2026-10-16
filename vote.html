@@ -77,13 +77,6 @@ input[type=text],select{min-height:44px;background:var(--surface-2);border:1px s
   <aside class="v-side">
     <div class="status" id="who">正在连接数据…</div>
     <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <h2><i data-lucide="user-round"></i>我是谁</h2>
-        <select id="meSel" aria-label="我是谁" style="width:auto"></select>
-      </div>
-      <p class="sub">选好才能投票和发起投票。跟工具箱共用，选一次就记住。</p>
-    </div>
-    <div class="card">
       <div class="row" style="justify-content:space-between"><h2><i data-lucide="circle-plus"></i>发起投票</h2><button class="btn small" id="newBtn" aria-expanded="false">新投票</button></div>
       <form id="newForm" class="card" style="box-shadow:none;padding:0" hidden>
         <input type="text" id="pTitle" maxlength="80" placeholder="问题，例如：12/30 晚上去哪个酒吧？" aria-label="投票问题">
@@ -119,10 +112,9 @@ let toastTimer = 0;
 function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2000); }
 
 /* ---------- identity ---------- */
-function renderMe() {
-  $("#meSel").innerHTML = `<option value="">— 选一下 —</option>` + IDS.map(id => `<option value="${id}" ${id === me ? "selected" : ""}>${esc(nm(id))}</option>`).join("");
-}
-$("#meSel").addEventListener("change", e => { me = e.target.value; try { localStorage.setItem("trip-me", me); } catch (er) {} renderPolls(); });
+// 我是谁 is the shared avatar in the top bar (trip-nav.js), same value as the toolbox
+function renderMe() { if (window.tripNav) tripNav.setMembers(members); }
+if (window.tripNav) tripNav.configure({ members, onChange: id => { me = id; renderPolls(); } });
 
 /* ---------- create ---------- */
 function optInput(v = "") { const d = document.createElement("div"); d.className = "optrow";
@@ -136,7 +128,7 @@ document.querySelectorAll("[data-multi]").forEach(b => b.addEventListener("click
 $("#newForm").addEventListener("submit", async e => {
   e.preventDefault();
   if (!ready()) return toast("还没连上数据库");
-  if (!me) return toast("先在上面选一下你是谁");
+  if (!me) return (toast("先点右上角头像，选一下你是谁"), window.tripNav && tripNav.openPicker());
   const title = $("#pTitle").value.trim();
   const options = [...$("#pOpts").querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean).map(o => o.slice(0, 40));
   if (!title) return toast("先写问题");
@@ -192,7 +184,7 @@ function renderPolls() {
           <span class="lbl">${esc(o)}<span class="who">${c.map(nm).map(esc).join("、")}</span></span><span class="n">${c.length} 票 · ${pct}%</span></button>`;
       }).join("")}</div>
       <div class="meta">${voters.length}/4 人已投${missing.length ? " · 还没投：" + missing.map(nm).map(esc).join("、") : " · 全员到齐"}</div>
-      ${!me && !p.closed ? `<p class="sub">先在上面选你是谁，才能投票。</p>` : ""}
+      ${!me && !p.closed ? `<p class="sub">先点右上角头像选你是谁，才能投票。</p>` : ""}
       ${p.by === uid ? `<div class="row"><button class="btn ghost small" data-close="${p.closed ? 0 : 1}">${p.closed ? "重新开放" : "截止投票"}</button><button class="btn danger small" data-del="1">删除</button></div>` : ""}
     </article>`;
   }).join("") + legacy;
@@ -204,7 +196,7 @@ $("#polls").addEventListener("click", async e => {
   const o = e.target.closest("[data-opt]"), cl = e.target.closest("[data-close]"), del = e.target.closest("[data-del]");
   try {
     if (o) {
-      if (!me) return toast("先选你是谁");
+      if (!me) return (toast("先点右上角头像，选一下你是谁"), window.tripNav && tripNav.openPicker());
       const i = +o.dataset.opt, cur = (ballots[p.id] || {})[me] || [];
       const next = p.multi ? (cur.includes(i) ? cur.filter(x => x !== i) : [...cur, i].sort((a, b) => a - b)) : (cur.length === 1 && cur[0] === i ? [] : [i]);
       const ref = db.doc(`polls/${p.id}/ballots/${me}`);

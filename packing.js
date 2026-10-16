@@ -31,6 +31,10 @@
   const progress = id => { let n = 0, d = 0; for (const cat of CATS) for (const it of itemsOf(id, cat)) { n++; if (stateOf(id, it.k)) d++; } return { n, d }; };
   const canWrite = () => ctx.ready() && loaded;
   const who = () => view || ctx.me() || 'm1';
+  const av = id => ctx.avatar ? ctx.avatar(id) : ctx.nm(id).slice(0, 1);
+  // desktop table: categories collapse; a category everyone has finished starts collapsed
+  let deskOpen = {};
+  const catDone = cat => ctx.IDS.every(id => itemsOf(id, cat).every(it => stateOf(id, it.k)));
 
   /* ---------- writes ---------- */
   async function ensure(id) {
@@ -80,9 +84,11 @@
   }
   function table() {
     const ids = ctx.IDS, dis = canWrite() ? '' : 'disabled';
-    let h = `<div class="pk-tr pk-th"><span></span>${ids.map(id => `<span class="${id === ctx.me() ? 'me' : ''}"><span class="av sm" style="--p:var(--${id})">${esc(ctx.nm(id).slice(0, 1))}</span>${esc(ctx.nm(id))}</span>`).join('')}</div>`;
+    let h = `<div class="pk-tr pk-th"><span></span>${ids.map(id => `<span class="${id === ctx.me() ? 'me' : ''}"><span class="av sm" style="--p:var(--${id})">${esc(av(id))}</span>${esc(ctx.nm(id))}</span>`).join('')}</div>`;
     for (const cat of CATS) {
-      h += `<div class="pk-tr pk-tc"><b><i data-lucide="${cat.icon}" class="i18"></i>${cat.label}</b>${ids.map(id => { const it = itemsOf(id, cat); return `<span class="pk-n">${it.filter(x => stateOf(id, x.k)).length} / ${it.length}</span>`; }).join('')}</div>`;
+      const done = catDone(cat), open = deskOpen[cat.id] ?? !done;
+      h += `<div class="pk-tr pk-tc${done ? ' done' : ''}" id="pkc-${cat.id}"><button type="button" class="pk-tc-b" data-pkdcat="${cat.id}" aria-expanded="${open}"><i data-lucide="${cat.icon}" class="i18"></i>${cat.label}${done ? '<i data-lucide="circle-check" class="i18 ok"></i>' : ''}<i data-lucide="chevron-down" class="i18 chev"></i></button>${ids.map(id => { const it = itemsOf(id, cat); return `<span class="pk-n">${it.filter(x => stateOf(id, x.k)).length} / ${it.length}</span>`; }).join('')}</div>`;
+      if (!open) continue;
       const rows = [...cat.items.map(([k, label, w, note, strong]) => ({ k, label, w, note, strong })),
         ...ids.flatMap(id => (doc(id).custom || []).filter(c => c.cat === cat.id).map(c => ({ k: c.k, label: c.label, owner: id })))];
       for (const it of rows) h += `<div class="pk-tr"><span class="t"><span class="l">${esc(it.label)}</span>${tag(it)}${it.owner ? `<span class="pk-w own" style="--p:var(--${it.owner})">${esc(ctx.nm(it.owner))}</span>` : ''}${sub(it)}</span>${ids.map(id => {
@@ -91,6 +97,10 @@
         return `<span><button class="pk-cell ${s}" data-pkcycle="${esc(it.k)}" data-id="${id}" ${dis} aria-label="${esc(ctx.nm(id))}：${esc(it.label)}，${s === 'done' ? '已带' : s === 'skip' ? '不需要' : '未处理'}" title="点一下：已带 → 不需要 → 取消">${s === 'done' ? '<i data-lucide="check"></i>' : s === 'skip' ? '<i data-lucide="minus"></i>' : ''}</button>${it.owner ? `<button class="pk-x" data-pkdel="${esc(it.k)}" data-id="${id}" ${dis} aria-label="删除"><i data-lucide="trash-2"></i></button>` : ''}</span>`; }).join('')}</div>`;
     }
     return h;
+  }
+  function toc() {
+    return CATS.map(cat => { let n = 0, d = 0; ctx.IDS.forEach(id => itemsOf(id, cat).forEach(it => { n++; if (stateOf(id, it.k)) d++; }));
+      return `<a href="#pkc-${cat.id}" data-pktoc="${cat.id}" class="${d === n ? 'ok' : ''}"><span>${cat.label}</span><span class="num">${d} / ${n}</span></a>`; }).join('');
   }
   function checkout(id) {
     const co = doc(id).checkout || {}, dis = canWrite() ? '' : 'disabled';
@@ -104,7 +114,8 @@
     root.querySelector('#pkRings').innerHTML = ctx.IDS.map(ring).join('');
     root.querySelector('#pkList').innerHTML = phoneList(id);
     root.querySelector('#pkTable').innerHTML = table();
-    root.querySelector('#pkCoWho').innerHTML = `<span class="av sm" style="--p:var(--${id})">${esc(ctx.nm(id).slice(0, 1))}</span>${esc(ctx.nm(id))} 的退房检查`;
+    const t = root.querySelector('#pkToc'); if (t) t.innerHTML = toc();
+    root.querySelector('#pkCoWho').innerHTML = `<span class="av sm" style="--p:var(--${id})">${esc(av(id))}</span>${esc(ctx.nm(id))} 的退房检查`;
     root.querySelector('#pkCo').innerHTML = checkout(id);
     root.querySelector('#pkStart').disabled = !canWrite();
     ctx.icons();
@@ -113,6 +124,7 @@
   /* ---------- check mode: one category at a time, only unhandled items ---------- */
   function startCheck() {
     const id = ctx.me();
+    if (!id) { ctx.toast('先点右上角头像，选一下你是谁'); if (window.tripNav) tripNav.openPicker(); return; }
     const cats = id ? CATS.filter(c => itemsOf(id, c).some(it => !stateOf(id, it.k))).map(c => c.id) : [];
     check = { id, cats, i: 0 };
     document.getElementById('pkCheck').hidden = false; document.documentElement.style.overflow = 'hidden';
@@ -121,10 +133,6 @@
   function closeCheck() { check = null; document.getElementById('pkCheck').hidden = true; document.documentElement.style.overflow = ''; render(); }
   function drawCheck() {
     const el = document.getElementById('pkCheckIn'), c = check;
-    if (!c.id) {
-      el.innerHTML = `<h2>先选一下你是谁</h2><p class="sub">只检查你自己的行李。</p><div class="pk-pick">${ctx.IDS.map(id => `<button class="pk-big" data-pkme="${id}"><span class="av" style="--p:var(--${id})">${esc(ctx.nm(id).slice(0, 1))}</span>${esc(ctx.nm(id))}</button>`).join('')}</div>`;
-      return ctx.icons();
-    }
     const cat = CATS.find(x => x.id === c.cats[c.i]);
     if (!cat) {
       el.innerHTML = `<div class="pk-done"><span class="pk-done-i"><i data-lucide="party-popper"></i></span><h2>都带齐了，出发吧</h2><p class="sub">${esc(ctx.nm(c.id))} 的 ${progress(c.id).n} 项行李都处理好了。</p><button class="btn btn-primary" data-pkclose>返回</button></div>`;
@@ -155,15 +163,29 @@
       else if (t.dataset.pkcat) { const id = t.dataset.pkcat, el = t.closest('.pk-cat'); open[id] = !el.classList.contains('open'); render(); }
       else if (t.dataset.pkset) toggle(t.dataset.id, t.dataset.k, t.dataset.pkset);
       else if (t.dataset.pkcycle) cycle(t.dataset.id, t.dataset.pkcycle);
+      else if (t.dataset.pkdcat) { const c = CATS.find(x => x.id === t.dataset.pkdcat); deskOpen[c.id] = !(deskOpen[c.id] ?? !catDone(c)); render(); }
       else if (t.dataset.pkdel) {
         const id = t.dataset.id, c = (doc(id).custom || []).find(x => x.k === t.dataset.pkdel);
         if (c && confirm(`删除「${c.label}」？`)) write(id, { custom: FV().arrayRemove(c), items: { [c.k]: FV().delete() } });
       } else if (t.id === 'pkStart') startCheck();
     });
+    root.addEventListener('click', e => {
+      const a = e.target.closest('[data-pktoc]'); if (!a) return; e.preventDefault();
+      deskOpen[a.dataset.pktoc] = true; render();
+      // where the sticky table header ends once stuck (its CSS top + height), not where it is right now
+      const th = root.querySelector('.pk-th'), row = root.querySelector('#pkc-' + a.dataset.pktoc), off = th ? parseFloat(getComputedStyle(th).top) + th.offsetHeight : 200;
+      if (row) scrollTo({ top: scrollY + row.getBoundingClientRect().top - off - 8, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+    // highlight the category currently under the sticky header
+    let raf = 0;
+    addEventListener('scroll', () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0;
+      const head = root.querySelector('.pk-th'); if (!head || !head.offsetParent) return; const line = head.getBoundingClientRect().bottom + 12;
+      let curId = CATS[0].id; CATS.forEach(c => { const r = root.querySelector('#pkc-' + c.id); if (r && r.getBoundingClientRect().top <= line) curId = c.id; });
+      root.querySelectorAll('[data-pktoc]').forEach(a => a.classList.toggle('on', a.dataset.pktoc === curId)); }); }, { passive: true });
     root.addEventListener('submit', e => {
       const f = e.target.closest('[data-pkadd]'); if (!f) return; e.preventDefault();
       const id = ctx.me(), label = f.querySelector('input').value.trim().slice(0, 30);
-      if (!id) return ctx.toast('先在基础信息里选「我是谁」');
+      if (!id) { ctx.toast('先点右上角头像，选一下你是谁'); if (window.tripNav) tripNav.openPicker(); return; }
       if (!label) return;
       if ((doc(id).custom || []).length >= 30) return ctx.toast('自定义最多 30 项');
       const k = 'c_' + Math.random().toString(16).slice(2, 6);
@@ -178,7 +200,6 @@
     ov.addEventListener('click', e => {
       const t = e.target.closest('button'); if (!t) return;
       if (t.dataset.pkclose !== undefined) closeCheck();
-      else if (t.dataset.pkme) { ctx.setMe(t.dataset.pkme); startCheck(); }
       else if (t.dataset.pkbig) markInCheck(t.dataset.pkbig, 'done');
       else if (t.dataset.pkbigskip) markInCheck(t.dataset.pkbigskip, 'skip');
       else if (t.dataset.pknext !== undefined) { check.i++; check.touched = {}; drawCheck(); }
@@ -192,9 +213,10 @@
     subscribe(db) {
       db.collection('packing').onSnapshot(s => {
         loaded = true; data = {}; exists = new Set(); s.docs.forEach(d => { data[d.id] = d.data(); exists.add(d.id); });
-        render(); if (check) drawCheck();
+        render(); if (check) drawCheck(); if (ctx.onData) ctx.onData();
       }, () => {});
     },
     render,
+    progress: id => ctx ? progress(id) : { n: 0, d: 0 },
   };
 })();

@@ -8,7 +8,7 @@ const TRIP_DAYS = ['2026-12-29', '2026-12-30', '2026-12-31', '2027-01-01', '2027
 const EPS = 0.01;   // ¥0.01: below this a balance counts as settled
 
 let expenses = [], settlements = [];
-let aaFilter = { cat: '', who: '' };
+let aaFilter = { cat: '', who: '', q: '' };
 let split = new Set();                    // participants (all modes); filled in resetForm (IDS is defined after this file loads)
 let fmode = 'equal', fvals = {}, fcat = 'food', editId = null, armedKey = '', armedTimer = 0;
 
@@ -18,6 +18,11 @@ const cnyOf = x => x.cny > 0 ? x.cny : x.amount / rate(x.currency);
 const yuan = n => '¥' + n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const money = (n, c) => (SYM[c] || '') + fmt(n, c);
 const dayLabel = d => { const [, m, dd] = d.split('-'); return `${+m}/${+dd}`; };
+const WEEK = '日一二三四五六';
+const weekday = d => '周' + WEEK[new Date(d + 'T12:00:00Z').getUTCDay()];
+const avOf = id => window.tripInitial ? tripInitial(id, settings.members || {}) : nm(id).slice(0, 1);
+const avBtn = (id, attr, on, extra = '') => `<button type="button" class="aa-av${on ? ' on' : ''}" ${attr}="${id}" aria-pressed="${on}"${extra}><span class="av sm" style="--p:var(--${id})">${esc(avOf(id))}</span><span>${esc(nm(id))}</span></button>`;
+const wideAA = () => matchMedia('(min-width:1200px)').matches;
 // trip day of an expense: its own `day`, else the Vietnam date it was recorded on; before the trip = 'pre'
 function dayOf(x) {
   const d = x.day || new Date((x.at || 0) + 7 * 3600e3).toISOString().slice(0, 10);
@@ -60,7 +65,7 @@ const repayBtn = (a, b, m, label = '标记已还') => `<button class="btn ghost 
 function renderMe(s) {
   const el = $('#aaMe');
   if (!me) { el.innerHTML = `<h2><i data-lucide="user-round"></i>我的账</h2><p class="sub">先选一下你是谁，这里会告诉你要给谁钱。</p>
-    <select id="aaMeSel" aria-label="我是谁"><option value="">— 选一下 —</option>${IDS.map(id => `<option value="${id}">${esc(nm(id))}</option>`).join('')}</select>`; return; }
+    <button type="button" class="btn ghost small" id="aaPickMe"><i data-lucide="user-round" class="i18"></i>点这里选「我是谁」</button>`; return; }
   const out = s.xfers.filter(x => x[0] === me), inc = s.xfers.filter(x => x[1] === me);
   let h = `<h2><i data-lucide="user-round"></i>我的账 · ${esc(nm(me))}</h2>`;
   if (out.length) h += out.map(([, b, m]) => `<div class="aa-me owe"><span>你还要给 <b>${esc(nm(b))}</b> <b class="num">${yuan(m)}</b></span>${repayBtn(me, b, m)}</div>`).join('');
@@ -69,12 +74,23 @@ function renderMe(s) {
   h += `<p class="sub">我的花费（我应摊的，含已结清的账）：<b class="num">${yuan(s.spend[me])}</b></p>`;
   el.innerHTML = h;
 }
+function renderOverview(s) {
+  const mine = me ? s.bal[me] : null;
+  const meCell = !me ? `<div class="ov"><span class="k">我</span><b class="v">—</b><button type="button" class="linkbtn" id="aaPickMe2">选一下我是谁</button></div>`
+    : `<div class="ov"><span class="k">${mine > EPS ? '我应收' : mine < -EPS ? '我应付' : '我'}</span><b class="v ${mine > EPS ? 'pos' : mine < -EPS ? 'neg' : ''}">${Math.abs(mine) < EPS ? '已结清' : yuan(Math.abs(mine))}</b></div>`;
+  $('#aaOverview').innerHTML = `<div class="ovs">
+      <div class="ov"><span class="k">总花费</span><b class="v">${yuan(s.total)}</b><span class="sub">${expenses.length} 笔</span></div>
+      <div class="ov"><span class="k">人均</span><b class="v">${yuan(s.total / IDS.length)}</b></div>${meCell}
+      <div class="ov"><span class="k">待转账</span><b class="v">${s.xfers.length} 笔</b></div></div>
+    <div class="ovm">${IDS.map(id => `<div class="ovp${id === me ? ' me' : ''}"><span class="av sm" style="--p:var(--${id})">${esc(avOf(id))}</span><span class="n">${esc(nm(id))}</span><b class="${s.bal[id] > EPS ? 'pos' : s.bal[id] < -EPS ? 'neg' : ''}">${s.bal[id] >= 0 ? '+' : '−'}${yuan(Math.abs(s.bal[id]))}</b></div>`).join('')}</div>`;
+}
 function renderSettle(s) {
   const nExp = expenses.length, nSettled = expenses.filter(x => x.settled).length;
   $('#aaTotal').innerHTML = nExp ? `共 ${nExp} 笔${nSettled ? `（${nSettled} 笔当场已结清）` : ''}，合计 <b class="num">${yuan(s.total)}</b>` : '记了账以后，这里会算出谁该转给谁。';
   $('#transfers').innerHTML = s.clear && (nExp || settlements.length)
     ? `<div class="aa-clear"><i data-lucide="circle-check-big"></i>已经全部结清</div>`
-    : s.xfers.map(([a, b, m]) => `<div class="xfer"><span>${esc(nm(a))} → ${esc(nm(b))}：<b class="num">${yuan(m)}</b></span>${repayBtn(a, b, m)}</div>`).join('');
+    : s.xfers.length ? s.xfers.map(([a, b, m]) => `<div class="xfer"><span>${esc(nm(a))} → ${esc(nm(b))}：<b class="num">${yuan(m)}</b></span>${repayBtn(a, b, m)}</div>`).join('')
+    : `<div class="aa-none"><i data-lucide="circle-check"></i>目前不需要转账</div>`;
   $('#aaCopy').disabled = !nExp;
   $('#balances').innerHTML = `<span class="muted">成员</span><span class="muted r">已付 / 应摊</span><span class="muted r">余额</span>` +
     IDS.map(id => `<span>${esc(nm(id))}${id === me ? '（我）' : ''}</span><span class="r">${yuan(s.paid[id])} / ${yuan(s.share[id])}</span><span class="${s.bal[id] >= -EPS ? 'pos' : 'neg'}">${s.bal[id] >= 0 ? '+' : '−'}${yuan(Math.abs(s.bal[id]))}</span>`).join('');
@@ -128,12 +144,27 @@ function rowPay(s) {
 }
 function renderLedger() {
   $('#aaFilters').innerHTML = `<div class="chips">${[['', '全部', 'list'], ...AA_CATS].map(([k, n, i]) => `<button type="button" class="chip ${aaFilter.cat === k ? 'on' : ''}" data-fcat="${k}" aria-pressed="${aaFilter.cat === k}"><i data-lucide="${i}" class="i18"></i>${n}</button>`).join('')}</div>
-    <select id="aaWho" aria-label="按人筛选"><option value="">所有人</option>${IDS.map(id => `<option value="${id}" ${aaFilter.who === id ? 'selected' : ''}>${esc(nm(id))}</option>`).join('')}</select>`;
+    <div class="aa-tool"><select id="aaWho" aria-label="按人筛选"><option value="">所有人</option>${IDS.map(id => `<option value="${id}" ${aaFilter.who === id ? 'selected' : ''}>${esc(nm(id))}</option>`).join('')}</select>
+    <input type="search" id="aaSearch" placeholder="搜索名称或备注" aria-label="搜索" value="${esc(aaFilter.q)}"></div>`;
+  const qEl = $('#aaSearch'); if (aaFilter.q && document.activeElement !== qEl && aaFilter._focus) { qEl.focus(); qEl.setSelectionRange(qEl.value.length, qEl.value.length); }
   const w = aaFilter.who;
-  const ex = expenses.filter(x => (!aaFilter.cat || (AA_CAT[x.cat] ? x.cat : 'other') === aaFilter.cat) && (!w || x.payer === w || (x.split || []).includes(w)));
-  const ps = aaFilter.cat ? [] : settlements.filter(s => !w || s.from === w || s.to === w);
-  const rows = [...ex.map(x => ({ k: x.at || 0, h: rowExpense(x) })), ...ps.map(s => ({ k: s.at || 0, h: rowPay(s) }))].sort((a, b) => b.k - a.k);
-  $('#expList').innerHTML = rows.length ? rows.map(r => r.h).join('') : `<p class="empty">${expenses.length ? '没有符合筛选的记录。' : '还没有记账。'}</p>`;
+  const q = aaFilter.q.trim().toLowerCase(), hit = t => !q || String(t || '').toLowerCase().includes(q);
+  const ex = expenses.filter(x => (!aaFilter.cat || (AA_CAT[x.cat] ? x.cat : 'other') === aaFilter.cat) && (!w || x.payer === w || (x.split || []).includes(w)) && (hit(x.title) || hit(x.note)));
+  const ps = aaFilter.cat ? [] : settlements.filter(s => (!w || s.from === w || s.to === w) && (hit(s.note) || hit(nm(s.from) + '还给' + nm(s.to))));
+  const payDay = s => dayOf({ at: s.at });
+  const rows = [...ex.map(x => ({ k: x.at || 0, d: dayOf(x), c: cnyOf(x), h: rowExpense(x) })), ...ps.map(s => ({ k: s.at || 0, d: payDay(s), c: 0, h: rowPay(s) }))];
+  let html = '';
+  if (wideAA()) {   // desktop: grouped by trip day, newest day first, with the day's spending
+    const order = d => d === 'pre' ? '0' : d;
+    rows.sort((a, b) => order(b.d).localeCompare(order(a.d)) || b.k - a.k);
+    let last = null;
+    for (const r of rows) {
+      if (r.d !== last) { last = r.d; const sum = rows.filter(x => x.d === r.d).reduce((a, x) => a + x.c, 0);
+        html += `<div class="aa-gh">${r.d === 'pre' ? '行前' : `${dayLabel(r.d)} ${weekday(r.d)}`} · ${yuan(sum)}</div>`; }
+      html += r.h;
+    }
+  } else html = rows.sort((a, b) => b.k - a.k).map(r => r.h).join('');
+  $('#expList').innerHTML = rows.length ? html : `<p class="empty">${expenses.length ? '没有符合筛选的记录。' : '还没有记账。'}</p>`;
   // this browser's anonymous id: entries are editable only from the browser that recorded them
   $('#aaDev').innerHTML = uid ? `本机编号 <code>${esc(uid)}</code><button type="button" id="aaDevCopy">复制</button>（换手机或浏览器后，以前记的账要靠它转过来）` : '';
   const unlocked = expenses.filter(x => x.by === uid && !(x.cny > 0));
@@ -151,8 +182,12 @@ function renderForm() {
   dsel.value = dv;
   document.querySelectorAll('#aaMode [data-mode]').forEach(b => { b.classList.toggle('on', b.dataset.mode === fmode); b.setAttribute('aria-pressed', b.dataset.mode === fmode); });
   const cur = $('#expCur').value;
+  document.querySelectorAll('#aaCurSeg [data-cur]').forEach(b => { b.classList.toggle('on', b.dataset.cur === cur); b.setAttribute('aria-pressed', b.dataset.cur === cur); });
+  const r = settings.rates || {};
+  $('#aaRateMini').innerHTML = cur === 'CNY' ? '结算都按人民币' : `1¥ ≈ ${fmt(r[cur] || rate(cur), cur)}${SYM[cur]} · 记账时锁定 <button type="button" class="linkbtn" id="aaRateRefresh">更新汇率</button>`;
+  $('#aaPayerAv').innerHTML = IDS.map(id => avBtn(id, 'data-payer', id === $('#expPayer').value, ' role="radio"')).join('');
   $('#expSplit').innerHTML = fmode === 'equal'
-    ? `<div class="chips">${IDS.map(id => `<button type="button" class="chip ${split.has(id) ? 'on' : ''}" data-split="${id}" aria-pressed="${split.has(id)}">${esc(nm(id))}</button>`).join('')}</div>`
+    ? `<div class="chips">${IDS.map(id => `<button type="button" class="chip ${split.has(id) ? 'on' : ''}" data-split="${id}" aria-pressed="${split.has(id)}"><span class="av sm" style="--p:var(--${id})">${esc(avOf(id))}</span>${esc(nm(id))}</button>`).join('')}</div>`
     : IDS.map(id => `<label class="aa-sv"><span>${esc(nm(id))}</span><input type="number" inputmode="decimal" step="any" min="0" data-sv="${id}" value="${fvals[id] ?? (fmode === 'shares' ? 1 : '')}" placeholder="${fmode === 'shares' ? '份数' : '金额'}"><em>${fmode === 'shares' ? '份' : SYM[cur]}</em></label>`).join('');
   splitHint();
   $('#expAdd').disabled = !ready();
@@ -207,12 +242,10 @@ async function saveExpense(e) {
   const day = $('#expDay').value; if (day) doc.day = day;
   if ($('#expSettled').checked) doc.settled = true;
   const note = $('#expNote').value.trim().slice(0, 120); if (note) doc.note = note;
-  $('#expAdd').disabled = true;
-  try {
-    if (old) await db.doc('expenses/' + old.id).set(doc); else await db.collection('expenses').add(doc);
-    toast(old ? '已保存修改' : '已记账'); resetForm(); closeSheet();
-  } catch (err) { toast('保存失败，请稍后再试'); }
-  $('#expAdd').disabled = !ready();
+  // start the write, then clear the form right away: waiting for the server would wipe what the user types next
+  const write = old ? db.doc('expenses/' + old.id).set(doc) : db.collection('expenses').add(doc);
+  resetForm(); closeSheet(); toast(old ? '已保存修改' : '已记账');
+  try { await write; } catch (err) { toast('保存失败，请稍后再试'); }
 }
 
 /* ---------- repayment dialog ---------- */
@@ -223,9 +256,27 @@ function openRepay(from = me || 'm1', to = '', amount = '') {
   $('#rpFrom').innerHTML = opts(from); $('#rpTo').innerHTML = opts(to);
   $('#rpAmt').value = amount; $('#rpCur').value = 'CNY'; $('#rpNote').value = '';
   $('#rpMethods').innerHTML = Object.entries(METHODS).map(([k, n], i) => `<button type="button" class="chip ${i ? '' : 'on'}" data-method="${k}" aria-pressed="${!i}">${n}</button>`).join('');
+  drawRepayAv();
+  if (wideAA()) { setPanel('repay'); $('#rpAmt').focus(); return; }
   $('#aaRepay').hidden = false; $('#rpAmt').focus(); document.documentElement.style.overflow = 'hidden';
 }
-const closeRepay = () => { $('#aaRepay').hidden = true; document.documentElement.style.overflow = ''; };
+function drawRepayAv() {
+  $('#rpFromAv').innerHTML = IDS.map(id => avBtn(id, 'data-rpfrom', id === $('#rpFrom').value)).join('');
+  $('#rpToAv').innerHTML = IDS.map(id => avBtn(id, 'data-rpto', id === $('#rpTo').value)).join('');
+}
+const closeRepay = () => { $('#aaRepay').hidden = true; document.documentElement.style.overflow = ''; if (wideAA()) { $('#rpForm').reset(); $('#rpAmt').value = ''; setPanel('settle'); } };
+// desktop: one sticky panel with three tabs; the repay form lives in it (phone: pop-up dialog)
+function setPanel(t) {
+  $('#aaPanel').dataset.ptab = t;
+  document.querySelectorAll('.aa-ptabs [data-ptab]').forEach(b => { b.classList.toggle('on', b.dataset.ptab === t); b.setAttribute('aria-selected', b.dataset.ptab === t); });
+  if (t === 'repay' && !$('#rpFrom').options.length) openRepay();
+}
+function placeAA() {
+  const wide = wideAA(), f = $('#rpForm');
+  if (wide && f.parentNode !== $('#aaRepaySlot')) { $('#aaRepaySlot').appendChild(f); $('#aaRepay').hidden = true; document.documentElement.style.overflow = ''; }
+  if (!wide && f.parentNode !== $('#aaRepay')) $('#aaRepay').appendChild(f);
+  if (wide) closeSheet();
+}
 async function saveRepay(e) {
   e.preventDefault();
   const from = $('#rpFrom').value, to = $('#rpTo').value, amount = parseFloat($('#rpAmt').value), currency = $('#rpCur').value;
@@ -257,7 +308,6 @@ function copySettlement() {
 }
 
 /* ---------- sheet (phone) ---------- */
-const wideAA = () => matchMedia('(min-width:1200px)').matches;
 function openSheet() {
   if (wideAA()) { $('#aaFormBox').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('#expTitle').focus(); return; }
   $('#aaFormBox').classList.add('open'); $('#aaBackdrop').hidden = false; document.documentElement.style.overflow = 'hidden';
@@ -267,7 +317,7 @@ function closeSheet() { $('#aaFormBox').classList.remove('open'); $('#aaBackdrop
 /* ---------- render all ---------- */
 function renderAA() {
   const s = settle();
-  renderMe(s); renderSettle(s); renderStats(s); renderLedger();
+  renderMe(s); renderOverview(s); renderSettle(s); renderStats(s); renderLedger();
   lucideIcons();
 }
 
@@ -285,6 +335,13 @@ function bindAA() {
     const t = e.target.closest('button'); if (!t) return;
     if (t.dataset.repay) { const [a, b, m] = t.dataset.repay.split('|'); openRepay(a, b, m); }
     else if (t.id === 'aaRepayBtn') openRepay();
+    else if (t.id === 'aaPickMe' || t.id === 'aaPickMe2') { if (window.tripNav) tripNav.openPicker(); e.stopPropagation(); }
+    else if (t.dataset.ptab && t.closest('.aa-ptabs')) setPanel(t.dataset.ptab);
+    else if (t.dataset.cur) { $('#expCur').value = t.dataset.cur; renderForm(); lucideIcons(); }
+    else if (t.dataset.payer) { $('#expPayer').value = t.dataset.payer; renderForm(); lucideIcons(); }
+    else if (t.dataset.rpfrom) { $('#rpFrom').value = t.dataset.rpfrom; if ($('#rpTo').value === t.dataset.rpfrom) $('#rpTo').value = IDS.find(i => i !== t.dataset.rpfrom); drawRepayAv(); }
+    else if (t.dataset.rpto) { $('#rpTo').value = t.dataset.rpto; drawRepayAv(); }
+    else if (t.id === 'aaRateRefresh') $('#refreshRates').click();
     else if (t.id === 'aaCopy') copySettlement();
     else if (t.id === 'aaDevCopy') { try { navigator.clipboard.writeText(uid).then(() => toast('本机编号已复制'), () => toast('请长按编号手动复制')); } catch (er) { toast('请长按编号手动复制'); } }
     else if (t.id === 'aaFab') { if (editId) resetForm(); openSheet(); }
@@ -305,13 +362,26 @@ function bindAA() {
   });
   panel.addEventListener('change', e => {
     if (e.target.id === 'aaWho') { aaFilter.who = e.target.value; renderLedger(); lucideIcons(); }
-    else if (e.target.id === 'aaMeSel' && e.target.value) { me = e.target.value; try { localStorage.setItem('trip-me', me); } catch (er) {} renderAll(); }
     else if (e.target.id === 'expCur') { renderForm(); }
   });
+  panel.addEventListener('input', e => { if (e.target.id === 'aaSearch') { aaFilter.q = e.target.value; aaFilter._focus = true; renderLedger(); lucideIcons(); return; } });
   panel.addEventListener('input', e => { if (e.target.dataset.sv || e.target.id === 'expAmt') { if (e.target.dataset.sv) fvals = readVals(); splitHint(); } });
   $('#expForm').addEventListener('submit', saveExpense);
   $('#aaBackdrop').addEventListener('click', closeSheet);
   $('#rpForm').addEventListener('submit', saveRepay);
+  // the repay form may sit in the desktop panel, outside #aaRepay: handle its clicks there too
+  $('#rpForm').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.rpfrom) { $('#rpFrom').value = b.dataset.rpfrom; if ($('#rpTo').value === b.dataset.rpfrom) $('#rpTo').value = IDS.find(i => i !== b.dataset.rpfrom); drawRepayAv(); }
+    else if (b.dataset.rpto) { $('#rpTo').value = b.dataset.rpto; drawRepayAv(); }
+    else if (b.dataset.method) document.querySelectorAll('#rpMethods .chip').forEach(c => { c.classList.toggle('on', c === b); c.setAttribute('aria-pressed', c === b); });
+    else if (b.dataset.rpclose !== undefined && wideAA()) closeRepay();
+  });
+  ['rpFrom', 'rpTo'].forEach(id => $('#' + id).addEventListener('change', drawRepayAv));
+  const mq = matchMedia('(min-width:1200px)');
+  const onMq = () => { placeAA(); if (mq.matches) $('.c-stats').open = false; renderLedger(); lucideIcons(); };
+  (mq.addEventListener ? mq.addEventListener('change', onMq) : mq.addListener(onMq));
+  placeAA(); if (mq.matches) $('.c-stats').open = false; setPanel('add');
   $('#aaRepay').addEventListener('click', e => {
     if (e.target === $('#aaRepay') || e.target.closest('[data-rpclose]')) closeRepay();
     const m = e.target.closest('[data-method]'); if (m) document.querySelectorAll('#rpMethods .chip').forEach(c => { c.classList.toggle('on', c === m); c.setAttribute('aria-pressed', c === m); });

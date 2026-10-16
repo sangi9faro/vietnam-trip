@@ -153,14 +153,12 @@ main.wrap.aa-mode{padding-bottom:calc(100px + var(--tabbar-h))}
 #aaRepay[hidden]{display:none}
 .aa-rp{width:100%;max-width:520px;border-radius:var(--r-l) var(--r-l) 0 0;padding-bottom:calc(16px + var(--safe-b))}
 @media (min-width:768px){ #aaRepay{align-items:center} .aa-rp{border-radius:var(--r-l)} }
-/* desktop: three columns — me/transfers/balances · ledger · stats/form */
+/* desktop bills layout lives in the ≥1200px block above; here only what the sheet needs */
 @media (min-width:1200px){
-  main.wrap.aa-mode>section[data-panel="aa"]>.aa-col{display:grid;gap:16px;align-content:start;grid-column:span 4}
-  .aa-col .card{order:0}
   #aaFab,#aaBackdrop{display:none!important}
   .aa-sheet{position:static;transform:none;max-height:none;overflow:visible;background:none;box-shadow:none;border-radius:0;padding:0}
   .aa-sheet .card{box-shadow:var(--shadow-1);border-radius:var(--r-l)}
-  .aa-x{display:none}
+  .aa-sheet .aa-x{display:none}
   main.wrap.aa-mode{padding-bottom:40px}
 }
 @media (min-width:768px) and (max-width:1199px){ main.wrap.aa-mode>section[data-panel="aa"] .card{grid-column:span 12} }
@@ -183,16 +181,133 @@ main.wrap.aa-mode{padding-bottom:calc(100px + var(--tabbar-h))}
   main.wrap>.c-hero,main.wrap>#who,section.wrap>.c-personal,section.wrap>.c-flights{grid-column:span 12}
   #toast{bottom:24px}
 }
-/* desktop: 12-column dashboard */
+/* ---------- desktop (≥1200px): one capsule tab at a time, aligned rows, larger type ---------- */
+/* desktop-only pieces stay hidden on phones and tablets */
+.c-progress,.c-aaov,.aa-ptabs,.f-cur,.f-rate,.f-payer,.rp-av,.pk-toc,.aa-st-more,#aaSearch,.aa-gh,.aa-none,.fl-tbd,.lk-empty svg,.lk-empty .sub,.grid .h .av,.chip .av{display:none}
+.gr{display:contents}
+.ph{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 12px;border:0;background:none;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.ph b{font-weight:700} .ph i{grid-column:1;display:block;font-style:normal;font-weight:600;font-size:13px;color:var(--accent);font-family:var(--font-num)}
+.ph span{grid-column:2;grid-row:1/3;align-self:center;color:var(--ink-2)}
+.phr{grid-template-columns:1fr}
 @media (min-width:1200px){
-  main.wrap .c-hero,section.wrap>.c-hero{grid-column:span 6;order:1} main.wrap .c-money,section.wrap>.c-money{grid-column:span 3;order:2} main.wrap .c-me,section.wrap>.c-me{grid-column:span 3;order:3}
+  main.wrap{font-size:15px;align-items:stretch}
+  .card h2{font-size:17px} .sub,.exp .meta,.kv{font-size:13px} .kv{font-size:14px}
+  main.wrap>section.wrap[hidden]{display:none!important}
+  main.wrap:not(.tab-info)>.c-hero{display:none!important}
+  /* tabs with their own grid: undo the tablet dashboard's span-6 cards */
+  main.wrap>section.wrap:not([data-panel="info"])>*{grid-column:auto}
   main.wrap>#who{grid-column:span 12;order:0}
-  main.wrap .c-personal,section.wrap>.c-personal{grid-column:span 8;order:4}
-  main.wrap .c-group,section.wrap>.c-group{grid-column:span 6;order:8} main.wrap .c-lkadd,section.wrap>.c-lkadd{grid-column:span 3;order:9} main.wrap .c-lklist,section.wrap>.c-lklist{grid-column:span 3;order:10}
-  main.wrap .c-flights,section.wrap>.c-flights{grid-column:span 12;order:11} main.wrap .c-hotels,section.wrap>.c-hotels{grid-column:span 8;order:12}
-  main.wrap .c-phr,section.wrap>.c-phr{grid-column:span 4;order:13} main.wrap .c-tips,section.wrap>.c-tips{grid-column:span 4;order:14} main.wrap .c-sos,section.wrap>.c-sos{grid-column:span 4;order:15}
-  main.wrap .c-names,section.wrap>.c-names{grid-column:span 4;order:12}
-  .cd b{font-size:48px}
+  /* 基础信息: four aligned rows */
+  main.wrap>.c-hero{grid-column:span 8;order:1}
+  section[data-panel="info"]>.c-money{grid-column:span 4;order:2}
+  section[data-panel="info"]>.c-flights{grid-column:span 12;order:3}
+  section[data-panel="info"]>.c-hotels{grid-column:span 8;order:4}
+  section[data-panel="info"]>.c-progress{display:grid;grid-column:span 4;order:5}
+  section[data-panel="info"]>.c-phr{grid-column:span 6;order:6}
+  section[data-panel="info"]>.c-tips{grid-column:span 3;order:7}
+  section[data-panel="info"]>.c-sos{grid-column:span 3;order:8}
+  .hero{background:var(--accent-soft);color:var(--accent);grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"k cd" "sub cd";align-items:center;padding:20px 24px;column-gap:24px}
+  .hero-k{grid-area:k;align-self:end;font-size:15px;font-weight:700;opacity:1} .hero-sub{grid-area:sub;align-self:start;font-size:14px;opacity:.85}
+  .cd{grid-area:cd;grid-template-columns:repeat(4,92px)} .cd div{background:var(--surface);padding:12px 0 8px}
+  .cd b{font-size:40px;color:var(--accent)} .cd div:first-child b{color:var(--coral)} .cd span{color:var(--ink-2);opacity:1}
+  .cd.msg{grid-template-columns:auto} .cd.msg b{font-size:24px}
+  .fl.tbd .fl-in{display:none} .fl-tbd{display:block;margin:4px 0 0;color:var(--ink-2);font-size:14px}
+  .prg{display:grid;gap:12px}
+  .pr{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center}
+  .pr .av{grid-row:span 3} .pr .nm{font-weight:700;font-size:14px}
+  .pb{display:grid;grid-template-columns:34px minmax(0,1fr) 54px;gap:8px;align-items:center;border:0;background:none;padding:2px 0;font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer;text-align:left;border-radius:6px}
+  .pb:hover{color:var(--accent)} .pb .track{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden} .pb .track b{display:block;height:100%;background:var(--p);border-radius:4px}
+  .pb .pv{text-align:right;font-size:13px}
+  .phr{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .ph{display:grid;grid-template-columns:1fr;gap:2px;padding:10px 12px;border-radius:12px;background:var(--surface-2);transition:background .15s}
+  .ph:hover{background:var(--accent-soft)} .ph b{font-size:15px} .ph i{font-size:13px} .ph span{grid-column:1;grid-row:auto;font-size:13px}
+  /* 准备清单: centred table with a sticky header + group column */
+  main.wrap>section[data-panel="check"]{display:grid!important;grid-column:1/-1;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+  .grid{display:block;max-width:860px;width:100%;margin:0 auto;font-size:15px}
+  .gr{display:grid;grid-template-columns:minmax(0,420px) repeat(4,88px);justify-content:center;align-items:center;min-height:48px;border-top:1px solid var(--line);border-radius:8px}
+  .gr:not(.hd):not(.ft):hover{background:var(--surface-2)}
+  .gr>div:first-child{padding-left:10px}
+  .gr.hd{position:sticky;top:calc(var(--tn-top-h,0px) + var(--top2-h,0px));z-index:3;background:var(--surface);border-top:0;min-height:64px}
+  .grid .h{display:grid;justify-items:center;gap:3px;font-size:13px} .grid .h .av{display:grid}
+  .grid label{min-height:48px} .prog{font-size:14px}
+  .task:hover{background:var(--surface-2)} .task{border-radius:8px;padding:10px 6px}
+  /* 攻略收藏 */
+  main.wrap>section[data-panel="links"]{display:grid!important;grid-column:1/-1;grid-template-columns:380px minmax(0,1fr);gap:16px;align-items:start}
+  .c-lkadd{position:sticky;top:calc(var(--tn-top-h,0px) + var(--top2-h,0px) + 16px)}
+  #lkList>.card:not(.lk-empty){grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #lkList>.card:not(.lk-empty)>h2{grid-column:1/-1}
+  #lkList .lk{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .lk-empty{min-height:320px;place-content:center;justify-items:center;text-align:center;gap:6px}
+  .lk-empty svg{display:block;width:40px;height:40px;color:var(--ink-2)} .lk-empty .sub{display:block}
+  /* 行李: category list · table · checkout */
+  main.wrap>section[data-panel="packing"]{display:grid!important;grid-column:1/-1;grid-template-columns:160px minmax(0,1fr) 340px;gap:16px;align-items:start}
+  main.wrap>section[data-panel="packing"][hidden]{display:none!important}
+  main.wrap>section>.c-pk-main,main.wrap>section>.c-pk-side{grid-column:auto}
+  .pk-toc{display:grid;gap:2px;position:sticky;top:calc(var(--tn-top-h,0px) + var(--top2-h,0px) + 16px)}
+  .pk-toc a{display:flex;justify-content:space-between;gap:6px;padding:9px 10px;border-radius:10px;color:var(--ink);font-size:14px;font-weight:600}
+  .pk-toc a .num{color:var(--ink-2);font-size:12px} .pk-toc a.ok .num{color:var(--good)}
+  .pk-toc a:hover{background:var(--surface-2)} .pk-toc a.on{background:var(--accent-soft);color:var(--accent)}
+  .pk-bar{position:sticky;top:calc(var(--tn-top-h,0px) + var(--top2-h,0px));z-index:4;display:flex;align-items:center;gap:12px;margin:0 -16px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+  .pk-rings{display:flex!important;gap:4px}
+  .pk-ring{grid-template-columns:auto auto;align-items:center;justify-items:start;gap:8px;padding:4px 10px 4px 4px}
+  .pk-ring svg{width:44px;height:44px} .pk-ring .c{display:flex;align-items:center;justify-content:center;top:4px;left:4px;width:44px;height:44px;font-size:12px} .pk-ring .c small{font-size:10px}
+  .pk-ring .nm{font-size:14px}
+  #pkStart{margin-left:auto;align-self:center}
+  .pk-th{top:calc(var(--tn-top-h,0px) + var(--top2-h,0px) + 61px)!important;font-size:14px}
+  .pk-tr{font-size:15px} .pk-n{font-size:14px} .pk-w{font-size:12px}
+  .pk-tc{scroll-margin-top:200px}
+  .pk-tc-b{display:flex;align-items:center;gap:6px;border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;min-height:40px}
+  .pk-tc-b .chev{color:var(--ink-2);transition:transform .2s} .pk-tc-b[aria-expanded="false"] .chev{transform:rotate(-90deg)} .pk-tc-b .ok{color:var(--good)}
+  .pk-tc.done{opacity:.8}
+  main.wrap>section>.c-pk-side{position:sticky;top:calc(var(--tn-top-h,0px) + var(--top2-h,0px) + 16px)}
+  /* 账单: overview · ledger (60%) · sticky panel (40%) */
+  main.wrap.aa-mode>section[data-panel="aa"]{display:grid!important;grid-column:1/-1;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px;align-items:start}
+  main.wrap.aa-mode>section[data-panel="aa"]>.c-aaov{display:grid;grid-column:1/-1;gap:14px}
+  main.wrap.aa-mode>section[data-panel="aa"]>.aa-l{display:none}
+  main.wrap.aa-mode>section[data-panel="aa"]>.aa-m{display:grid;gap:16px;align-content:start}
+  main.wrap.aa-mode>section[data-panel="aa"]>.aa-r{display:grid;gap:12px;align-content:start;position:sticky;top:calc(var(--tn-top-h,0px) + 16px);max-height:calc(100dvh - var(--tn-top-h,0px) - 32px);overflow-y:auto;padding:2px}
+  .aa-col .card{order:0}
+  .ovs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .ov{display:grid;gap:2px;padding:4px 8px} .ov .k{font-size:13px;color:var(--ink-2);font-weight:600}
+  .ov .v{font:800 30px/1.15 var(--font-num)} .ov .v.pos{color:var(--good)} .ov .v.neg{color:var(--coral)}
+  .linkbtn{border:0;background:none;padding:0;color:var(--accent);font-weight:700;font-size:13px;cursor:pointer;justify-self:start}
+  .ovm{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .ovp{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--surface-2);font-size:14px}
+  .ovp.me{box-shadow:inset 0 0 0 2px var(--accent)} .ovp .n{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ovp b{font:800 15px var(--font-num)} .ovp b.pos{color:var(--good)} .ovp b.neg{color:var(--coral)}
+  .aa-ptabs{display:grid;grid-template-columns:repeat(3,1fr);margin:0}
+  .aa-ptabs button{min-height:40px;font-size:15px}
+  #aaPanel>.aa-sheet,#aaPanel>.aa-rp-slot,#aaPanel>.c-settle{display:none}
+  #aaPanel[data-ptab="add"]>.aa-sheet,#aaPanel[data-ptab="repay"]>.aa-rp-slot,#aaPanel[data-ptab="settle"]>.c-settle{display:grid}
+  .aa-rp-slot .aa-rp{max-width:none;border-radius:var(--r-l);padding-bottom:16px;box-shadow:var(--shadow-1)}
+  .aa-rp-slot .rp-sel{display:none} .rp-av{display:grid;gap:6px}
+  .aa-none{display:flex;align-items:center;gap:8px;padding:14px;border-radius:12px;background:color-mix(in srgb,var(--good) 12%,var(--surface));color:var(--good);font-weight:700}
+  .c-stats summary h2{flex:1} .aa-st-more{display:inline;font-size:14px;color:var(--accent);font-weight:700;margin-right:6px}
+  .c-stats[open] .aa-st-more{display:none}
+  .aa-tool{display:grid;grid-template-columns:200px minmax(0,1fr);gap:8px} #aaSearch{display:block;min-height:44px;background:var(--surface-2);border:1px solid transparent;border-radius:12px;padding:0 12px;font-size:15px}
+  .aa-gh{display:block;margin:14px 0 2px;padding:6px 0;font:700 14px var(--font-num);color:var(--ink-2);border-bottom:1px solid var(--line)}
+  .aa-gh+.exp{border-top:0}
+  .exp{font-size:15px} .exp .amt{font-size:16px;font-variant-numeric:tabular-nums} .aa-tag{font-size:12px}
+  .aa-raterow{display:none!important}
+  /* 记一笔 form: amount first */
+  #expForm .f-amt{order:1;grid-template-columns:1fr} #expCur{display:none}
+  #expAmt{font:800 28px var(--font-num);min-height:60px}
+  #expForm .f-cur{display:inline-grid;order:2;justify-self:start;margin:0}
+  #expForm .f-rate{display:block;order:3;margin-top:-4px}
+  #expForm .f-title{order:4} #expForm .f-cats{order:5;grid-template-columns:repeat(3,1fr)}
+  .aa-cat{min-height:64px;font-size:13px} .aa-cat svg{width:22px;height:22px}
+  #expForm .f-dp{order:6;grid-template-columns:1fr} .f-payer-sel{display:none!important}
+  #expForm .f-payer{display:grid;gap:6px;order:7}
+  #expForm .f-split{order:8} #expForm .f-note{order:9} #expForm .f-settled{order:10} #expForm .f-act{order:11}
+  .aa-avs{display:flex;flex-wrap:wrap;gap:6px}
+  .aa-av{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:3px 12px 3px 4px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer}
+  .aa-av.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);background:var(--accent-soft)}
+  /* 谁来分: unselected = grey and faded, selected = colour */
+  #expSplit .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 12px 3px 4px;min-height:40px;background:var(--surface-2);color:var(--ink-2);border:1.5px solid transparent;opacity:.55}
+  #expSplit .chip .av{display:grid;filter:grayscale(1)}
+  #expSplit .chip.on{opacity:1;background:var(--accent-soft);color:var(--ink);border-color:var(--accent)}
+  #expSplit .chip.on .av{filter:none}
+  .rp-av .aa-av.on{border-color:var(--accent)}
 }
 /* 账单 page: no countdown at any width */
 main.wrap.aa-mode>.c-hero{display:none}
@@ -272,7 +387,6 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
   .pk-cell.done{background:var(--good);border-color:var(--good)}
   .pk-cell.skip{background:var(--surface-2);color:var(--ink-2);border-style:dashed}
 }
-@media (min-width:1200px){ main.wrap>section>.c-pk-main{grid-column:span 8} main.wrap>section>.c-pk-side{grid-column:span 4;position:sticky;top:calc(var(--tn-top-h,0px) + 74px)} }
 /* ---------- Splash: cinematic Nha Trang photo loop, tap to enter ---------- */
 #splash{position:fixed;inset:0;z-index:1000;overflow:hidden;color:#fff;background:#0a0f1c;cursor:pointer;transition:opacity .7s ease,transform .7s ease;-webkit-tap-highlight-color:transparent}
 #splash:focus{outline:none}
@@ -365,12 +479,6 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
       <p class="sub">越南盾面额大、0 很多，付钱前看清楚。夜市和小店多数只收现金；大酒店、Grab 可以刷卡。不用给小费。</p>
     </div>
 
-    <div class="card c-me">
-      <h2><i data-lucide="user-round"></i>我是谁</h2>
-      <p class="sub">选一下，记账时默认是你付的，清单里你那一列会高亮。只存在这台手机上。</p>
-      <select id="meSel" aria-label="我是谁"></select>
-    </div>
-
     <div class="card c-flights">
       <h2><i data-lucide="plane"></i>成员和航班</h2>
       <div id="flights"></div>
@@ -380,6 +488,10 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
       <h2><i data-lucide="bed-double"></i>住宿</h2>
       <div id="hotels"></div>
     </div>
+    <div class="card c-progress" id="progCard">
+      <h2><i data-lucide="chart-no-axes-column-increasing"></i>准备进度</h2>
+      <div id="progList" class="prg"></div>
+    </div>
 
 
 
@@ -387,19 +499,19 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
 
     <div class="card c-phr">
       <h2><i data-lucide="languages"></i>常用越南语</h2>
-      <p class="sub">拼音是近似读音（按南部口音），说慢一点、配合手势基本能懂。</p>
-      <div class="phr">
-        <span>Cảm ơn<i>gǎm ēn</i></span><span>谢谢</span>
-        <span>Xin chào<i>xīn zhào</i></span><span>你好</span>
-        <span>Bao nhiêu tiền?<i>bāo niū dièn</i></span><span>多少钱？</span>
-        <span>Tính tiền<i>dǐng dièn</i></span><span>买单</span>
-        <span>Mắc quá<i>mǎ guā</i></span><span>太贵了（砍价用）</span>
-        <span>Không cay<i>kōng gāi</i></span><span>不要辣</span>
-        <span>Không đá<i>kōng dá</i></span><span>不加冰</span>
-        <span>Ngon quá<i>ngōn guā</i></span><span>好吃！</span>
-        <span>Bốn người<i>bōn ngúi</i></span><span>四个人（进餐厅用）</span>
-        <span>Nhà vệ sinh ở đâu?<i>nyà wē xīn ē dōu</i></span><span>厕所在哪？</span>
-        <span>Không, cảm ơn<i>kōng, gǎm ēn</i></span><span>不用了，谢谢（拒绝拉客）</span>
+      <p class="sub">拼音是近似读音（按南部口音），说慢一点、配合手势基本能懂。点一下可以复制越南语。</p>
+      <div class="phr" id="phr">
+        <button type="button" class="ph" data-vi="Cảm ơn" title="点一下复制越南语"><b>Cảm ơn</b><i>gǎm ēn</i><span>谢谢</span></button>
+        <button type="button" class="ph" data-vi="Xin chào" title="点一下复制越南语"><b>Xin chào</b><i>xīn zhào</i><span>你好</span></button>
+        <button type="button" class="ph" data-vi="Bao nhiêu tiền?" title="点一下复制越南语"><b>Bao nhiêu tiền?</b><i>bāo niū dièn</i><span>多少钱？</span></button>
+        <button type="button" class="ph" data-vi="Tính tiền" title="点一下复制越南语"><b>Tính tiền</b><i>dǐng dièn</i><span>买单</span></button>
+        <button type="button" class="ph" data-vi="Mắc quá" title="点一下复制越南语"><b>Mắc quá</b><i>mǎ guā</i><span>太贵了（砍价用）</span></button>
+        <button type="button" class="ph" data-vi="Không cay" title="点一下复制越南语"><b>Không cay</b><i>kōng gāi</i><span>不要辣</span></button>
+        <button type="button" class="ph" data-vi="Không đá" title="点一下复制越南语"><b>Không đá</b><i>kōng dá</i><span>不加冰</span></button>
+        <button type="button" class="ph" data-vi="Ngon quá" title="点一下复制越南语"><b>Ngon quá</b><i>ngōn guā</i><span>好吃！</span></button>
+        <button type="button" class="ph" data-vi="Bốn người" title="点一下复制越南语"><b>Bốn người</b><i>bōn ngúi</i><span>四个人（进餐厅用）</span></button>
+        <button type="button" class="ph" data-vi="Nhà vệ sinh ở đâu?" title="点一下复制越南语"><b>Nhà vệ sinh ở đâu?</b><i>nyà wē xīn ē dōu</i><span>厕所在哪？</span></button>
+        <button type="button" class="ph" data-vi="Không, cảm ơn" title="点一下复制越南语"><b>Không, cảm ơn</b><i>kōng, gǎm ēn</i><span>不用了，谢谢（拒绝拉客）</span></button>
       </div>
     </div>
     <div class="card c-tips">
@@ -421,12 +533,6 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
       </dl>
       <p class="sub">打车时把酒店名字给司机看最方便。Grab 打车、送餐都能用。</p>
     </div>
-    <div class="card c-names">
-      <h2><i data-lucide="users"></i>成员名字</h2>
-      <p class="sub">名字改了以后，清单和账本会跟着变，以前的账不受影响。</p>
-      <div id="nameEdit" class="form"></div>
-      <button class="btn small" id="saveNames">保存名字</button>
-    </div>
   </section>
 
   <!-- ================= 准备清单 ================= -->
@@ -444,17 +550,11 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
   </section>
 
   <!-- ================= AA 账单（逻辑在 bills.js） ================= -->
+  <!-- phone: the columns are display:contents and the cards are ordered by CSS; desktop: overview + ledger + sticky panel -->
   <section data-panel="aa" class="wrap" style="padding:0" hidden>
+    <div class="card c-aaov" id="aaOverview"></div>
     <div class="aa-col aa-l">
       <div class="card c-aame" id="aaMe" aria-live="polite"></div>
-      <div class="card c-settle">
-        <h2><i data-lucide="scale"></i>建议转账</h2>
-        <p class="sub" id="aaTotal">—</p>
-        <div id="transfers" class="aa-xfers"></div>
-        <div class="row"><button class="btn ghost small" id="aaCopy"><i data-lucide="clipboard-copy" class="i18"></i>复制结算单</button>
-          <button class="btn ghost small" id="aaRepayBtn"><i data-lucide="arrow-right-left" class="i18"></i>记一笔还款</button></div>
-        <textarea id="aaCopyFallback" rows="6" readonly hidden aria-label="结算单文字"></textarea>
-      </div>
       <div class="card c-bal">
         <h2><i data-lucide="users"></i>四个人的余额</h2>
         <p class="sub">余额 = 垫付的 − 应摊的 + 还出去的 − 收到的还款。正数是别人欠你。</p>
@@ -462,6 +562,10 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
       </div>
     </div>
     <div class="aa-col aa-m">
+      <details class="card c-stats" open>
+        <summary><h2><i data-lucide="chart-column"></i>统计</h2><span class="aa-st-more">查看统计</span><i data-lucide="chevron-down" class="chev"></i></summary>
+        <div id="aaStats"></div>
+      </details>
       <div class="card c-ledger">
         <h2><i data-lucide="receipt"></i>账本</h2>
         <div class="aa-filters" id="aaFilters"></div>
@@ -469,34 +573,45 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
         <p class="sub">只有记账的那台手机能修改和删除。新记的账会锁定当时的汇率，以后更新汇率不影响。</p>
         <button class="btn ghost small" id="aaLock" hidden></button>
         <p class="sub aa-dev" id="aaDev"></p>
-        <div class="row"><span class="sub" id="rateLine2">—</span><button class="btn ghost small" id="refreshRates"><i data-lucide="refresh-cw" class="i18"></i>更新成最新汇率</button></div>
+        <div class="row aa-raterow"><span class="sub" id="rateLine2">—</span><button class="btn ghost small" id="refreshRates"><i data-lucide="refresh-cw" class="i18"></i>更新成最新汇率</button></div>
       </div>
     </div>
-    <div class="aa-col aa-r">
-      <details class="card c-stats" open>
-        <summary><h2><i data-lucide="chart-column"></i>统计</h2><i data-lucide="chevron-down" class="chev"></i></summary>
-        <div id="aaStats"></div>
-      </details>
+    <div class="aa-col aa-r" id="aaPanel" data-ptab="add">
+      <div class="aa-ptabs seg" role="tablist" aria-label="操作">
+        <button type="button" role="tab" data-ptab="add">记一笔</button><button type="button" role="tab" data-ptab="repay">记还款</button><button type="button" role="tab" data-ptab="settle">结算</button>
+      </div>
       <div class="aa-sheet" id="aaFormBox" role="dialog" aria-labelledby="aaFormTitle">
         <div class="card c-add">
           <div class="aa-sheet-h"><h2 id="aaFormTitle">记一笔</h2><button type="button" class="aa-x" data-aaclose aria-label="关闭"><i data-lucide="x"></i></button></div>
           <form class="form" id="expForm">
-            <input type="text" id="expTitle" maxlength="60" placeholder="花在什么上，例如：芽庄凯悦房费" aria-label="用途">
-            <div class="two">
+            <input type="text" id="expTitle" class="f-title" maxlength="60" placeholder="花在什么上，例如：芽庄凯悦房费" aria-label="用途">
+            <div class="two f-amt">
               <input type="number" id="expAmt" inputmode="decimal" step="any" min="0" placeholder="金额" aria-label="金额">
               <select id="expCur" aria-label="币种"><option value="VND">₫ 越南盾</option><option value="CNY">¥ 人民币</option><option value="KRW">₩ 韩元</option><option value="USD">$ 美元</option></select>
             </div>
-            <div class="aa-cats" id="aaCats" role="group" aria-label="分类"></div>
-            <div class="two"><label class="aa-lbl">日期<select id="expDay"></select></label><label class="aa-lbl">谁付的<select id="expPayer"></select></label></div>
-            <div><span class="muted">谁来分</span>
+            <div class="seg f-cur" id="aaCurSeg" role="group" aria-label="币种"><button type="button" data-cur="VND">₫</button><button type="button" data-cur="CNY">¥</button><button type="button" data-cur="KRW">₩</button><button type="button" data-cur="USD">$</button></div>
+            <p class="sub f-rate" id="aaRateMini"></p>
+            <div class="aa-cats f-cats" id="aaCats" role="group" aria-label="分类"></div>
+            <div class="two f-dp"><label class="aa-lbl">日期<select id="expDay"></select></label><label class="aa-lbl f-payer-sel">谁付的<select id="expPayer"></select></label></div>
+            <div class="f-payer"><span class="muted">谁付的</span><div class="aa-avs" id="aaPayerAv" role="radiogroup" aria-label="谁付的"></div></div>
+            <div class="f-split"><span class="muted">谁来分</span>
               <div class="seg" id="aaMode" role="group" aria-label="分摊方式"><button type="button" data-mode="equal">平分</button><button type="button" data-mode="shares">按份数</button><button type="button" data-mode="amounts">按金额</button></div>
               <div id="expSplit"></div><p class="sub" id="aaSplitHint"></p></div>
-            <input type="text" id="expNote" maxlength="120" placeholder="备注（可不填）" aria-label="备注">
-            <label class="aa-switch"><input type="checkbox" id="expSettled"><span>当场已经各付各的（只记录，不参与结算）</span></label>
-            <div class="row"><button class="btn" id="expAdd" type="submit"><i data-lucide="plus" class="i18"></i>记一笔</button>
+            <input type="text" id="expNote" class="f-note" maxlength="120" placeholder="备注（可不填）" aria-label="备注">
+            <label class="aa-switch f-settled"><input type="checkbox" id="expSettled"><span>当场已经各付各的（只记录，不参与结算）</span></label>
+            <div class="row f-act"><button class="btn" id="expAdd" type="submit"><i data-lucide="plus" class="i18"></i>记一笔</button>
               <button class="btn ghost small" type="button" id="aaCancelEdit" hidden>取消修改</button></div>
           </form>
         </div>
+      </div>
+      <div class="aa-rp-slot" id="aaRepaySlot"></div>
+      <div class="card c-settle">
+        <h2><i data-lucide="scale"></i>建议转账</h2>
+        <p class="sub" id="aaTotal">—</p>
+        <div id="transfers" class="aa-xfers"></div>
+        <div class="row"><button class="btn ghost small" id="aaCopy"><i data-lucide="clipboard-copy" class="i18"></i>复制结算单</button>
+          <button class="btn ghost small" id="aaRepayBtn"><i data-lucide="arrow-right-left" class="i18"></i>记一笔还款</button></div>
+        <textarea id="aaCopyFallback" rows="6" readonly hidden aria-label="结算单文字"></textarea>
       </div>
     </div>
     <button class="btn btn-primary" id="aaFab" type="button"><i data-lucide="plus" class="i18"></i>记一笔</button>
@@ -520,14 +635,17 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
 
   <!-- ================= 行李 ================= -->
   <section data-panel="packing" class="wrap" style="padding:0" hidden>
+    <nav class="pk-toc" id="pkToc" aria-label="分类目录"></nav>
     <div class="card c-pk-main">
       <h2><i data-lucide="luggage"></i>出发前行李检查</h2>
       <div class="pk-warn"><i data-lucide="triangle-alert"></i><span>越捷等廉航的基础票价可能只含 7kg 手提行李，出发前确认自己的票含不含托运。</span></div>
-      <div class="pk-rings pk-phone-only" id="pkRings" role="group" aria-label="四个人的进度，点头像切换"></div>
+      <div class="pk-bar">
+        <div class="pk-rings" id="pkRings" role="group" aria-label="四个人的进度，点头像切换"></div>
+        <button class="btn btn-primary" id="pkStart"><i data-lucide="list-checks" class="i18"></i>开始出发前检查</button>
+      </div>
       <p class="sub">打勾 = 已带，「不带」= 不需要（也算完成），再点一次取消。自己加的东西只出现在自己那一列。</p>
       <div id="pkList"></div>
       <div id="pkTable" role="table" aria-label="四个人的行李清单"></div>
-      <button class="btn btn-primary" id="pkStart"><i data-lucide="list-checks" class="i18"></i>开始出发前检查</button>
     </div>
     <div class="card c-pk-side">
       <h2><i data-lucide="door-open"></i>退房检查</h2>
@@ -537,9 +655,16 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
     </div>
   </section>
 </main>
+<div id="namesDlg" class="aa-modal-bg" role="dialog" aria-modal="true" aria-labelledby="namesTitle" hidden><div class="card aa-rp">
+  <div class="aa-sheet-h"><h2 id="namesTitle"><i data-lucide="users"></i>修改成员名字</h2><button type="button" class="aa-x" data-namesclose aria-label="关闭"><i data-lucide="x"></i></button></div>
+  <p class="sub">名字改了以后，清单和账本会跟着变，以前的账不受影响。四个人看到的是同一份。</p>
+  <div id="nameEdit" class="form"></div>
+  <button class="btn" id="saveNames" type="button">保存名字</button>
+</div></div>
 <div id="aaRepay" role="dialog" aria-modal="true" aria-labelledby="rpTitle" hidden><form class="card aa-rp" id="rpForm">
   <div class="aa-sheet-h"><h2 id="rpTitle"><i data-lucide="arrow-right-left"></i>记一笔还款</h2><button type="button" class="aa-x" data-rpclose aria-label="关闭"><i data-lucide="x"></i></button></div>
-  <div class="two"><label class="aa-lbl">谁还<select id="rpFrom"></select></label><label class="aa-lbl">还给谁<select id="rpTo"></select></label></div>
+  <div class="two rp-sel"><label class="aa-lbl">谁还<select id="rpFrom"></select></label><label class="aa-lbl">还给谁<select id="rpTo"></select></label></div>
+  <div class="rp-av"><span class="muted">谁还</span><div class="aa-avs" id="rpFromAv"></div><span class="muted">还给谁</span><div class="aa-avs" id="rpToAv"></div></div>
   <div class="two"><input type="number" id="rpAmt" inputmode="decimal" step="any" min="0" placeholder="金额（可以先还一部分）" aria-label="金额">
     <select id="rpCur" aria-label="币种"><option value="CNY">¥ 人民币</option><option value="VND">₫ 越南盾</option><option value="KRW">₩ 韩元</option><option value="USD">$ 美元</option></select></div>
   <div class="chips" id="rpMethods" role="group" aria-label="方式"></div>
@@ -654,7 +779,9 @@ function showTab(t, user) {
   if (!TABS.includes(t)) t = "info";
   document.querySelectorAll(".tab").forEach(b => { b.classList.toggle("on", b.dataset.tab === t); b.setAttribute("aria-selected", b.dataset.tab === t); });
   document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== t);
-  document.querySelector("main.wrap").classList.toggle("pk-mode", t === "packing");
+  const mainEl = document.querySelector("main.wrap");
+  TABS.forEach(x => mainEl.classList.toggle("tab-" + x, x === t));
+  mainEl.classList.toggle("pk-mode", t === "packing");
   // 账单 is its own bottom-bar page: no capsule tabs, own title
   document.querySelector("main.wrap").classList.toggle("aa-mode", t === "aa");
   document.querySelector("header.top").hidden = t === "aa";
@@ -663,10 +790,13 @@ function showTab(t, user) {
   if (window.tripNav) tripNav.update();
   try { localStorage.setItem("trip-tab", t); } catch (e) {}
   // desktop shows the dashboard at once, so a tab there scrolls to its first card
-  if (user && wide() && t !== "packing" && t !== "aa") { const c = document.querySelector(`[data-panel="${t}"] > *`); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  if (user && wide() && !matchMedia("(min-width:1200px)").matches && t !== "packing" && t !== "aa") { const c = document.querySelector(`[data-panel="${t}"] > *`); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (user) scrollTo({ top: 0 });
 }
 addEventListener("hashchange", () => showTab(location.hash.slice(1)));
+{ // --top2-h: height of the capsule tab bar (0 when hidden), used by sticky table headers on desktop
+  const hdr = document.querySelector("header.top"), set = () => document.documentElement.style.setProperty("--top2-h", (hdr.hidden ? 0 : hdr.offsetHeight) + "px");
+  set(); if (window.ResizeObserver) new ResizeObserver(set).observe(hdr); new MutationObserver(set).observe(hdr, { attributes: true, attributeFilter: ["hidden"] }); }
 { let t = location.hash.slice(1); if (!TABS.includes(t)) { try { t = localStorage.getItem("trip-tab") || "info"; } catch (e) { t = "info"; } } showTab(t); }
 
 /* ---------- info ---------- */
@@ -688,7 +818,7 @@ function renderCountdown() {
   cd.innerHTML = `<div><b>${now < TRIP_END ? `旅行中 · 第 ${day} 天` : "旅行结束，记得结清 AA 账"}</b></div>`;
 }
 function renderInfo() {
-  $("#meSel").innerHTML = `<option value="">— 选一下 —</option>` + IDS.map(id => `<option value="${id}" ${id === me ? "selected" : ""}>${esc(nm(id))}</option>`).join("");
+  if (window.tripNav) tripNav.setMembers(settings.members || DEFAULT_SETTINGS.members);
   renderFlights($("#flights"), { name: nm });
   $("#hotels").innerHTML = HOTELS.map(h => `<div class="flight"><span class="pill">${h.when}</span><b>${h.name}</b>${h.addr ? `<span class="muted">${h.addr}</span>` : ""}${h.note ? `<span>${h.note.replace(/\{(m\d)\}/g, (_, id) => esc(nm(id)))}</span>` : ""}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.q)}" target="_blank" rel="noopener"><i data-lucide="navigation" class="i18"></i>Google Maps 导航</a></div>`).join("");
   const r = settings.rates, when = settings.ratesAt ? new Date(settings.ratesAt).toLocaleDateString("zh-CN") : "默认估算";
@@ -703,11 +833,28 @@ function convert() {
   $("#cnyOut").textContent = isFinite(v) ? "¥" + fmt(v / rate("VND"), "CNY") : "—";
 }
 $("#cnyIn").addEventListener("input", convert); $("#vndIn").addEventListener("input", convert);
-$("#meSel").addEventListener("change", e => { me = e.target.value; try { localStorage.setItem("trip-me", me); } catch (er) {} renderAll(); });
+// 我是谁 lives in the top-bar avatar (trip-nav.js); 修改成员名字 opens a small dialog from that menu
+const openNames = () => { renderInfo(); $("#namesDlg").hidden = false; const f = document.querySelector("[data-name]"); if (f) f.focus(); };
+const closeNames = () => { $("#namesDlg").hidden = true; };
+$("#namesDlg").addEventListener("click", e => { if (e.target === $("#namesDlg") || e.target.closest("[data-namesclose]")) closeNames(); });
+if (window.tripNav) tripNav.configure({ members: settings.members, onChange: id => { me = id; renderAll(); }, onEditNames: openNames });
+const avatarOf = id => window.tripInitial ? tripInitial(id, settings.members || DEFAULT_SETTINGS.members) : nm(id).slice(0, 1);
+// 准备进度 (desktop info page): checklist + packing per person; tap to open that tab
+function renderProgress() {
+  const el = $("#progList"); if (!el) return;
+  const bar = (d, n, label, tab) => `<button type="button" class="pb" data-gotab="${tab}"><span class="pl">${label}</span><span class="track"><b style="width:${n ? d / n * 100 : 0}%"></b></span><span class="pv num">${d} / ${n}</span></button>`;
+  el.innerHTML = IDS.map(id => { const c = PERSONAL.filter(([k]) => checks[id]?.[k]).length, p = window.Packing ? Packing.progress(id) : { d: 0, n: 0 };
+    return `<div class="pr" style="--p:var(--${id})"><span class="av sm">${esc(avatarOf(id))}</span><span class="nm">${esc(nm(id))}${id === me ? "（我）" : ""}</span>
+      ${bar(c, PERSONAL.length, "清单", "check")}${bar(p.d, p.n, "行李", "packing")}</div>`; }).join("");
+}
+$("#progList").addEventListener("click", e => { const b = e.target.closest("[data-gotab]"); if (b) showTab(b.dataset.gotab, true); });
+// phrases: tap to copy the Vietnamese
+$("#phr").addEventListener("click", e => { const b = e.target.closest("[data-vi]"); if (!b) return;
+  const t = b.dataset.vi; try { navigator.clipboard.writeText(t).then(() => toast("已复制：" + t), () => toast(t)); } catch (er) { toast(t); } });
 $("#saveNames").addEventListener("click", async () => {
   if (!ready()) return toast("还没连上数据库");
   const members = {}; for (const id of IDS) { const v = document.querySelector(`[data-name="${id}"]`).value.trim().slice(0, 20); members[id] = v || DEFAULT_SETTINGS.members[id]; }
-  try { await saveSettings({ members }); toast("名字已保存"); } catch (e) { toast("保存失败，请稍后再试"); }
+  try { await saveSettings({ members }); toast("名字已保存"); closeNames(); } catch (e) { toast("保存失败，请稍后再试"); }
 });
 async function saveSettings(patch) {
   const next = { members: settings.members, rates: settings.rates, ratesAt: settings.ratesAt || 0, ...patch, at: Date.now() };
@@ -727,12 +874,14 @@ $("#refreshRates").addEventListener("click", async () => {
 
 /* ---------- checklist ---------- */
 function renderChecklist() {
-  let h = `<div></div>` + IDS.map(id => `<div class="h ${id === me ? "me" : ""}">${esc(nm(id))}</div>`).join("");
+  // rows are display:contents on phones (same flat grid as before) and real table rows on desktop
+  let h = `<div class="gr hd"><div></div>` + IDS.map(id => `<div class="h ${id === me ? "me" : ""}"><span class="av sm" style="--p:var(--${id})">${esc(avatarOf(id))}</span>${esc(nm(id))}</div>`).join("") + `</div>`;
   for (const [k, label] of PERSONAL) {
-    h += `<div>${label}</div>` + IDS.map(id => `<label><input type="checkbox" data-p="${id}" data-k="${k}" ${checks[id]?.[k] ? "checked" : ""} ${ready() && checksLoaded ? "" : "disabled"} aria-label="${esc(nm(id))}：${label}"></label>`).join("");
+    h += `<div class="gr"><div>${label}</div>` + IDS.map(id => `<label><input type="checkbox" data-p="${id}" data-k="${k}" ${checks[id]?.[k] ? "checked" : ""} ${ready() && checksLoaded ? "" : "disabled"} aria-label="${esc(nm(id))}：${label}"></label>`).join("") + `</div>`;
   }
-  h += `<div class="prog">完成</div>` + IDS.map(id => { const n = PERSONAL.filter(([k]) => checks[id]?.[k]).length; return `<div class="prog">${n}/${PERSONAL.length}</div>`; }).join("");
+  h += `<div class="gr ft"><div class="prog">完成</div>` + IDS.map(id => { const n = PERSONAL.filter(([k]) => checks[id]?.[k]).length; return `<div class="prog">${n}/${PERSONAL.length}</div>`; }).join("") + `</div>`;
   $("#personal").innerHTML = h;
+  renderProgress();
   const g = checks.group || {};
   $("#group").innerHTML = GROUP.map(([k, label]) => {
     const it = g[k] || {}; return `<div class="task ${it.done ? "done" : ""}">
@@ -770,7 +919,7 @@ function parseShare(text) {
 function renderLinks() {
   $("#lkTags").innerHTML = LINK_TAGS.map(t => `<button type="button" class="chip ${t === lkTag ? "on" : ""}" data-lktag="${t}" aria-pressed="${t === lkTag}">${t}</button>`).join("");
   $("#lkAdd").disabled = !ready();
-  if (!links.length) { $("#lkList").innerHTML = `<div class="card"><p class="empty">还没有收藏。</p></div>`; return; }
+  if (!links.length) { $("#lkList").innerHTML = `<div class="card lk-empty"><i data-lucide="bookmark"></i><p class="empty">还没有收藏。</p><p class="sub">把小红书的分享内容粘贴到左边，就会出现在这里。</p></div>`; lucideIcons(); return; }
   $("#lkList").innerHTML = LINK_TAGS.filter(t => links.some(l => l.tag === t)).map(t => `<div class="card"><h2>${t}</h2>${
     links.filter(l => l.tag === t).sort((a, b) => (b.at || 0) - (a.at || 0)).map(l => `<div class="lk">
       <a class="t" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.title)}</a>
@@ -800,7 +949,7 @@ $("#lkList").addEventListener("click", async e => {
 const lucideIcons = () => { try { if (window.lucide) lucide.createIcons({ attrs: { "stroke-width": 1.75 } }); } catch (e) {} };
 function renderAll() { renderInfo(); renderChecklist(); renderForm(); renderAA(); renderLinks(); Packing.render(); lucideIcons(); }
 bindAA();
-Packing.init({ root: document.querySelector('[data-panel="packing"]'), IDS, nm, me: () => me, ready, db: () => db, toast, icons: lucideIcons,
+Packing.init({ root: document.querySelector('[data-panel="packing"]'), IDS, nm, me: () => me, ready, db: () => db, toast, icons: lucideIcons, avatar: avatarOf, onData: () => renderProgress(),
   setMe: id => { me = id; try { localStorage.setItem("trip-me", me); } catch (e) {} renderAll(); } });
 renderCountdown(); setInterval(renderCountdown, 1000); renderAll();
 
