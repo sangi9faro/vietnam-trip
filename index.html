@@ -98,7 +98,8 @@ textarea{padding:10px 12px}
   .wrap{max-width:1600px;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;padding:20px 24px 40px;align-items:start}
   section.wrap,section.wrap[hidden]{display:contents!important}
   /* the 行李 view replaces the dashboard instead of joining it */
-  main.wrap>section[data-panel="packing"][hidden],main.wrap.pk-mode>section[data-panel]:not([data-panel="packing"]),main.wrap.pk-mode>.c-hero{display:none!important}
+  main.wrap>section[data-panel="packing"][hidden],main.wrap.pk-mode>section[data-panel]:not([data-panel="packing"]),main.wrap.pk-mode>.c-hero,
+  main.wrap>section[data-panel="aa"][hidden],main.wrap.aa-mode>section[data-panel]:not([data-panel="aa"]),main.wrap.aa-mode>.c-hero{display:none!important}
   main.wrap>*,section.wrap>*{grid-column:span 6}
   main.wrap>.c-hero,main.wrap>#who,section.wrap>.c-personal,section.wrap>.c-ledger,section.wrap>.c-flights{grid-column:span 12}
   #toast{bottom:24px}
@@ -249,7 +250,6 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
     <div class="tabs" role="tablist">
     <button class="tab on" data-tab="info" role="tab"><i data-lucide="info"></i>基础信息</button>
     <button class="tab" data-tab="check" role="tab"><i data-lucide="list-checks"></i>准备清单</button>
-    <button class="tab" data-tab="aa" role="tab"><i data-lucide="wallet"></i>AA 记账</button>
     <button class="tab" data-tab="links" role="tab"><i data-lucide="bookmark"></i>攻略收藏</button>
     <button class="tab" data-tab="packing" role="tab"><i data-lucide="luggage"></i>行李</button>
   </div>
@@ -534,11 +534,15 @@ function showTab(t, user) {
   document.querySelectorAll(".tab").forEach(b => { b.classList.toggle("on", b.dataset.tab === t); b.setAttribute("aria-selected", b.dataset.tab === t); });
   document.querySelectorAll("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== t);
   document.querySelector("main.wrap").classList.toggle("pk-mode", t === "packing");
+  // 账单 is its own bottom-bar page: no capsule tabs, own title
+  document.querySelector("main.wrap").classList.toggle("aa-mode", t === "aa");
+  document.querySelector("header.top").hidden = t === "aa";
+  if (window.tripNav) tripNav.setTitle(t === "aa" ? "AA 账单" : "越南跨年工具箱");
   if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t);
   if (window.tripNav) tripNav.update();
   try { localStorage.setItem("trip-tab", t); } catch (e) {}
   // desktop shows the dashboard at once, so a tab there scrolls to its first card
-  if (user && wide() && t !== "packing") { const c = document.querySelector(`[data-panel="${t}"] > *`); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  if (user && wide() && t !== "packing" && t !== "aa") { const c = document.querySelector(`[data-panel="${t}"] > *`); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); }
   else if (user) scrollTo({ top: 0 });
 }
 addEventListener("hashchange", () => showTab(location.hash.slice(1)));

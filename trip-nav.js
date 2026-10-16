@@ -4,8 +4,9 @@
 (function () {
   const s = document.currentScript, HUB = 'https://sangi9faro.github.io/';
   const showTop = s.dataset.top !== '0', title = s.dataset.title || document.title;
-  const ITEMS = [['guide', '行程', 'map', 'guide.html'], ['toolbox', '工具箱', 'wallet', './#info'], ['packing', '行李', 'luggage', './#packing'], ['vote', '投票', 'vote', 'vote.html']];
-  const current = () => /guide\.html$/.test(location.pathname) ? 'guide' : /vote\.html$/.test(location.pathname) ? 'vote' : (location.hash === '#packing' ? 'packing' : 'toolbox');
+  // 行李 lives inside 工具箱 (capsule tab); 账单 (AA) has its own entry
+const ITEMS = [['guide', '行程', 'map', 'guide.html'], ['toolbox', '工具箱', 'briefcase', './#info'], ['bills', '账单', 'receipt', './#aa'], ['vote', '投票', 'vote', 'vote.html']];
+  const current = () => /guide\.html$/.test(location.pathname) ? 'guide' : /vote\.html$/.test(location.pathname) ? 'vote' : (location.hash === '#aa' ? 'bills' : 'toolbox');
   const link = ([id, label, icon, href], cls) => `<a href="${href}" data-tn="${id}" data-tip="${label}" aria-label="${label}"${cls ? ` class="${cls}"` : ''}><i data-lucide="${icon}"></i><span>${label}</span></a>`;
   document.body.classList.add('tn');
   if (showTop) document.body.insertAdjacentHTML('afterbegin', `<header class="tn-top"><a class="tn-back" href="${HUB}"><i data-lucide="chevron-left"></i>我的旅行</a><h1>${title}</h1><span class="tn-spacer"></span></header>`);
@@ -18,7 +19,8 @@
   const top = document.querySelector('.tn-top');
   const setH = () => document.documentElement.style.setProperty('--tn-top-h', (top ? top.offsetHeight : 0) + 'px');
   setH(); if (top && window.ResizeObserver) new ResizeObserver(setH).observe(top);
-  window.tripNav = { update };
+  const setTitle = t => { const h = document.querySelector('.tn-top h1'); if (h) h.textContent = t; };
+  window.tripNav = { update, setTitle };
   const icons = () => { try { if (window.lucide) lucide.createIcons({ attrs: { 'stroke-width': 1.75 } }); } catch (e) {} };
   if (window.lucide) icons(); else addEventListener('DOMContentLoaded', icons);
 })();
