@@ -211,7 +211,7 @@ service cloud.firestore {
 
     // ---------- 主页：收藏（只有 Faro 能写；公开的所有人可读）----------
     function isOwner() {
-      return request.auth != null && request.auth.uid == 'OWNER_UID';
+      return request.auth != null && request.auth.uid == 'X8BxRGYdemf6Wwb9MtQcLAxpy5q2';
     }
     function validFavorite() {
       let d = request.resource.data;
