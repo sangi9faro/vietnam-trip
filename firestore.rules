@@ -179,5 +179,36 @@ service cloud.firestore {
         && request.resource.data.at is int;
       allow delete: if false;
     }
+
+    // ---------- 主页：收藏（只有 Faro 能写；公开的所有人可读）----------
+    function isOwner() {
+      return request.auth != null && request.auth.uid == 'OWNER_UID';
+    }
+    function validFavorite() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['name', 'category', 'lat', 'lng', 'rating', 'note', 'city', 'country',
+                               'tripId', 'visitedAt', 'price', 'tags', 'link', 'private', 'at', 'updatedAt'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 60
+        && d.category in ['food', 'cafe', 'bar', 'spot', 'stay', 'shop', 'other']
+        && d.lat is number && d.lat >= -90 && d.lat <= 90
+        && d.lng is number && d.lng >= -180 && d.lng <= 180
+        && d.rating is int && d.rating >= 1 && d.rating <= 5
+        && d.note is string && d.note.size() <= 500
+        && d.city is string && d.city.size() <= 30
+        && d.country is string && d.country.size() <= 30
+        && (d.tripId == null || (d.tripId is string && d.tripId.size() <= 40))
+        && (d.visitedAt == null || (d.visitedAt is string && d.visitedAt.size() == 10))
+        && d.price is int && d.price >= 0 && d.price <= 4
+        && d.tags is list && d.tags.size() <= 8
+        && d.link is string && d.link.size() <= 500
+        && (d.link == '' || d.link.matches('https?://.+'))
+        && d.private is bool
+        && d.at is int && d.updatedAt is int;
+    }
+    match /favorites/{id} {
+      allow read: if resource.data.private == false || isOwner();
+      allow create, update: if isOwner() && validFavorite();
+      allow delete: if isOwner();
+    }
   }
 }
