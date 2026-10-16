@@ -124,6 +124,7 @@ textarea{padding:10px 12px}
 .exp.done .amt{color:var(--ink-2)}
 .aa-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:6px;background:var(--surface-2);color:var(--ink-2);font:700 11px var(--font)}
 .aa-cur{color:var(--warn);font-weight:700}
+.aa-dev code{font:12px var(--font-num);word-break:break-all;color:var(--ink)} .aa-dev button{border:0;background:none;color:var(--accent);font-weight:700;font-size:13px;cursor:pointer;padding:0 4px}
 .aa-cats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .aa-cat{display:grid;justify-items:center;gap:2px;padding:8px 0;min-height:56px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink-2);font-size:11px;font-weight:700;cursor:pointer}
 .aa-cat svg{width:20px;height:20px}
@@ -467,6 +468,7 @@ main.wrap.pk-mode{padding-bottom:calc(100px + var(--tabbar-h))}
         <div id="expList"><p class="empty">还没有记账。</p></div>
         <p class="sub">只有记账的那台手机能修改和删除。新记的账会锁定当时的汇率，以后更新汇率不影响。</p>
         <button class="btn ghost small" id="aaLock" hidden></button>
+        <p class="sub aa-dev" id="aaDev"></p>
         <div class="row"><span class="sub" id="rateLine2">—</span><button class="btn ghost small" id="refreshRates"><i data-lucide="refresh-cw" class="i18"></i>更新成最新汇率</button></div>
       </div>
     </div>

@@ -134,6 +134,8 @@ function renderLedger() {
   const ps = aaFilter.cat ? [] : settlements.filter(s => !w || s.from === w || s.to === w);
   const rows = [...ex.map(x => ({ k: x.at || 0, h: rowExpense(x) })), ...ps.map(s => ({ k: s.at || 0, h: rowPay(s) }))].sort((a, b) => b.k - a.k);
   $('#expList').innerHTML = rows.length ? rows.map(r => r.h).join('') : `<p class="empty">${expenses.length ? '没有符合筛选的记录。' : '还没有记账。'}</p>`;
+  // this browser's anonymous id: entries are editable only from the browser that recorded them
+  $('#aaDev').innerHTML = uid ? `本机编号 <code>${esc(uid)}</code><button type="button" id="aaDevCopy">复制</button>（换手机或浏览器后，以前记的账要靠它转过来）` : '';
   const unlocked = expenses.filter(x => x.by === uid && !(x.cny > 0));
   $('#aaLock').hidden = !unlocked.length;
   $('#aaLock').textContent = `把我的 ${unlocked.length} 笔旧账按当前汇率锁定`;
@@ -284,6 +286,7 @@ function bindAA() {
     if (t.dataset.repay) { const [a, b, m] = t.dataset.repay.split('|'); openRepay(a, b, m); }
     else if (t.id === 'aaRepayBtn') openRepay();
     else if (t.id === 'aaCopy') copySettlement();
+    else if (t.id === 'aaDevCopy') { try { navigator.clipboard.writeText(uid).then(() => toast('本机编号已复制'), () => toast('请长按编号手动复制')); } catch (er) { toast('请长按编号手动复制'); } }
     else if (t.id === 'aaFab') { if (editId) resetForm(); openSheet(); }
     else if (t.dataset.aaclose !== undefined) closeSheet();
     else if (t.id === 'aaCancelEdit') { resetForm(); closeSheet(); }
