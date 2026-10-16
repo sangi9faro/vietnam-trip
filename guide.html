@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <title>越南跨年攻略</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
@@ -11,257 +12,161 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <style>
-/* ═══════════════════════════════════════════
-   Design System — edit :root to change theme
-   ═══════════════════════════════════════════ */
-:root {
-  --bg-primary:    #ffffff;
-  --bg-secondary:  #f5f5f7;
-  --bg-tertiary:   #fbfbfd;
-  --bg-grouped:    #f2f2f7;
-  --bg-elevated:   #ffffff;
-  --text-primary:   #1d1d1f;
-  --text-secondary: #86868b;
-  --text-tertiary:  #aeaeb2;
-  --accent:        #0071e3;
-  --accent-hover:  #0077ed;
-  --tint-red:    #ff3b30;
-  --tint-orange: #ff9500;
-  --tint-green:  #34c759;
-  --tint-blue:   #007aff;
-  --tint-purple: #af52de;
-  --tint-pink:   #ff2d55;
-  --separator:  rgba(60, 60, 67, .12);
-  --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:  0 4px 14px rgba(0,0,0,.08);
-  --shadow-lg:  0 8px 30px rgba(0,0,0,.12);
-  --radius-sm:  8px;
-  --radius-md:  12px;
-  --radius-lg:  16px;
-  --radius-xl:  20px;
-  --safe-top:    env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+/* guide.html — layout and page-only pieces; tokens and shared components live in ui.css */
+html,body{height:100%}
+body.g{overflow:hidden}
+#map{position:fixed;inset:0;z-index:0}
+/* phone: floating top bar over a full-screen map */
+.g-top{position:fixed;left:0;right:0;top:0;z-index:700;padding:calc(10px + var(--safe-t)) 12px 6px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 10px;pointer-events:none}
+.g-top>*{pointer-events:auto}
+.g-back{width:44px;height:44px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-2);display:grid;place-items:center;color:var(--ink)}
+.g-title{height:44px;background:var(--surface);box-shadow:var(--shadow-2);border-radius:12px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.g-title b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tabs{grid-column:1/-1;padding:2px 2px 6px}
+#tabs .chip{background:var(--surface);box-shadow:var(--shadow-1)}
+#tabs .chip.on{background:var(--c,var(--ink));color:#fff}
+#syncStatus,#statusDesk{font-size:12px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+#syncStatus.ok,#statusDesk.ok{color:var(--good)}
+/* phone: draggable bottom sheet with three heights */
+/* the sheet's real height changes (not a translate), so its scroll area always ends at the screen edge */
+.g-panel{position:fixed;left:0;right:0;bottom:0;z-index:800;height:var(--peek,150px);max-height:calc(100dvh - 60px);background:var(--bg);border-radius:var(--r-l) var(--r-l) 0 0;
+  box-shadow:var(--shadow-2);display:flex;flex-direction:column;transition:height .32s cubic-bezier(.2,.8,.2,1)}
+.g-panel.drag{transition:none}
+.g-handle{flex-shrink:0;height:30px;border:0;background:none;display:grid;place-items:center;cursor:grab;touch-action:none;border-radius:var(--r-l) var(--r-l) 0 0}
+.g-handle span{width:44px;height:5px;border-radius:3px;background:var(--line)}
+#content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 16px calc(28px + var(--safe-b))}
+.g-days{display:none}
+/* tablet: tabs on top + two columns */
+@media (min-width:768px){
+  body.g{display:grid;grid-template-columns:minmax(360px,420px) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:100dvh}
+  #map{position:relative;inset:auto;grid-column:2;grid-row:1/3;height:100dvh}
+  .g-top{position:static;grid-column:1;grid-row:1;pointer-events:auto;background:var(--bg);padding:14px 16px 6px;border-right:1px solid var(--line)}
+  .g-back,.g-title{box-shadow:none;background:var(--surface-2)}
+  #tabs .chip{box-shadow:none;background:var(--surface-2)}
+  .g-panel{position:static;grid-column:1;grid-row:2;height:auto;max-height:none;border-radius:0;box-shadow:none;transition:none;border-right:1px solid var(--line)}
+  .g-handle{display:none}
+  #content{padding:6px 18px 28px}
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
-               "Helvetica Neue", "Arial", sans-serif;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: 1.47059;
-  letter-spacing: -0.022em;
+/* desktop: day list | timeline | full-height map */
+@media (min-width:1200px){
+  body.g{grid-template-columns:240px minmax(420px,480px) minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+  .g-top{display:none}
+  .g-days{display:flex;flex-direction:column;gap:6px;grid-column:1;grid-row:1;overflow-y:auto;padding:18px 12px;background:var(--surface);border-right:1px solid var(--line)}
+  .g-panel{grid-column:2;grid-row:1}
+  #map{grid-column:3;grid-row:1}
 }
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+.gd-head{display:grid;gap:4px;padding:0 6px 12px}
+.gd-head a{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:600}
+.gd-head h1{font-size:20px}
+.gd{display:grid;grid-template-columns:12px minmax(0,1fr);gap:2px 10px;align-items:start;text-align:left;border:0;background:none;border-radius:12px;padding:10px;cursor:pointer;color:var(--ink)}
+.gd:hover{background:var(--surface-2)}
+.gd.on{background:var(--accent-soft)}
+.gd i.dot{width:12px;height:12px;border-radius:50%;background:var(--c);margin-top:5px}
+.gd .l{font:800 14px var(--font-num)} .gd .l small{font:600 12px var(--font-num);color:var(--ink-2);margin-left:6px}
+.gd .t{grid-column:2;font-size:13px;color:var(--ink-2);line-height:1.4}
+.gd .n{grid-column:2;font:600 12px var(--font-num);color:var(--ink-2)}
 
-/* ── Map ── */
-#map { width: 100%; height: 40vh; min-height: 280px; position: sticky; top: 0; z-index: 100; }
-.locate-btn {
-  width: 36px; height: 36px; border-radius: 8px;
-  background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
-  border: none; box-shadow: 0 1px 4px rgba(0,0,0,.18);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; cursor: pointer; -webkit-tap-highlight-color: transparent;
-}
-.locate-btn.active { color: #007aff; }
-@keyframes loc-pulse {
-  0%   { transform: scale(1); opacity: .55; }
-  100% { transform: scale(2.4); opacity: 0; }
-}
-.loc-pulse {
-  width: 14px; height: 14px; border-radius: 50%;
-  background: rgba(0,122,255,.25);
-  animation: loc-pulse 1.6s ease-out infinite;
-}
+/* day header + timeline */
+.day-head{padding:4px 0 12px}
+.dh-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.day-chip{display:inline-block;font:800 13px var(--font-num);color:#fff;background:var(--c);border-radius:8px;padding:2px 9px;margin-bottom:6px}
+.day-head h2{font-size:20px}
+.day-head p{margin:4px 0 0;color:var(--ink-2);font-size:14px}
+.dh-who{color:var(--ink-2)}
+.section-head{font-size:13px;font-weight:700;color:var(--ink-2);margin:18px 2px 8px;display:flex;align-items:center;gap:6px}
+.tl-item{position:relative;padding-left:40px;margin-bottom:10px}
+.tl-item::before{content:"";position:absolute;left:15px;top:34px;bottom:-14px;width:2px;background:var(--line)}
+.timeline>.tl-item:last-child::before{display:none}
+.tl-num{position:absolute;left:2px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font:800 13px var(--font-num);border:2px solid var(--bg)}
+.tl-num.alt{background:var(--surface-2);color:var(--ink-2)}
+.tl-item>.card{padding:12px 14px;cursor:pointer;transition:transform .12s,box-shadow .15s}
+.tl-item>.card:active{transform:scale(.98)}
+.tl-item.sel>.card{box-shadow:0 0 0 2px var(--c),var(--shadow-1)}
+.tl-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl-head .time{font:700 14px var(--font-num)}
+.type-tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-2);background:var(--surface-2);border-radius:6px;padding:1px 7px}
+.type-tag svg.lucide{width:14px;height:14px}
+.tl-item .name{font-size:17px;font-weight:700;margin:4px 0 2px;line-height:1.35}
+.tl-item .desc{font-size:14px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.tl-item.open .desc{display:block}
+.tl-item .budget{font:600 13px var(--font-num);color:var(--warn);margin-top:4px}
+.links{display:none;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tl-item.open .links,.tl-item.editing .links{display:flex}
+.leg{display:flex;align-items:center;gap:6px;margin:-2px 0 10px 40px;font:600 12px var(--font-num);color:var(--ink-2)}
+.leg svg.lucide{width:14px;height:14px}
 
-/* ── Tabs ── */
-.tabs {
-  display: flex; gap: 6px; padding: 12px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch;
-  background: rgba(255,255,255,.85); -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px); position: sticky; top: 40vh; z-index: 99;
-  border-bottom: .5px solid var(--separator); scrollbar-width: none;
-}
-.tabs::-webkit-scrollbar { display: none; }
-.tab {
-  flex-shrink: 0; padding: 7px 16px; border-radius: 980px; border: none;
-  background: var(--bg-grouped); color: var(--text-secondary);
-  font-size: 14px; font-weight: 500; cursor: pointer; transition: all .25s ease;
-  white-space: nowrap; letter-spacing: -0.01em;
-}
-.tab:active { transform: scale(.96); }
-.tab.active { background: var(--accent); color: #fff; }
+/* overview */
+.hero{padding:6px 0 4px}
+.hero h1{font-size:28px}
+.hero .subtitle{margin:4px 0 0;font:600 15px var(--font-num);color:var(--ink-2)}
+.note{font-size:14px;margin:10px 0 14px;color:var(--ink-2)}
+.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.info-card{background:var(--surface-2);border-radius:var(--r-m);padding:12px 14px}
+.info-card .label{font-size:12px;font-weight:700;color:var(--ink-2)}
+.info-card .value{font-size:14px;font-weight:600;margin-top:4px;line-height:1.5}
+#content>.card,.card.warn{padding:14px 16px;font-size:14px;line-height:1.7}
+.card.warn{background:color-mix(in srgb,var(--coral) 12%,var(--surface))}
+.day-list{display:grid;gap:8px}
+.day-list .card{padding:12px 14px;cursor:pointer}
+.day-list .name{font-weight:700;display:flex;align-items:center;gap:8px}
+.day-list .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.day-list .desc{font:600 13px var(--font-num);color:var(--ink-2);margin-top:2px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--ink-2);font-size:13px;padding-bottom:8px}
+.legend-item{display:flex;align-items:center;gap:6px}
 
-/* ── Main content ── */
-.content { max-width: 680px; margin: 0 auto; padding: 16px 16px calc(24px + var(--safe-bottom)); }
-
-/* ── Overview ── */
-.hero { text-align: center; padding: 28px 20px 20px; }
-.hero h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; }
-.hero .subtitle { font-size: 17px; color: var(--text-secondary); margin-top: 6px; font-weight: 400; }
-
-.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-.info-card { background: var(--bg-elevated); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
-.info-card .label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .02em; margin-bottom: 6px; }
-.info-card .value { font-size: 15px; font-weight: 600; line-height: 1.4; }
-
-/* ── Section headers ── */
-.section-head { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .03em; padding: 20px 0 8px; }
-
-/* ── Day header ── */
-.day-head { padding: 20px 0 12px; }
-.day-head h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-.day-head p { font-size: 15px; color: var(--text-secondary); margin-top: 2px; }
-
-/* ── Route bar ── */
-.route-bar { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--shadow-sm); font-size: 13px; color: var(--text-secondary); line-height: 1.7; white-space: pre-line; }
-.route-bar strong { color: var(--text-primary); }
-
-/* ── Timeline ── */
-.timeline { position: relative; padding-left: 24px; }
-.timeline::before { content: ''; position: absolute; left: 7px; top: 20px; bottom: 20px; width: 1.5px; background: var(--separator); }
-.tl-item { position: relative; margin-bottom: 10px; }
-.tl-dot { position: absolute; left: -20px; top: 18px; width: 10px; height: 10px; border-radius: 50%; z-index: 1; box-shadow: 0 0 0 3px var(--bg-secondary); }
-.tl-dot.food    { background: var(--tint-red); }
-.tl-dot.spot    { background: var(--tint-blue); }
-.tl-dot.hotel   { background: var(--tint-orange); }
-.tl-dot.drink   { background: var(--tint-purple); }
-.tl-dot.transport { background: var(--text-tertiary); }
-
-/* ── Card ── */
-.card { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 14px 16px; box-shadow: var(--shadow-sm); transition: box-shadow .25s ease; cursor: pointer; }
-.card:active { box-shadow: var(--shadow-md); }
-.card .time { font-size: 12px; font-weight: 600; color: var(--text-tertiary); letter-spacing: .01em; }
-.card .name { font-size: 17px; font-weight: 600; margin: 2px 0 4px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 6px; }
-.card .desc { font-size: 14px; color: var(--text-secondary); line-height: 1.45; }
-
-/* Badge */
-.badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 4px; }
-.badge.food   { background: rgba(255,59,48,.1);  color: var(--tint-red); }
-.badge.spot   { background: rgba(0,122,255,.1);  color: var(--tint-blue); }
-.badge.drink  { background: rgba(175,82,222,.1); color: var(--tint-purple); }
-
-/* Budget */
-.budget { display: inline-block; margin-top: 6px; padding: 3px 10px; background: var(--bg-grouped); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-secondary); font-weight: 500; }
-
-/* Payment */
-.pays { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-.pay { font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
-.pay.ok  { background: rgba(52,199,89,.1);  color: var(--tint-green); }
-.pay.no  { background: rgba(255,59,48,.08); color: var(--tint-red); }
-.pay.idk { background: rgba(255,149,0,.1);  color: var(--tint-orange); }
-
-/* Links row */
-.links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.btn {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 8px 14px; border-radius: var(--radius-sm);
-  font-size: 13px; font-weight: 600; border: none; cursor: pointer;
-  text-decoration: none !important; transition: filter .2s;
-}
-.btn:active { filter: brightness(.9); }
-.btn.nav    { background: var(--accent); color: #fff; }
-.btn.xhs    { background: #ff2442; color: #fff; }
-.btn.dp     { background: #ffa700; color: #fff; }
-.btn.rsv    { background: var(--tint-green); color: #fff; }
-
-/* Action Sheet */
-.as-overlay {
-  position: fixed; inset: 0; z-index: 9999;
-  background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
-  display: flex; align-items: flex-end; justify-content: center;
-  opacity: 0; pointer-events: none; transition: opacity .25s;
-}
-.as-overlay.show { opacity: 1; pointer-events: auto; }
-.as-sheet {
-  width: 100%; max-width: 420px;
-  padding: 0 8px 34px;
-  transform: translateY(100%); transition: transform .3s cubic-bezier(.22,1,.36,1);
-}
-.as-overlay.show .as-sheet { transform: translateY(0); }
-.as-group {
-  background: rgba(255,255,255,.88); backdrop-filter: blur(20px);
-  border-radius: 14px; overflow: hidden; margin-bottom: 8px;
-}
-.as-group .as-item {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 16px; font-size: 18px; color: #007aff; font-weight: 500;
-  border: none; background: none; width: 100%; cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.as-group .as-item + .as-item { border-top: .5px solid rgba(0,0,0,.12); }
-.as-group .as-item:active { background: rgba(0,0,0,.06); }
-.as-cancel { font-weight: 600; }
-
-/* Details — default open */
-.details {
-  margin-top: 10px; padding-top: 10px;
-  border-top: .5px solid var(--separator);
-  font-size: 13px; color: var(--text-secondary); line-height: 1.6;
-}
-.details.closed { display: none; }
-
-/* ── Overview day list ── */
-.day-list .card { margin-bottom: 8px; }
-.day-list .card .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-
-/* ── Payment summary ── */
-.pay-summary { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 14px 16px; box-shadow: var(--shadow-sm); font-size: 13px; line-height: 1.7; margin-bottom: 10px; }
-.pay-summary h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-.pay-summary .warn { color: var(--tint-red); }
-.pay-summary .ok-text { color: var(--tint-green); }
-
-/* ── Legend ── */
-.legend { display: flex; gap: 14px; flex-wrap: wrap; padding: 8px 0; font-size: 12px; color: var(--text-secondary); }
-.legend-item { display: flex; align-items: center; gap: 5px; }
-.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-/* ── Leaflet overrides ── */
-.leaflet-popup-content-wrapper { border-radius: var(--radius-md) !important; box-shadow: var(--shadow-lg) !important; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif !important; }
-.leaflet-popup-content { font-size: 14px !important; line-height: 1.5 !important; margin: 12px 14px !important; }
-.leaflet-popup-content a { color: var(--accent) !important; }
-.leaflet-popup-tip { background: #fff !important; }
-.leaflet-control-zoom a { width: 34px !important; height: 34px !important; line-height: 34px !important; font-size: 16px !important; border-radius: 10px !important; background: rgba(255,255,255,.85) !important; -webkit-backdrop-filter: blur(10px) !important; backdrop-filter: blur(10px) !important; border: .5px solid var(--separator) !important; color: var(--text-primary) !important; }
-.leaflet-control-zoom { border-radius: 12px !important; overflow: hidden; box-shadow: var(--shadow-md) !important; border: none !important; }
-.leaflet-control-attribution { font-size: 9px !important; opacity: .5; }
-.dest-switch{display:flex;gap:6px;justify-content:center;margin-bottom:8px}
-.dest-switch .tab{text-decoration:none}
-.card.warn{border-left:4px solid var(--tint-orange)}
-.note{text-align:center;font-size:13px;color:var(--text-secondary);margin-bottom:16px}
-
-/* ── sync status, distance rows, edit mode ── */
-#syncStatus{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:10px;z-index:1200;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#6e6e73;font-size:12px;font-weight:600;border-radius:980px;padding:4px 10px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
-#syncStatus.ok{color:#248a3d}
-.leg{font-size:12px;color:var(--text-secondary);margin:-2px 0 8px 2px;padding-left:2px;font-variant-numeric:tabular-nums}
-.dh-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.dh-who{color:var(--text-tertiary)}
-.ed-toggle{flex-shrink:0;border:0;border-radius:980px;padding:6px 14px;font-size:14px;font-weight:600;background:var(--bg-grouped);color:var(--accent);cursor:pointer}
-.edit-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:.5px solid var(--separator)}
-.edit-bar button,.edit-bar select{border:1px solid var(--separator);background:var(--bg-secondary);color:var(--text-primary);border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;max-width:100%}
-.edit-bar .danger{color:var(--tint-red)}
-.edit-bar .armed{background:var(--tint-red);color:#fff;border-color:var(--tint-red)}
-.add-loc{width:100%;margin:6px 0 20px;border:1.5px dashed var(--separator);background:none;border-radius:var(--radius-md);padding:12px;font-size:15px;font-weight:600;color:var(--accent);cursor:pointer}
-.edit-form{display:grid;gap:10px;cursor:default;margin-bottom:10px;border:1.5px solid var(--accent)}
-.edit-form .ef-title{font-weight:700}
-.edit-form label{display:grid;gap:4px;font-size:12.5px;color:var(--text-secondary);min-width:0}
-.edit-form input,.edit-form select,.edit-form textarea{font:inherit;font-size:15px;color:var(--text-primary);background:var(--bg-secondary);border:1px solid var(--separator);border-radius:8px;padding:8px 10px;width:100%;min-width:0;box-sizing:border-box}
+/* editing */
+.ed-toggle{flex-shrink:0}
+.edit-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.edit-bar button,.edit-bar select{min-height:36px;border:0;background:var(--surface-2);color:var(--ink);border-radius:10px;padding:0 12px;font-size:14px;cursor:pointer;max-width:100%}
+.edit-bar .danger{color:var(--bad)}
+.edit-bar .armed{background:var(--bad);color:#fff}
+.add-loc{width:100%;min-height:48px;margin:6px 0 20px;border:1.5px dashed var(--line);background:none;border-radius:var(--r-m);font-size:15px;font-weight:700;color:var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.edit-form{display:grid;gap:10px;padding:14px;margin-bottom:10px;box-shadow:0 0 0 2px var(--accent)}
+.edit-form .ef-title{font-weight:800;font-size:17px}
+.edit-form label{display:grid;gap:4px;font-size:13px;color:var(--ink-2);min-width:0}
+.edit-form input,.edit-form select,.edit-form textarea{font-size:16px;color:var(--ink);background:var(--surface-2);border:1px solid transparent;border-radius:10px;padding:10px 12px;width:100%;min-width:0}
 .edit-form .ef-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-.ef-coord{font-size:13px;color:var(--text-secondary)}
+.ef-coord{font:600 13px var(--font-num);color:var(--ink-2)}
 .ef-actions{display:flex;justify-content:flex-end;gap:8px}
-.btn-primary,.btn-ghost{border:0;border-radius:980px;padding:8px 18px;font-weight:600;font-size:14px;cursor:pointer}
-.btn-primary{background:var(--accent);color:#fff}.btn-ghost{background:var(--bg-grouped);color:var(--text-primary)}
-.btn-primary:disabled{opacity:.5}
-#gtoast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:#1d1d1f;color:#fff;padding:10px 18px;border-radius:980px;font-weight:600;font-size:14px;transition:opacity .25s,transform .25s;pointer-events:none;z-index:3000;max-width:92vw;text-align:center}
+.btn-ghost{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:12px;border:0;background:var(--surface-2);font-weight:600;cursor:pointer}
+.edit-form .btn-primary{min-height:44px;padding:0 18px;border-radius:12px;border:0;font-weight:700;cursor:pointer}
+
+/* navigation sheet, locate button */
+.as-overlay{position:fixed;inset:0;z-index:2000;background:rgba(14,20,25,.4);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.as-overlay.show{opacity:1;pointer-events:auto}
+.as-sheet{width:100%;max-width:480px;padding:10px 10px calc(10px + var(--safe-b));transform:translateY(20px);transition:transform .25s}
+.as-overlay.show .as-sheet{transform:none}
+.as-group{background:var(--surface);border-radius:var(--r-m);overflow:hidden;margin-top:8px}
+.as-group .as-item{display:block;width:100%;min-height:52px;border:0;background:none;font-size:17px;color:var(--accent);cursor:pointer}
+.as-group .as-item+.as-item{border-top:1px solid var(--line)}
+.as-cancel{font-weight:700}
+.locate-btn{width:40px;height:40px;border-radius:12px;border:0;background:var(--surface);color:var(--ink);box-shadow:var(--shadow-2);display:grid;place-items:center;cursor:pointer}
+.locate-btn.active{color:var(--accent)}
+#gtoast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b));transform:translate(-50%,16px);opacity:0;z-index:3000;background:#13202B;color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;max-width:92vw;text-align:center;pointer-events:none;transition:opacity .25s,transform .25s}
 #gtoast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
-<body>
+<body class="g">
 
-<div id="map"></div>
-<div class="tabs" id="tabs"></div>
-<div class="content" id="content"></div>
+<div id="map" role="region" aria-label="行程地图"></div>
+<header class="g-top">
+  <a class="g-back" href="https://sangi9faro.github.io/" aria-label="返回我的旅行"><i data-lucide="chevron-left"></i></a>
+  <div class="g-title"><b>越南跨年</b><span id="statusSlot"></span></div>
+  <div class="tabs chips" id="tabs" role="tablist" aria-label="分天"></div>
+</header>
+<aside class="g-days" aria-label="分天">
+  <div class="gd-head"><a href="https://sangi9faro.github.io/"><i data-lucide="chevron-left" class="i18"></i>我的旅行</a><h1>越南跨年</h1><span id="statusDesk">正在连接…</span></div>
+  <div id="dayList"></div>
+</aside>
+<section class="g-panel" id="panel" aria-label="行程">
+  <button class="g-handle" id="handle" aria-label="展开或收起行程"><span></span></button>
+  <div id="content"></div>
+</section>
 
 <script>
 // ╔══════════════════════════════════════════════════════════════╗
@@ -343,14 +248,14 @@ function overviewContent() {
 钟知心：1/4 CZ6090 新山一 T2 02:25 → 白云 06:20<br>
 杨巧思：1/3 胡志明 → 首尔（待补充）
 </div></div>
-<div class="section-head">⚠️ 回程提醒</div>
+<div class="section-head"><i data-lucide="triangle-alert" class="i18"></i>回程提醒</div>
 <div class="card warn"><div class="desc">
 陈性情 1/3 <b>21:45</b>、王大气 1/4 <b>00:10</b> 从胡志明起飞，分别要 19:45、22:10 前到机场。中午从金兰湾坐大巴，晚上 7–9 点才到，基本赶不上。<br>
 建议：1/3 中午退房后，四个人一起从<b>金兰机场飞胡志明</b>（约 1 小时，机场离 Fusion 十几分钟），选 17:00 前到的班次。<br>
 如果要省钱：钟知心 1/4 02:25 才走，可以坐大巴；陈性情和王大气一定要坐飞机。
 </div></div>
 <div class="section-head">行程概览</div>
-<div class="day-list">${DAYS.slice(1).map(d => `<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${okColor(d.color)}"></span>${esc(d.label)} · ${esc(d.title)}</div><div class="desc">${esc(d.date)}</div></div>`).join('')}</div>
+<div class="day-list">${DAYS.slice(1).map(d => `<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${dayHex(d.id)}"></span>${esc(d.label)} · ${esc(d.title)}</div><div class="desc">${esc(d.date)}</div></div>`).join('')}</div>
 <div class="section-head">出发前要办</div>
 <div class="card"><div class="desc">
 ① <b>12/31 大巴票</b>：跨年当天票紧张，提前买卧铺。钟知心 01:20 落地，买 03:30 以后最早的一班，确认上车点。<br>
@@ -365,10 +270,10 @@ function overviewContent() {
 <div class="card"><div class="desc">餐厅和跨年活动还没用小红书、Google Maps 核实，带「以官方为准」的地方出发前要再查。每个地点都可以点「导航」用 Google Maps 打开。</div></div>
 <div class="section-head">图例</div>
 <div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-red)"></div>吃饭</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-blue)"></div>景点</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-purple)"></div>酒吧</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--tint-orange)"></div>住宿</div>
+  <div class="legend-item"><i data-lucide="utensils" class="i18"></i>吃饭</div>
+  <div class="legend-item"><i data-lucide="camera" class="i18"></i>景点</div>
+  <div class="legend-item"><i data-lucide="wine" class="i18"></i>酒吧</div>
+  <div class="legend-item"><i data-lucide="bed-double" class="i18"></i>住宿</div><div class="legend-item"><i data-lucide="plane" class="i18"></i>交通</div>
 </div>`;
 }
 
@@ -377,17 +282,17 @@ function overviewContent() {
 // ╚══════════════════════════════════════════════════════════════╝
 
 const map = L.map('map', { center: [HOTEL.lat || 35.69, HOTEL.lng || 139.74], zoom: 12, zoomControl: false, attributionControl: true });
-L.control.zoom({ position: 'topright' }).addTo(map);
+L.control.zoom({ position: 'bottomright' }).addTo(map);
 // CARTO basemaps now require an API key; use standard OpenStreetMap tiles with attribution.
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'tiles', attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
 
 /* ── Geolocation ── */
 const LocateControl = L.Control.extend({
   options: { position: 'bottomright' },
   onAdd() {
     const btn = L.DomUtil.create('button', 'locate-btn');
-    btn.innerHTML = '📍';
-    btn.title = '我的位置';
+    btn.innerHTML = '<i data-lucide="locate-fixed"></i>';
+    btn.title = '我的位置'; btn.setAttribute('aria-label', '我的位置');
     L.DomEvent.disableClickPropagation(btn);
     btn.addEventListener('click', () => {
       btn.classList.add('active');
@@ -424,32 +329,60 @@ const emojis = { food:'🍽️', spot:'📍', hotel:'🏨', transport:'🚃', dr
 function clearMap() { markers.forEach(m=>map.removeLayer(m)); polylines.forEach(p=>map.removeLayer(p)); markers=[]; polylines=[]; }
 
 const okColor = c => /^#[0-9a-f]{3,8}$/i.test(c || '') ? c : '#0071e3';
+// route colour per day (ui.css --d1..--d6), same on map lines, tabs and timeline dots
+const dayHex = id => (getComputedStyle(document.documentElement).getPropertyValue('--d' + (((id - 1) % 6) + 1)).trim() || '#0B7A8C');
+const TYPE_ICON = { food: 'utensils', spot: 'camera', drink: 'wine', hotel: 'bed-double', transport: 'plane', cafe: 'coffee', shop: 'shopping-bag' };
+const TYPE_NAME = { food: '吃饭', spot: '景点', drink: '酒吧', hotel: '住宿', transport: '交通', cafe: '咖啡', shop: '购物' };
+const icons = root => { try { if (window.lucide) lucide.createIcons({ attrs: { 'stroke-width': 1.75 }, root }); } catch (e) {} };
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let markerById = {}, selId = null;
+function mkIcon(color, type, n, alt) {
+  return L.divIcon({ className: '', iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -18],
+    html: `<div class="mk${alt ? ' alt' : ''}" style="--c:${color}"><i data-lucide="${TYPE_ICON[type] || 'map-pin'}"></i>${n ? `<b>${n}</b>` : ''}</div>` });
+}
+function fitTo(pts) {
+  if (!pts.length) return;
+  const phone = innerWidth < 768, top = phone ? (document.querySelector('.g-top').offsetHeight + 16) : 30, bottom = phone ? (sheetPeek() + 16) : 30;
+  const opt = { paddingTopLeft: [30, top], paddingBottomRight: [30, bottom], maxZoom: 14 };
+  if (reduceMotion) map.fitBounds(pts, opt); else map.flyToBounds(pts, { ...opt, duration: .6 });
+}
 function showDay(idx) {
-  clearMap();
+  clearMap(); markerById = {};
   if (idx === 0) {
     const pts = [];
-    DAYS.forEach(d => d.locations.forEach(l => { if (l.lat) pts.push([l.lat, l.lng]); }));
-    if (pts.length) map.fitBounds(pts, { padding: [30, 30] });
     DAYS.slice(1).forEach(d => {
-      d.locations.filter(l => l.time !== '—' && l.lat).forEach(l => {
-        const m = L.circleMarker([l.lat, l.lng], { radius: 4, fillColor: okColor(d.color), color: '#fff', weight: 1.5, fillOpacity: .9 }).addTo(map).bindPopup(`<b>${esc(l.name)}</b><br><span style="color:#86868b">${esc(d.label)}</span>`);
-        markers.push(m);
-      });
+      const main = d.locations.filter(l => l.time !== '—' && l.lat), c = dayHex(d.id);
+      if (main.length > 1) polylines.push(L.polyline(main.map(l => [l.lat, l.lng]), { color: c, weight: 4, opacity: .85 }).addTo(map));
+      main.forEach(l => { pts.push([l.lat, l.lng]);
+        markers.push(L.circleMarker([l.lat, l.lng], { radius: 6, fillColor: c, color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map).bindPopup(`<b>${esc(l.name)}</b><br><span class="muted">${esc(d.label)}</span>`)); });
     });
-    return;
+    fitTo(pts); return;
   }
-  const day = DAYS.find(d => d.id === idx);
-  if (!day) return;
-  const coords = [];
+  const day = DAYS.find(d => d.id === idx); if (!day) return;
+  const c = dayHex(day.id), coords = []; let n = 0;
   day.locations.forEach(l => {
     if (!l.lat) return;
-    const m = L.marker([l.lat, l.lng], { icon: icon(okColor(day.color), emojis[l.type] || '📌') }).addTo(map);
-    m.bindPopup(`<b>${esc(l.name)}</b>${l.time !== '—' ? '<br><span style="color:#86868b">' + esc(l.time) + '</span>' : ''}<br>${esc(l.desc)}${l.budget ? '<br><span style="color:#ff9500">' + esc(l.budget) + '</span>' : ''}<br><a href="#" data-nav="${esc(l.id)}">📍 导航</a>`);
-    markers.push(m);
-    if (l.time !== '—') coords.push([l.lat, l.lng]);
+    const alt = l.time === '—'; if (!alt) n++;
+    const m = L.marker([l.lat, l.lng], { icon: mkIcon(c, l.type, alt ? 0 : n, alt), riseOnHover: true }).addTo(map);
+    m.bindPopup(`<b>${esc(l.name)}</b>${!alt ? '<br><span class="muted num">' + esc(l.time) + '</span>' : ''}<br>${esc(l.desc)}<br><a href="#" data-nav="${esc(l.id)}">导航</a>`);
+    m.on('click', () => selectLoc(l.id, 'map'));
+    markers.push(m); markerById[l.id] = m;
+    if (!alt) coords.push([l.lat, l.lng]);
   });
-  if (coords.length > 1) { const pl = L.polyline(coords, { color: okColor(day.color), weight: 2.5, opacity: .5, dashArray: '6,5' }).addTo(map); polylines.push(pl); }
-  if (coords.length && !form) map.fitBounds(coords, { padding: [40, 40], maxZoom: 14 });
+  if (coords.length > 1) polylines.push(L.polyline(coords, { color: c, weight: 4, opacity: .85 }).addTo(map));
+  icons(document.getElementById('map'));
+  if (coords.length && !form) fitTo(coords);
+}
+// card <-> marker: highlight both; from the map, scroll the card into view (and lift the sheet on phones)
+function selectLoc(id, from) {
+  selId = id;
+  document.querySelectorAll('.tl-item.sel').forEach(x => x.classList.remove('sel'));
+  Object.entries(markerById).forEach(([k, m]) => { const el = m.getElement(); if (el) el.firstElementChild.classList.toggle('on', k === id); });
+  const card = document.querySelector(`.tl-item[data-loc="${CSS.escape(id)}"]`);
+  if (card) { card.classList.add('sel');
+    if (from === 'map') { if (innerWidth < 768 && sheetState === 'min') setSheet('half'); card.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' }); } }
+  const m = markerById[id];
+  if (m && from === 'card') { const ll = m.getLatLng(); if (reduceMotion) map.setView(ll, Math.max(map.getZoom(), 15)); else map.flyTo(ll, Math.max(map.getZoom(), 15), { duration: .6 }); }
 }
 map.on('popupopen', e => { const a = e.popup.getElement().querySelector('[data-nav]'); if (a) a.addEventListener('click', ev => { ev.preventDefault(); const l = findLoc(a.dataset.nav); if (l) openAS(l.name, l.lat, l.lng, l.gmap); }); });
 
@@ -523,27 +456,27 @@ function legText(a, b) {
   if (d < 2) t += ` · 步行约 ${r5(d / 4.5 * 60)} 分钟`;
   return t;
 }
-const legRow = (a, b) => { const t = legText(a, b); return t ? `<div class="leg" title="直线距离估算，仅供参考">↓ ${t}</div>` : ''; };
+const legRow = (a, b) => { const t = legText(a, b); return t ? `<div class="leg" title="直线距离估算，仅供参考"><i data-lucide="move-down"></i>${t}</div>` : ''; };
 
 // ══════════ CARDS ══════════
 const TYPES = [['spot', '景点'], ['food', '吃饭'], ['drink', '酒吧'], ['hotel', '住宿'], ['transport', '交通']];
 let editMode = false, form = null, pendingRender = false, armedDel = null;
-function locCard(loc, dayIdx) {
-  if (form && form.id === loc.id) return `<div class="tl-item">${formHtml(loc)}</div>`;
-  const dot = ['food', 'spot', 'drink', 'hotel'].includes(loc.type) ? loc.type : 'transport';
-  const bdg = loc.type === 'food' ? '<span class="badge food">餐</span>' : loc.type === 'spot' ? '<span class="badge spot">景</span>' : loc.type === 'drink' ? '<span class="badge drink">饮</span>' : '';
-  let lnk = `<button class="btn nav" data-nav="${esc(loc.id)}">📍 导航</button>`;
-  if (loc.xhs || loc.xhsKeyword) {
-    const xhsHref = IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc);
-    lnk += `<a href="${esc(xhsHref)}" data-xhs="${esc(loc.id)}" class="btn xhs">${IN_APP_WEBVIEW ? '📕 小红书' : '📕 小红书 App'}</a>`;
-  }
-  if (safeUrl(loc.reserve)) lnk += `<a href="${esc(loc.reserve)}" target="_blank" rel="noopener" class="btn rsv">📅 预约</a>`;
-  const day = DAYS.find(x => x.id === dayIdx);
+let openIds = new Set();
+function locCard(loc, dayIdx, n) {
+  const c = dayHex(dayIdx), alt = loc.time === '—';
+  if (form && form.id === loc.id) return `<div class="tl-item editing" style="--c:${c}"><span class="tl-num${alt ? ' alt' : ''}">${alt ? '' : n}</span>${formHtml(loc)}</div>`;
+  let lnk = `<button class="btn btn-sm btn-primary" data-nav="${esc(loc.id)}"><i data-lucide="navigation" class="i18"></i>导航</button>`;
+  if (loc.xhs || loc.xhsKeyword) lnk += `<a href="${esc(IN_APP_WEBVIEW ? xhsWebUrl(loc) : xhsAppUrl(loc))}" data-xhs="${esc(loc.id)}" class="btn btn-sm"><i data-lucide="book-open" class="i18"></i>${IN_APP_WEBVIEW ? '小红书' : '小红书 App'}</a>`;
+  if (safeUrl(loc.reserve)) lnk += `<a href="${esc(loc.reserve)}" target="_blank" rel="noopener" class="btn btn-sm"><i data-lucide="calendar-check" class="i18"></i>预约</a>`;
   const bar = editMode && !form ? `<div class="edit-bar">
-      <button data-ed="up" data-id="${esc(loc.id)}" aria-label="上移">↑</button><button data-ed="down" data-id="${esc(loc.id)}" aria-label="下移">↓</button>
+      <button data-ed="up" data-id="${esc(loc.id)}" aria-label="上移"><i data-lucide="arrow-up" class="i18"></i></button><button data-ed="down" data-id="${esc(loc.id)}" aria-label="下移"><i data-lucide="arrow-down" class="i18"></i></button>
       <select data-ed="move" data-id="${esc(loc.id)}" aria-label="移到哪一天"><option value="">移到…</option>${DAYS.slice(1).filter(d => d.id !== dayIdx).map(d => `<option value="${d.id}">${esc(d.label)}</option>`).join('')}</select>
       <button data-ed="edit" data-id="${esc(loc.id)}">改</button><button data-ed="del" data-id="${esc(loc.id)}" class="danger">删</button></div>` : '';
-  return `<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card"><div class="time">${loc.time !== '—' ? esc(loc.time) : '备选'}</div><div class="name">${bdg} ${esc(loc.name)}</div><div class="desc">${esc(loc.desc)}</div>${loc.budget ? '<div class="budget">' + esc(loc.budget) + '</div>' : ''}<div class="links">${lnk}</div>${bar}</div></div>`;
+  const open = openIds.has(loc.id) || editMode;
+  return `<div class="tl-item${open ? ' open' : ''}${selId === loc.id ? ' sel' : ''}" data-loc="${esc(loc.id)}" style="--c:${c}"><span class="tl-num${alt ? ' alt' : ''}">${alt ? '' : n}</span>
+    <div class="card" role="button" tabindex="0" aria-expanded="${open}"><div class="tl-head"><span class="time">${alt ? '备选' : esc(loc.time)}</span><span class="type-tag"><i data-lucide="${TYPE_ICON[loc.type] || 'map-pin'}"></i>${TYPE_NAME[loc.type] || '地点'}</span></div>
+    <div class="name">${esc(loc.name)}</div>${loc.desc ? `<div class="desc">${esc(loc.desc)}</div>` : ''}${loc.budget ? '<div class="budget">' + esc(loc.budget) + '</div>' : ''}
+    <div class="links">${lnk}</div>${bar}</div></div>`;
 }
 function formHtml(loc) {
   const l = loc || {}, lat = form.lat, lng = form.lng;
@@ -560,12 +493,12 @@ function formHtml(loc) {
 }
 function renderDay(idx) {
   const d = DAYS.find(x => x.id === idx); if (!d) return '';
-  const main = d.locations.filter(l => l.time !== '—'), alt = d.locations.filter(l => l.time === '—');
-  const editBtn = canEdit() ? `<button class="ed-toggle" data-ed="toggle">${editMode ? '完成' : '编辑'}</button>` : '';
-  let h = `<div class="day-head"><div class="dh-row"><h2>${esc(d.title)}</h2>${editBtn}</div><p>${esc(d.date)}${d.who ? ` · <span class="dh-who">最后修改：${esc(memberName(d.who))}</span>` : ''}</p></div>`;
-  if (main.length) { h += '<div class="section-head">行程</div><div class="timeline">'; main.forEach((l, i) => { if (i) h += legRow(main[i - 1], l); h += locCard(l, idx); }); h += '</div>'; }
-  if (alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach(l => h += locCard(l, idx)); h += '</div>'; }
-  if (editMode) h += form && !form.id ? formHtml(null) : (!form ? `<button class="add-loc" data-ed="add">＋ 添加地点</button>` : '');
+  const c = dayHex(d.id), main = d.locations.filter(l => l.time !== '—'), alt = d.locations.filter(l => l.time === '—');
+  const editBtn = canEdit() ? `<button class="btn btn-sm ed-toggle" data-ed="toggle">${editMode ? '完成' : '<i data-lucide="pencil" class="i18"></i>编辑'}</button>` : '';
+  let h = `<div class="day-head" style="--c:${c}"><div class="dh-row"><div><span class="day-chip">${esc(d.label.split(' ')[0])}</span><h2>${esc(d.title)}</h2></div>${editBtn}</div><p class="num">${esc(d.date)}${d.who ? ` · <span class="dh-who">最后修改：${esc(memberName(d.who))}</span>` : ''}</p></div>`;
+  if (main.length) { h += '<div class="timeline">'; main.forEach((l, i) => { if (i) h += legRow(main[i - 1], l); h += locCard(l, idx, i + 1); }); h += '</div>'; }
+  if (alt.length) { h += '<div class="section-head">备选</div><div class="timeline">'; alt.forEach(l => h += locCard(l, idx, 0)); h += '</div>'; }
+  if (editMode) h += form && !form.id ? formHtml(null) : (!form ? `<button class="add-loc" data-ed="add"><i data-lucide="plus"></i>添加地点</button>` : '');
   return h;
 }
 
@@ -574,31 +507,41 @@ let cur = 0;
 const tabsEl = document.getElementById('tabs');
 const contentEl = document.getElementById('content');
 function renderTabs() {
-  tabsEl.innerHTML = DAYS.map(d => `<button class="tab${d.id === cur ? ' active' : ''}" data-day="${d.id}">${esc(d.label)}</button>`).join('');
+  tabsEl.innerHTML = DAYS.map(d => `<button class="tab chip${d.id ? ' day' : ''}${d.id === cur ? ' on' : ''}" role="tab" aria-selected="${d.id === cur}" data-day="${d.id}"${d.id ? ` style="--c:${dayHex(d.id)}"` : ''}>${esc(d.id ? d.label.split(' ')[0] : d.label)}</button>`).join('');
+  document.getElementById('dayList').innerHTML = DAYS.map(d => d.id === 0
+    ? `<button class="gd${cur === 0 ? ' on' : ''}" data-day="0"><i class="dot" style="--c:var(--ink-2)"></i><span class="l">总览</span><span class="t">航班、住宿、出发前要办</span></button>`
+    : `<button class="gd${d.id === cur ? ' on' : ''}" data-day="${d.id}"><i class="dot" style="--c:${dayHex(d.id)}"></i><span class="l">${esc(d.label.split(' ')[0])}<small>${esc((d.date || '').split(' ')[0])}</small></span><span class="t">${esc(d.title)}</span><span class="n">${d.locations.length} 个地点</span></button>`).join('');
 }
 renderTabs();
-function rerender() { contentEl.innerHTML = cur === 0 ? overviewContent() : renderDay(cur); showDay(cur); }
+function rerender() { contentEl.innerHTML = cur === 0 ? overviewContent() : renderDay(cur); icons(contentEl); showDay(cur); }
 function go(idx) {
   if (form) closeForm(false);
   if (idx !== cur) editMode = false;
   cur = idx;
-  tabsEl.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', +t.dataset.day === idx));
+  renderTabs(); selId = null;
   rerender();
-  window.scrollTo({ top: 0 });
+  contentEl.scrollTop = 0;
   const tab = tabsEl.querySelector(`[data-day="${idx}"]`);
   if (tab) tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
 }
 tabsEl.addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) go(+t.dataset.day); });
+document.getElementById('dayList').addEventListener('click', e => { const t = e.target.closest('[data-day]'); if (t) go(+t.dataset.day); });
 
 // card interactions (no inline handlers: names are user-entered)
+contentEl.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.tl-item > .card')) { e.preventDefault(); e.target.click(); } });
 contentEl.addEventListener('click', e => {
+  const cardEl = e.target.closest('.tl-item > .card');
+  if (cardEl && !e.target.closest('button,a,select,input,textarea,.edit-bar,.links')) {
+    const id = cardEl.parentElement.dataset.loc; if (id) { openIds.has(id) ? openIds.delete(id) : openIds.add(id);
+      cardEl.parentElement.classList.toggle('open', openIds.has(id)); cardEl.setAttribute('aria-expanded', openIds.has(id)); selectLoc(id, 'card'); } return;
+  }
   const n = e.target.closest('[data-nav]'); if (n) { const l = findLoc(n.dataset.nav); if (l) openAS(l.name, l.lat, l.lng, l.gmap); return; }
   const x = e.target.closest('[data-xhs]'); if (x) { const l = findLoc(x.dataset.xhs); if (l) { e.preventDefault(); window.location.href = IN_APP_WEBVIEW ? xhsWebUrl(l) : xhsAppUrl(l); } return; }
 });
 
 // ══════════ SYNC STATUS + FIREBASE ══════════
-const statusEl = document.createElement('div'); statusEl.id = 'syncStatus'; statusEl.textContent = '正在连接…'; document.body.appendChild(statusEl);
-const setStatus = (t, ok) => { statusEl.textContent = t; statusEl.classList.toggle('ok', !!ok); };
+const statusEl = document.createElement('span'); statusEl.id = 'syncStatus'; statusEl.textContent = '正在连接…'; document.getElementById('statusSlot').appendChild(statusEl);
+const setStatus = (t, ok) => [statusEl, document.getElementById('statusDesk')].forEach(el => { if (el) { el.textContent = t; el.classList.toggle('ok', !!ok); } });
 let db = null, uid = null, synced = false, me = '', members = { m1: '杨巧思', m2: '钟知心', m3: '陈性情', m4: '王大气' };
 try { me = localStorage.getItem('trip-me') || ''; } catch (e) {}
 const memberName = id => members[id] || '';
@@ -671,7 +614,7 @@ const isAlt = l => l.time === '—';
 contentEl.addEventListener('click', async e => {
   const b = e.target.closest('[data-ed]'); if (!b || b.tagName === 'SELECT') return;
   const act = b.dataset.ed, d = dayOf(cur);
-  if (act === 'toggle') { if (form) closeForm(false); editMode = !editMode; rerender(); return; }
+  if (act === 'toggle') { if (form) closeForm(false); editMode = !editMode; if (editMode && innerWidth < 768) setSheet('full'); rerender(); return; }
   if (act === 'add') { openForm(null); return; }
   const id = b.dataset.id, locs = d.locations.slice(), i = locs.findIndex(l => l.id === id); if (i < 0) return;
   if (act === 'edit') { openForm(locs[i]); return; }
@@ -704,6 +647,7 @@ function openForm(loc) {
   const d = dayOf(cur);
   form = { id: loc ? loc.id : null, rev: d.rev, lat: loc ? loc.lat : null, lng: loc ? loc.lng : null, origName: loc ? loc.name : '', origGmap: loc ? loc.gmap : '' };
   rerender();
+  if (innerWidth < 768) setSheet('half');   // phone: map stays visible above the form so a tap can set the location
   if (form.lat) setTemp(form.lat, form.lng);
   const f = document.getElementById('editForm'); if (f) { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); document.getElementById('ef-name').focus({ preventScroll: true }); }
 }
@@ -791,6 +735,25 @@ function openAS(name, lat, lng, gmap) {
   asOverlay.classList.add('show');
 }
 function closeAS() { asOverlay.classList.remove('show'); }
+
+/* ── phone bottom sheet: min (≈150px) / half / full (80px from top); drag or tap the handle ── */
+const panel = document.getElementById('panel'), handle = document.getElementById('handle');
+let sheetState = 'min';
+// full stops just under the floating top bar so the day tabs stay usable
+const topBarH = () => (document.querySelector('.g-top') || {}).offsetHeight || 80;
+const SHEET = { min: () => 150, half: () => Math.round(innerHeight * .5), full: () => innerHeight - topBarH() - 6 };
+const sheetPeek = () => SHEET[sheetState]();
+function setSheet(st) { sheetState = st; panel.style.setProperty('--peek', SHEET[st]() + 'px'); handle.setAttribute('aria-label', st === 'full' ? '收起行程' : '展开行程'); }
+handle.addEventListener('click', () => { if (dragMoved) return; setSheet(sheetState === 'min' ? 'half' : sheetState === 'half' ? 'full' : 'min'); });
+let dragY = null, dragStart = 0, dragMoved = false;
+handle.addEventListener('pointerdown', e => { dragY = e.clientY; dragStart = SHEET[sheetState](); dragMoved = false; panel.classList.add('drag'); handle.setPointerCapture(e.pointerId); });
+handle.addEventListener('pointermove', e => { if (dragY === null) return; const dy = dragY - e.clientY; if (Math.abs(dy) > 4) dragMoved = true;
+  panel.style.setProperty('--peek', Math.max(110, Math.min(SHEET.full(), dragStart + dy)) + 'px'); });
+handle.addEventListener('pointerup', e => { if (dragY === null) return; panel.classList.remove('drag'); const h = dragStart + (dragY - e.clientY); dragY = null;
+  if (!dragMoved) return; const best = Object.keys(SHEET).sort((a, b) => Math.abs(SHEET[a]() - h) - Math.abs(SHEET[b]() - h))[0]; setSheet(best); setTimeout(() => { dragMoved = false; }, 0); });
+addEventListener('resize', () => { if (innerWidth < 768) setSheet(sheetState); map.invalidateSize(); });
+setSheet('min');
+icons(document);
 
 go(0);
 </script>
