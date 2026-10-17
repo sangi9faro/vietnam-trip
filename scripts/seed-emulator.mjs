@@ -104,4 +104,38 @@ const ar = await fetch(`http://127.0.0.1:9199/identitytoolkit.googleapis.com/v1/
   body: JSON.stringify({ localId: OWNER, email: 'owner@example.com', password: 'emulator-only', displayName: 'Owner (emulator)' }) });
 if (!ar.ok) throw new Error('owner account: ' + await ar.text());
 
-console.log(`emulator seeded: ${n} days, ${E.length} expenses, ${S.length} repayments, checklist + packing for 4 members, ${L.length} links, survey + 1 poll, owner login owner@example.com`);
+// ---- multi-trip test data: trips/test-trip (members only, 投票 off, TWD) and trips/open-trip (anyone with the link reads) ----
+const TP = [25.0478, 121.517], JF = [25.1086, 121.8444];
+const tripDoc = (title, extra) => ({ title, start: '2026-12-25', end: '2026-12-28', country: '台湾', countryCode: 'TW', route: ['台北', '九份'],
+  places: [{ name: '台北', lat: TP[0], lng: TP[1] }, { name: '九份', lat: JF[0], lng: JF[1] }], color: '#0071e3', summary: '测试用', coverPos: '50% 50%',
+  members: { m1: '测试甲', m2: '测试乙', m3: '测试丙', m4: '测试丁' }, modules: { guide: true, tools: true, bills: true, packing: true, vote: false },
+  currencies: ['TWD', 'CNY'], baseCurrency: 'CNY', rates: { TWD: 4.4 }, ratesAt: at(1), joinCode: 'TESTJOIN2026', visibility: 'members', owner: OWNER, at: at(9), updatedAt: at(1), ...extra });
+await put('trips/test-trip', tripDoc('测试旅行', {}));
+await put('trips/test-trip/info/static', {
+  flights: [{ who: 'm1', dir: 'in', airline: '测试航空', no: 'TT101', from: { code: 'ICN', city: '首尔', term: 'T1' }, to: { code: 'TPE', city: '台北', term: 'T2' }, dep: '2026-12-25T09:00+09:00', arr: '2026-12-25T10:40+08:00', status: 'ticketed' },
+            { who: 'm1', dir: 'out', airline: '测试航空', no: 'TT102', from: { code: 'TPE', city: '台北', term: 'T2' }, to: { code: 'ICN', city: '首尔', term: 'T1' }, dep: '2026-12-28T18:00+08:00', arr: '2026-12-28T21:30+09:00', status: 'pending' }],
+  hotels: [{ when: '12/25 – 12/28（3 晚）', day: 1, name: '测试酒店 台北车站', q: 'Taipei Main Station', task: 'hotel' }],
+  transport: [{ task: 'jiufen', icon: 'bus', title: '台北 → 九份 巴士', when: '12/27 上午', day: 3, note: '1062 路' }],
+  group: [{ k: 'hotel', label: '订台北酒店' }, { k: 'jiufen', label: '查九份巴士' }],
+  personal: [{ k: 'passport', label: '护照' }, { k: 'entry', label: '入台证 / 签注' }, { k: 'esim', label: 'eSIM' }],
+  phrases: [], tips: [{ k: '插座', v: '110V，两脚扁插' }], sos: [{ label: '报警', number: '110' }, { label: '火警 / 急救', number: '119' }],
+  packingItems: [{ id: 'docs', label: '证件', icon: 'id-card', items: [{ k: 'passport', label: '护照', w: 'carry' }] },
+                 { id: 'city', label: '城市', icon: 'train-front', items: [{ k: 'shoes', label: '舒服的鞋', w: 'check' }, { k: 'easycard', label: '悠游卡', w: 'carry' }] }],
+  stays: [], notices: [], highlight: null, guideNotes: [], at: at(1) });
+const TD = [['D1', '12/25 周五', '到台北', [['台北车站', TP, 'transport', '11:30'], ['鼎泰丰 信义店', [25.0334, 121.5299], 'food', '13:00']]],
+            ['D2', '12/26 周六', '市区', [['台北 101', [25.0336, 121.5646], 'spot', '10:00'], ['象山', [25.0273, 121.5764], 'spot', '16:30']]],
+            ['D3', '12/27 周日', '九份', [['九份老街', JF, 'spot', '11:00']]], ['D4', '12/28 周一', '回程', [['桃园机场', [25.0797, 121.2342], 'transport', '16:00']]]];
+for (const [k, [label, date, title, locs]] of TD.entries())
+  await put(`trips/test-trip/days/d${k + 1}`, { label, date, title, color: ['#E8613C', '#2E8B57', '#C2397A', '#0B7A8C'][k], rev: 1, who: '', by: 'seed', at: at(2),
+    locations: locs.map(([name, [lat, lng], type, time], x) => ({ id: `t${k}${x}`, name, lat, lng, type, time, desc: '' })) });
+for (const [k, [title, amount, currency, payer, split, cat, day]] of [['小笼包', 1200, 'TWD', 'm1', ['m1', 'm2', 'm3', 'm4'], 'food', '2026-12-25'], ['悠游卡储值', 2000, 'TWD', 'm2', ['m1', 'm2', 'm3', 'm4'], 'transport', '2026-12-25'],
+     ['101 门票', 2400, 'TWD', 'm3', ['m1', 'm2', 'm3'], 'fun', '2026-12-26']].entries())
+  await put(`trips/test-trip/expenses/t-e${k + 1}`, { title, amount, currency, payer, split, at: at(5 - k), by: by(payer), byMember: payer, mode: 'equal', cny: amount / 4.4, rate: 4.4, cat, day });
+await put('trips/test-trip/settlements/t-s1', { from: 'm4', to: 'm1', amount: 100, currency: 'CNY', cny: 100, method: 'wechat', note: '', at: at(1), by: by('m4'), byMember: 'm4' });
+await put('trips/test-trip/checklist/group', { items: { hotel: { done: true, owner: 'm1' } }, at: at(1) });
+await put('trips/test-trip/checklist/m1', { items: { passport: true }, at: at(1) });
+await put('trips/open-trip', tripDoc('公开测试旅行', { visibility: 'link', joinCode: 'OPENJOIN2026', modules: { guide: true, tools: true, bills: true, packing: true, vote: true } }));
+await put('trips/open-trip/info/static', { flights: [], hotels: [], transport: [], group: [], personal: [], phrases: [], tips: [], sos: [{ label: '报警', number: '110' }], packingItems: [], stays: [], at: at(1) });
+await put('trips/open-trip/expenses/o-e1', { title: '公开测试账', amount: 440, currency: 'TWD', payer: 'm1', split: ['m1', 'm2'], at: at(1), by: by('m1'), byMember: 'm1', mode: 'equal', cny: 100, rate: 4.4, cat: 'food' });
+
+console.log(`emulator seeded: ${n} days, ${E.length} expenses, ${S.length} repayments, checklist + packing for 4 members, ${L.length} links, survey + 1 poll, owner login owner@example.com, trips test-trip + open-trip`);

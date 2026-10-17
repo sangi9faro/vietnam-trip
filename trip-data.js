@@ -66,3 +66,16 @@ window.TRIP_SOS = [['报警', '113'], ['火警', '114'], ['急救', '115'],
   ['领事馆', '中国驻胡志明市总领事馆', 'https://www.google.com/maps/search/?api=1&query=Consulate+General+of+China+Ho+Chi+Minh+City']];
 window.TRIP_PERSONAL = [['passport', '护照有效期 6 个月以上'], ['visa', '越南电子签 / 确认免签（看攻略收藏 · 签证）'], ['ticket', '机票已出票'],
   ['esim', '越南 eSIM / 流量'], ['grab', '装好 Grab'], ['cash', '换一些越南盾'], ['insurance', '旅行保险']];
+window.TRIP_STAYS = [['hyatt', '1/1 芽庄凯悦退房'], ['fusion', '1/3 金兰湾 Fusion 退房']];   // checkout lists (keys match packing/{m}.checkout)
+// guide overview extras (multi-trip: stored in info/static; {mN} = member names)
+window.TRIP_NOTICES = [{ text: '{m3} 1/3 21:45、{m4} 1/4 00:10 起飞，金兰湾坐大巴晚上才到，赶不上。1/3 中午一起从金兰机场飞回胡志明。', until: '2027-01-03' }];
+window.TRIP_HIGHLIGHT = { label: '跨年', icon: 'sparkles', day: 3, match: '跨年|倒数' };
+window.TRIP_GUIDE_NOTES = [
+  { title: '12/31 大巴票', text: '跨年当天票紧张，提前买卧铺。{m2} 01:20 落地，买 03:30 以后最早的一班，确认上车点。' },
+  { title: '1/3 国内线', text: '金兰 → 胡志明，17:00 前到达的班次，尽早订。' },
+  { title: '12/30 晚上没有酒店', text: '退房后行李寄存前台，先问好前台夜里能不能取；酒吧到凌晨，留出取行李和去上车点的时间。' },
+  { title: '1/1 跳岛游', text: '提前订，问清楚停航怎么退。' },
+  { title: '签证', text: '中国护照要提前在官网 evisa.gov.vn 办电子签（小心代办假网站），韩国护照目前免签。', url: 'https://evisa.gov.vn/' },
+  { title: '手机和打车', text: '买越南 eSIM，装好 Grab。' },
+  { title: '钱', text: '越南盾现金备一些，夜市和小店多数只收现金。' },
+];
