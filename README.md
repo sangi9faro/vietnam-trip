@@ -1,5 +1,9 @@
 # 越南跨年 2026–2027
 
+> **已搬家（2026-10-17）**：页面已经合并到主页仓库的通用旅行页 `/t/?id=vietnam-2026`（`sangi9faro.github.io` 仓库的 `t/`）。
+> 这里的 `index.html`、`guide.html`、`vote.html` 只负责跳转；旧数据和顶层规则保留到旅行结束后一个月。
+> `firestore.rules`、模拟器测试（`npm run test:rules`、`scripts/seed-emulator.mjs`）仍在本仓库。
+
 四个人共用的旅行小站（GitHub Pages + Firebase `vietnam-trip-10761`）。
 
 | 页面 | 内容 |
