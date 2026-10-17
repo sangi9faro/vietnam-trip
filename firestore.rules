@@ -254,5 +254,184 @@ service cloud.firestore {
         && request.resource.data.checkout.keys().hasOnly(['hyatt', 'fusion'])
         && request.resource.data.at is int;
     }
+
+    // ================= 多次旅行：trips/{tripId}/…（一套代码，多次旅行）=================
+    // Old top-level collections above stay until the Vietnam migration is confirmed.
+    // Each helper call costs one document read: keep them few per rule.
+    function tripPath(t) { return /databases/$(database)/documents/trips/$(t); }
+    function memberPath(t) { return /databases/$(database)/documents/trips/$(t)/members/$(request.auth.uid); }
+    function tripOf(t) { return get(tripPath(t)).data; }
+    function isTripMember(t) { return signedIn() && (isOwner() || exists(memberPath(t))); }
+    function canReadTrip(t) { return isTripMember(t) || tripOf(t).visibility == 'link'; }
+    function tripMembers(t) { return tripOf(t).members.keys(); }
+    // the member (m1–m8) this device picked; one person may use several devices
+    function myMember(t) { return get(memberPath(t)).data.get('member', null); }
+    // writer stamps: by = this device; byMember (optional) = the member this device picked
+    function stampsOk(t, d) {
+      return (d.by == request.auth.uid || isOwner())
+        && (!('byMember' in d) || isOwner() || d.byMember == myMember(t));
+    }
+    // "only the recorder": the same member on any of their devices, or (old entries) the same device
+    function ownEntry(t) {
+      return resource.data.by == request.auth.uid
+        || ('byMember' in resource.data && resource.data.byMember != null && exists(memberPath(t)) && resource.data.byMember == myMember(t));
+    }
+    function okCurrency(c) { return c in ['CNY', 'VND', 'KRW', 'USD', 'TWD', 'JPY', 'THB', 'HKD', 'EUR', 'SGD', 'MYR']; }
+    function validTrip() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['title', 'start', 'end', 'country', 'countryCode', 'route', 'places', 'color', 'summary', 'coverPos',
+                               'members', 'modules', 'currencies', 'baseCurrency', 'rates', 'ratesAt', 'joinCode', 'visibility', 'owner', 'at', 'updatedAt'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 60
+        && d.start is string && d.start.size() == 10 && d.end is string && d.end.size() == 10
+        && d.members is map && d.members.size() <= 8
+        && d.members.keys().hasOnly(['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8'])
+        && d.modules is map && d.modules.keys().hasOnly(['guide', 'tools', 'bills', 'packing', 'vote'])
+        && d.joinCode is string && d.joinCode.size() >= 8 && d.joinCode.size() <= 40
+        && d.visibility in ['members', 'link']
+        && d.owner == request.auth.uid;
+    }
+
+    match /trips/{tripId} {
+      allow read: if resource.data.visibility == 'link' || isTripMember(tripId);
+      allow create: if isOwner() && validTrip();
+      // the owner edits everything; members may only refresh the shared exchange rates
+      allow update: if (isOwner() && validTrip())
+        || (isTripMember(tripId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rates', 'ratesAt', 'updatedAt'])
+            && request.resource.data.rates is map);
+      allow delete: if isOwner();
+
+      // devices that joined: { code, member, at }. Joining needs the current invite code.
+      match /members/{uid} {
+        allow read: if isTripMember(tripId);
+        allow create: if (isOwner() && request.resource.data.keys().hasOnly(['code', 'member', 'at']))
+          || (signedIn() && request.auth.uid == uid
+              && request.resource.data.keys().hasOnly(['code', 'member', 'at'])
+              && request.resource.data.code == tripOf(tripId).joinCode
+              && (request.resource.data.get('member', null) == null || request.resource.data.member in tripMembers(tripId)));
+        allow update: if isOwner()
+          || (signedIn() && request.auth.uid == uid
+              && request.resource.data.keys().hasOnly(['code', 'member', 'at'])
+              && request.resource.data.code == resource.data.code
+              && (request.resource.data.get('member', null) == null || request.resource.data.member in tripMembers(tripId)));
+        allow delete: if isOwner() || (signedIn() && request.auth.uid == uid);
+      }
+
+      match /cover/{docId} { allow read: if canReadTrip(tripId); allow write: if isOwner(); }
+      match /info/{docId}  { allow read: if canReadTrip(tripId); allow write: if isOwner(); }
+
+      match /expenses/{id} {
+        allow read: if canReadTrip(tripId);
+        allow create: if isTripMember(tripId) && validTripExpense(tripId) && stampsOk(tripId, request.resource.data);
+        allow update: if isTripMember(tripId) && (isOwner() || ownEntry(tripId)) && validTripExpense(tripId)
+          && request.resource.data.by == resource.data.by;
+        allow delete: if isTripMember(tripId) && (isOwner() || ownEntry(tripId));
+      }
+      match /settlements/{id} {
+        allow read: if canReadTrip(tripId);
+        allow create: if isTripMember(tripId) && stampsOk(tripId, request.resource.data)
+          && request.resource.data.keys().hasOnly(['from', 'to', 'amount', 'currency', 'cny', 'method', 'note', 'at', 'by', 'byMember'])
+          && request.resource.data.from in tripMembers(tripId) && request.resource.data.to in tripMembers(tripId)
+          && request.resource.data.from != request.resource.data.to
+          && request.resource.data.amount is number && request.resource.data.amount > 0 && request.resource.data.amount < 10000000000
+          && okCurrency(request.resource.data.currency)
+          && request.resource.data.cny is number && request.resource.data.cny > 0
+          && request.resource.data.method in ['wechat', 'alipay', 'cash', 'bank', 'other']
+          && request.resource.data.note is string && request.resource.data.note.size() <= 60
+          && request.resource.data.at is int;
+        allow update: if false;
+        allow delete: if isTripMember(tripId) && (isOwner() || ownEntry(tripId));
+      }
+      match /checklist/{docId} {
+        allow read: if canReadTrip(tripId);
+        allow create, update: if isTripMember(tripId)
+          && (docId == 'group' || docId in tripMembers(tripId))
+          && request.resource.data.keys().hasOnly(['items', 'at'])
+          && request.resource.data.items is map && request.resource.data.items.size() <= 60
+          && request.resource.data.at is int;
+      }
+      match /packing/{docId} {
+        allow read: if canReadTrip(tripId);
+        allow create, update: if isTripMember(tripId) && docId in tripMembers(tripId)
+          && request.resource.data.keys().hasOnly(['items', 'custom', 'checkout', 'at'])
+          && request.resource.data.items is map && request.resource.data.items.size() <= 200
+          && request.resource.data.custom is list && request.resource.data.custom.size() <= 30
+          && request.resource.data.checkout is map
+          && request.resource.data.at is int;
+      }
+      match /links/{id} {
+        allow read: if canReadTrip(tripId);
+        allow create: if isTripMember(tripId) && stampsOk(tripId, request.resource.data)
+          && request.resource.data.keys().hasOnly(['title', 'url', 'tag', 'who', 'by', 'byMember', 'at'])
+          && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 80
+          && request.resource.data.url is string && request.resource.data.url.size() <= 500 && request.resource.data.url.matches('https?://.+')
+          && request.resource.data.tag in ['签证', '交通', '住宿', '吃喝', '玩乐', '其他']
+          && (request.resource.data.who == '' || request.resource.data.who in tripMembers(tripId))
+          && request.resource.data.at is int;
+        allow delete: if isTripMember(tripId) && (isOwner() || ownEntry(tripId));
+      }
+      match /days/{dayId} {
+        allow read: if canReadTrip(tripId);
+        allow create, update: if isTripMember(tripId)
+          && dayId.matches('d[0-9]{1,2}')
+          && request.resource.data.keys().hasOnly(['label', 'date', 'title', 'color', 'locations', 'rev', 'who', 'by', 'at'])
+          && request.resource.data.title is string && request.resource.data.title.size() <= 80
+          && request.resource.data.locations is list && request.resource.data.locations.size() <= 40
+          && request.resource.data.rev is int
+          && (resource == null || isOwner() || request.resource.data.rev == resource.data.rev + 1)
+          && (request.resource.data.who == '' || request.resource.data.who in tripMembers(tripId))
+          && (request.resource.data.by == request.auth.uid || isOwner())
+          && request.resource.data.at is int;
+        allow delete: if isOwner();
+      }
+      match /polls/{pid} {
+        allow read: if canReadTrip(tripId);
+        allow create: if isTripMember(tripId) && stampsOk(tripId, request.resource.data)
+          && request.resource.data.keys().hasOnly(['title', 'options', 'multi', 'closed', 'who', 'by', 'byMember', 'at'])
+          && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 80
+          && request.resource.data.options is list && request.resource.data.options.size() >= 2 && request.resource.data.options.size() <= 8;
+        allow update: if isTripMember(tripId) && (isOwner() || ownEntry(tripId))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['closed', 'title', 'options', 'multi']);
+        allow delete: if isTripMember(tripId) && (isOwner() || ownEntry(tripId));
+        match /ballots/{mid} {
+          allow read: if canReadTrip(tripId);
+          allow create, update: if isTripMember(tripId) && mid in tripMembers(tripId)
+            && request.resource.data.keys().hasOnly(['choices', 'by', 'at'])
+            && request.resource.data.choices is list && request.resource.data.choices.size() >= 1 && request.resource.data.choices.size() <= 8
+            && (request.resource.data.by == request.auth.uid || isOwner())
+            && (isOwner() || get(/databases/$(database)/documents/trips/$(tripId)/polls/$(pid)).data.closed == false);
+          allow delete: if isTripMember(tripId) && mid in tripMembers(tripId);
+        }
+      }
+      // the first Vietnam survey (destination vote, quiz, notes): kept as read-only history
+      match /{legacy}/{docId} {
+        allow read: if legacy in ['people', 'votes', 'quiz', 'notes'] && canReadTrip(tripId);
+        allow write: if legacy in ['people', 'votes', 'quiz', 'notes'] && isOwner();
+      }
+    }
+    function validTripExpense(t) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['title', 'amount', 'currency', 'payer', 'split', 'at', 'by', 'byMember',
+                               'mode', 'shares', 'cny', 'rate', 'settled', 'cat', 'day', 'note'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 60
+        && d.amount is number && d.amount > 0 && d.amount < 10000000000
+        && okCurrency(d.currency)
+        && d.payer in tripMembers(t)
+        && d.split is list && d.split.size() >= 1 && d.split.size() <= 8
+        && d.split.hasOnly(tripMembers(t))
+        && d.at is int
+        && (!('mode' in d) || d.mode in ['equal', 'shares', 'amounts'])
+        && (!('shares' in d) || (d.shares is map && d.shares.keys().hasOnly(tripMembers(t))))
+        && (!('cny' in d) || (d.cny is number && d.cny > 0))
+        && (!('rate' in d) || (d.rate is number && d.rate > 0))
+        && (!('settled' in d) || d.settled is bool)
+        && (!('cat' in d) || d.cat in ['food', 'transport', 'stay', 'fun', 'shop', 'other'])
+        && (!('day' in d) || (d.day is string && d.day.size() == 10))
+        && (!('note' in d) || (d.note is string && d.note.size() <= 120));
+    }
+    // checklist / packing templates (no personal data): anyone signed in reads, only the owner writes
+    match /templates/{id} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
   }
 }

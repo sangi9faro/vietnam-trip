@@ -87,4 +87,21 @@ for (const [k, id] of IDS.entries())
 const L = [['越南电子签证指南', 'https://evisa.gov.vn/', '签证', 'm1'], ['芽庄跳岛游攻略', 'https://example.com/nhatrang-island', '玩乐', 'm2'], ['胡志明河粉合集', 'https://example.com/pho', '吃喝', 'm3']];
 for (const [k, [title, url, tag, who]] of L.entries()) await put(`links/seed-l${k + 1}`, { title, url, tag, who, by: by(who), at: at(3 - k) });
 
-console.log(`emulator seeded: ${n} days, ${E.length} expenses, ${S.length} repayments, checklist + packing for 4 members, ${L.length} links`);
+// the first survey page (vote.html v1) and the poll collection — what the migration has to carry over
+for (const [k, id] of IDS.entries()) {
+  await put(`people/${by(id)}`, { name: ['成员A', '成员B', '成员C', '成员D'][k], at: at(30) });
+  await put(`votes/${by(id)}`, { dest: ['nt', 'pq', 'nt', 'dn'][k], at: at(30) });
+  await put(`quiz/${by(id)}`, { answers: [0, 1, 2], at: at(30) });
+}
+await put('notes/seed-n1', { text: '跨年要看烟花', author: by('m2'), at: at(29) });
+await put('polls/seed-p1', { title: '12/30 晚上去哪', options: ['裴援街', 'Chill Skybar'], multi: false, closed: false, who: 'm1', by: by('m1'), at: at(5) });
+await put('polls/seed-p1/ballots/m1', { choices: [1], by: by('m1'), at: at(5) });
+await put('polls/seed-p1/ballots/m3', { choices: [0], by: by('m3'), at: at(4) });
+
+// the trip owner, for testing owner-only pages (admin/migrate.html) on the emulator: email/password login, emulator only
+const OWNER = 'X8BxRGYdemf6Wwb9MtQcLAxpy5q2';
+const ar = await fetch(`http://127.0.0.1:9199/identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts`, { method: 'POST', headers: ADMIN,
+  body: JSON.stringify({ localId: OWNER, email: 'owner@example.com', password: 'emulator-only', displayName: 'Owner (emulator)' }) });
+if (!ar.ok) throw new Error('owner account: ' + await ar.text());
+
+console.log(`emulator seeded: ${n} days, ${E.length} expenses, ${S.length} repayments, checklist + packing for 4 members, ${L.length} links, survey + 1 poll, owner login owner@example.com`);

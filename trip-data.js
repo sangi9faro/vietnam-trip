@@ -50,3 +50,19 @@ window.TRIP_TRANSPORT = [
   { task: "bus1231", icon: "bus", title: "胡志明 → 芽庄 卧铺大巴", when: "12/31 03:30 以后最早的一班", day: 3, note: "跨年当天票紧张，提前买；确认上车点。" },
   { task: "cxr0103", icon: "plane", title: "金兰 → 胡志明 国内航班", when: "1/3 17:00 前到达", day: 6, note: "Fusion 到金兰机场十几分钟，中午退房后出发。" },
 ];
+
+// ---- static trip content (read by the multi-trip migration into trips/vietnam-2026/info/static) ----
+window.TRIP_META = { id: 'vietnam-2026', title: '越南跨年', start: '2026-12-29', end: '2027-01-03', country: '越南', countryCode: 'VN',
+  route: ['胡志明', '芽庄', '金兰湾'], places: [{ name: '胡志明', lat: 10.7769, lng: 106.7009 }, { name: '芽庄', lat: 12.2388, lng: 109.1967 }, { name: '金兰湾', lat: 12.05, lng: 109.208 }],
+  color: '#ff2d55', summary: '四个人，胡志明集合，芽庄跨年，金兰湾度假村收尾。', currencies: ['VND', 'CNY', 'KRW', 'USD'], baseCurrency: 'CNY' };
+window.TRIP_PHRASES = [
+  ['Cảm ơn', 'gǎm ēn', '谢谢'], ['Xin chào', 'xīn zhào', '你好'], ['Bao nhiêu tiền?', 'bāo niū dièn', '多少钱？'], ['Tính tiền', 'dǐng dièn', '买单'],
+  ['Mắc quá', 'mǎ guā', '太贵了（砍价用）'], ['Không cay', 'kōng gāi', '不要辣'], ['Không đá', 'kōng dá', '不加冰'], ['Ngon quá', 'ngōn guā', '好吃！'],
+  ['Bốn người', 'bōn ngúi', '四个人（进餐厅用）'], ['Nhà vệ sinh ở đâu?', 'nyà wē xīn ē dōu', '厕所在哪？'], ['Không, cảm ơn', 'kōng, gǎm ēn', '不用了，谢谢（拒绝拉客）'],
+];
+window.TRIP_TIPS = [['时差', '比北京晚 1 小时，比首尔晚 2 小时'], ['天气', '胡志明 12 月是旱季，白天 30°C 左右；芽庄 12 月底可能下雨，22–28°C'],
+  ['插座', '220V，两脚扁插、两脚圆插大多能用，带个转换头保险'], ['喝水', '不要喝自来水，买瓶装水']];
+window.TRIP_SOS = [['报警', '113'], ['火警', '114'], ['急救', '115'],
+  ['领事馆', '中国驻胡志明市总领事馆', 'https://www.google.com/maps/search/?api=1&query=Consulate+General+of+China+Ho+Chi+Minh+City']];
+window.TRIP_PERSONAL = [['passport', '护照有效期 6 个月以上'], ['visa', '越南电子签 / 确认免签（看攻略收藏 · 签证）'], ['ticket', '机票已出票'],
+  ['esim', '越南 eSIM / 流量'], ['grab', '装好 Grab'], ['cash', '换一些越南盾'], ['insurance', '旅行保险']];

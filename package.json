@@ -6,7 +6,7 @@
   "scripts": {
     "emulators": "firebase emulators:start --project vietnam-trip-10761",
     "seed": "node scripts/seed-emulator.mjs",
-    "test:rules": "firebase emulators:exec --only firestore --project vietnam-trip-10761 \"node tests/rules.test.mjs\""
+    "test:rules": "firebase emulators:exec --only firestore --project vietnam-trip-10761 \"node --test --test-concurrency=1 tests/\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
