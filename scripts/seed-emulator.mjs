@@ -1,6 +1,7 @@
 // Reset the local Firebase emulators and load a repeatable test dataset.
 // Usage (emulators running via `firebase emulators:start`):  node scripts/seed-emulator.mjs
 // Only ever talks to 127.0.0.1 — never to the live project. Member names are placeholders (成员A–D).
+import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -36,8 +37,8 @@ const now = Date.now(), day = 864e5, at = d => now - d * day;   // `at` some day
 const IDS = ['m1', 'm2', 'm3', 'm4'], by = id => 'seed-' + id;   // seed entries belong to fake devices, not to test browsers
 await put('meta/settings', { members: { m1: '成员A', m2: '成员B', m3: '成员C', m4: '成员D' }, rates: { VND: 3650, KRW: 195, USD: 0.14 }, ratesAt: at(1), at: at(1) });
 
-// itinerary: the fallback copy embedded in guide.html
-const src = readFileSync(join(ROOT, 'guide.html'), 'utf8'), i = src.indexOf('const DAYS = ['), j = src.indexOf('\n];', i);
+// itinerary: the fallback copy embedded in guide.html before it became a redirect page (6851eb1)
+const src = execSync('git show 6851eb1^:guide.html', { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 26 }), i = src.indexOf('const DAYS = ['), j = src.indexOf('\n];', i);
 const days = new Function(`const SGN=[10.81798,106.65626],D1=[10.77372,106.70405],HCMC_HOTEL=[10.78246,106.69186],g=q=>encodeURIComponent(q);${src.slice(i, j + 3)};return DAYS;`)().filter(d => d.id);
 let n = 0;
 for (const d of days) {

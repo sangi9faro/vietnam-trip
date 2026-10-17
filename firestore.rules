@@ -348,6 +348,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['items', 'at'])
           && request.resource.data.items is map && request.resource.data.items.size() <= 60
           && request.resource.data.at is int;
+        allow delete: if isOwner();   // deleting the whole trip
       }
       match /packing/{docId} {
         allow read: if canReadTrip(tripId);
@@ -357,6 +358,7 @@ service cloud.firestore {
           && request.resource.data.custom is list && request.resource.data.custom.size() <= 30
           && request.resource.data.checkout is map
           && request.resource.data.at is int;
+        allow delete: if isOwner();
       }
       match /links/{id} {
         allow read: if canReadTrip(tripId);

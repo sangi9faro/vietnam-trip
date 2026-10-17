@@ -112,3 +112,11 @@ test('cover / info / templates: owner writes, members read', async () => {
   await assertSucceeds(setDoc(doc(as(OWNER), 'templates/beach'), { packing: [] }));
   await assertFails(setDoc(doc(as('phoneB'), 'templates/beach'), { packing: [] }));
 });
+test('deleting a trip: owner can remove every part, members cannot', async () => {
+  await env.withSecurityRulesDisabled(c => setDoc(doc(c.firestore(), T + '/packing/m1'), { items: {}, custom: [], checkout: {}, at: 1 }));
+  await assertFails(deleteDoc(doc(as('phoneA'), T + '/packing/m1')));
+  await assertSucceeds(deleteDoc(doc(as(OWNER), T + '/packing/m1')));
+  await assertSucceeds(deleteDoc(doc(as(OWNER), T + '/members/phoneB')));
+  await assertFails(deleteDoc(doc(as('phoneA'), T)));
+  await assertSucceeds(deleteDoc(doc(as(OWNER), T)));
+});
