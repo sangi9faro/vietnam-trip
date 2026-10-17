@@ -216,12 +216,22 @@ service cloud.firestore {
     function validFavorite() {
       let d = request.resource.data;
       return d.keys().hasOnly(['name', 'category', 'lat', 'lng', 'rating', 'note', 'city', 'country',
-                               'tripId', 'visitedAt', 'price', 'tags', 'link', 'private', 'at', 'updatedAt'])
+                               'tripId', 'visitedAt', 'price', 'tags', 'link', 'private', 'at', 'updatedAt',
+                               'status', 'nameLocal', 'address', 'district', 'cuisine', 'source', 'countryCode'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 60
         && d.category in ['food', 'cafe', 'bar', 'spot', 'stay', 'shop', 'other']
         && d.lat is number && d.lat >= -90 && d.lat <= 90
         && d.lng is number && d.lng >= -180 && d.lng <= 180
-        && d.rating is int && d.rating >= 1 && d.rating <= 5
+        // 想去 (want) may be saved without stars; 去过 (been, or no status on old entries) needs 1–5
+        && (!('status' in d) || d.status in ['been', 'want'])
+        && d.rating is int && d.rating <= 5
+        && (d.rating >= 1 || (d.rating == 0 && d.get('status', 'been') == 'want'))
+        && (!('nameLocal' in d) || (d.nameLocal is string && d.nameLocal.size() <= 60))
+        && (!('address' in d) || (d.address is string && d.address.size() <= 200))
+        && (!('district' in d) || (d.district is string && d.district.size() <= 30))
+        && (!('cuisine' in d) || (d.cuisine is string && d.cuisine.size() <= 20))
+        && (!('source' in d) || d.source in ['naver', 'kakao', 'amap', 'dianping', 'xhs', 'google', 'photo', 'other', 'manual', 'search'])
+        && (!('countryCode' in d) || (d.countryCode is string && d.countryCode.size() <= 2))
         && d.note is string && d.note.size() <= 500
         && d.city is string && d.city.size() <= 30
         && d.country is string && d.country.size() <= 30

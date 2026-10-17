@@ -129,3 +129,20 @@ test('budgets: only the owner reads and writes', async () => {
   await assertFails(setDoc(doc(as('phoneB'), 'budgets/b2'), b));
   await assertFails(getDoc(doc(anon(), 'budgets/b1')));
 });
+
+test('favorites: 想去 without stars, 去过 needs 1–5, new recognition fields', async () => {
+  const base = { name: '小龙坎火锅', category: 'food', lat: 30.65, lng: 104.08, rating: 0, note: '', city: '成都', country: '中国', tripId: null, visitedAt: null,
+    price: 0, tags: [], link: '', private: false, at: 1, updatedAt: 1, status: 'want', nameLocal: '小龙坎火锅', address: '春熙路 1 号', district: '锦江区',
+    cuisine: '火锅', source: 'dianping', countryCode: 'CN' };
+  const o = as(OWNER);
+  await assertSucceeds(setDoc(doc(o, 'favorites/w1'), base));                                   // want, 0 stars
+  await assertFails(setDoc(doc(o, 'favorites/w2'), { ...base, status: 'been' }));             // been, 0 stars
+  await assertSucceeds(setDoc(doc(o, 'favorites/w3'), { ...base, status: 'been', rating: 4 }));
+  const { status, nameLocal, address, district, cuisine, source, countryCode, ...old } = base;
+  await assertFails(setDoc(doc(o, 'favorites/w4'), old));                                       // old shape (no status) still needs stars
+  await assertSucceeds(setDoc(doc(o, 'favorites/w5'), { ...old, rating: 5 }));
+  await assertFails(setDoc(doc(o, 'favorites/w6'), { ...base, status: 'maybe' }));
+  await assertFails(setDoc(doc(o, 'favorites/w7'), { ...base, source: 'evil' }));
+  await assertFails(setDoc(doc(o, 'favorites/w8'), { ...base, address: 'x'.repeat(201) }));
+  await assertFails(setDoc(doc(as('phoneB'), 'favorites/w9'), { ...base, rating: 5 }));       // not the owner
+});
