@@ -120,3 +120,12 @@ test('deleting a trip: owner can remove every part, members cannot', async () =>
   await assertFails(deleteDoc(doc(as('phoneA'), T)));
   await assertSucceeds(deleteDoc(doc(as(OWNER), T)));
 });
+
+test('budgets: only the owner reads and writes', async () => {
+  const b = { title: '预算', limit: 9000, trips: { 'test-trip': 'm1' }, items: [{ id: 'a', label: '机票', amount: 1000, cat: 'flight', status: 'paid' }], at: 1 };
+  await assertSucceeds(setDoc(doc(as(OWNER), 'budgets/b1'), b));
+  await assertSucceeds(getDoc(doc(as(OWNER), 'budgets/b1')));
+  await assertFails(getDoc(doc(as('phoneB'), 'budgets/b1')));
+  await assertFails(setDoc(doc(as('phoneB'), 'budgets/b2'), b));
+  await assertFails(getDoc(doc(anon(), 'budgets/b1')));
+});
