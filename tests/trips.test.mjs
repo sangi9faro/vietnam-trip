@@ -146,3 +146,13 @@ test('favorites: 想去 without stars, 去过 needs 1–5, new recognition field
   await assertFails(setDoc(doc(o, 'favorites/w8'), { ...base, address: 'x'.repeat(201) }));
   await assertFails(setDoc(doc(as('phoneB'), 'favorites/w9'), { ...base, rating: 5 }));       // not the owner
 });
+
+test('favorites: visits (到访日期) at most 100', async () => {
+  const f = { name: '성수 소금빵', category: 'cafe', lat: 37.5446, lng: 127.0557, rating: 4, note: '', city: '首尔', country: '韩国', tripId: null, visitedAt: '2026-10-01',
+    price: 0, tags: [], link: '', private: true, at: 1, updatedAt: 1, status: 'been', district: '성동구', visits: ['2026-10-01', '2026-10-15'] };
+  await assertSucceeds(setDoc(doc(as(OWNER), 'favorites/v1'), f));
+  const days = Array.from({ length: 101 }, (_, i) => `2026-01-${String(i % 28 + 1).padStart(2, '0')}`);
+  await assertFails(setDoc(doc(as(OWNER), 'favorites/v2'), { ...f, visits: days }));
+  await assertSucceeds(setDoc(doc(as(OWNER), 'favorites/v3'), { ...f, visits: days.slice(0, 100) }));
+  await assertFails(setDoc(doc(as(OWNER), 'favorites/v4'), { ...f, visits: 'often' }));
+});

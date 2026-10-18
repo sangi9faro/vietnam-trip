@@ -217,7 +217,7 @@ service cloud.firestore {
       let d = request.resource.data;
       return d.keys().hasOnly(['name', 'category', 'lat', 'lng', 'rating', 'note', 'city', 'country',
                                'tripId', 'visitedAt', 'price', 'tags', 'link', 'private', 'at', 'updatedAt',
-                               'status', 'nameLocal', 'address', 'district', 'cuisine', 'source', 'countryCode'])
+                               'status', 'nameLocal', 'address', 'district', 'cuisine', 'source', 'countryCode', 'visits'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 60
         && d.category in ['food', 'cafe', 'bar', 'spot', 'stay', 'shop', 'other']
         && d.lat is number && d.lat >= -90 && d.lat <= 90
@@ -232,6 +232,7 @@ service cloud.firestore {
         && (!('cuisine' in d) || (d.cuisine is string && d.cuisine.size() <= 20))
         && (!('source' in d) || d.source in ['naver', 'kakao', 'amap', 'dianping', 'xhs', 'google', 'photo', 'other', 'manual', 'search'])
         && (!('countryCode' in d) || (d.countryCode is string && d.countryCode.size() <= 2))
+        && (!('visits' in d) || (d.visits is list && d.visits.size() <= 100))   // 到访日期 YYYY-MM-DD
         && d.note is string && d.note.size() <= 500
         && d.city is string && d.city.size() <= 30
         && d.country is string && d.country.size() <= 30
